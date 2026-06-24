@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Domain.Entities;
-using VoltStream.Infrastructure.Persistence.Interceptors;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options)
     : DbContext(options), IAppDbContext
@@ -27,10 +26,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     private IDbContextTransaction? currentTransaction;
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.AddInterceptors(new AuditInterceptor());
-    }
+    // AuditInterceptor DI orqali (DependencyInjection.cs) bir marta ro'yxatdan o'tadi.
+    // Bu yerda qayta qo'shilsa, har SaveChanges'da ikki marta ishlardi - shuning uchun olib tashlandi.
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

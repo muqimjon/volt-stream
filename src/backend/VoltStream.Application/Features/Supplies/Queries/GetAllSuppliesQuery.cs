@@ -15,6 +15,7 @@ public class GetAllSuppliesQueryHandler(
 {
     public async Task<IReadOnlyCollection<SupplyDto>> Handle(GetAllSuppliesQuery request, CancellationToken cancellationToken)
        => mapper.Map<IReadOnlyCollection<SupplyDto>>(await context.Supplies
+           .AsNoTracking()
            .Where(supply => supply.IsDeleted != true)
            .Include(supply => supply.Product)
                 .ThenInclude(product => product.Category)

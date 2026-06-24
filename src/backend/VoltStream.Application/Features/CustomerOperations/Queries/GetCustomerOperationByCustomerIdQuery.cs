@@ -33,12 +33,14 @@ public class GetCustomerOperationByCustomerIdQueryHandler(
 
         // 🔹 Shu mijozning accountini olish
         var account = await _context.Accounts
+            .AsNoTracking()
             .FirstOrDefaultAsync(a => a.CustomerId == request.CustomerId, cancellationToken);
 
         if (account == null)
             throw new InvalidOperationException("Hisob topilmadi.");
 
         var allOperations = _context.CustomerOperations
+            .AsNoTracking()
             .Include(x => x.Account)
             .Where(x => x.Account.CustomerId == request.CustomerId);
 

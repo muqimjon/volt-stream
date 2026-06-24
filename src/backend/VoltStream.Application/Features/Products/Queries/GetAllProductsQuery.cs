@@ -14,6 +14,6 @@ public class GetAllProductsQueryHandler(
     : IRequestHandler<GetAllProductsQuery, IReadOnlyCollection<ProductDto>>
 {
     public async Task<IReadOnlyCollection<ProductDto>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
-        => mapper.Map<IReadOnlyCollection<ProductDto>>(await context.Products.ToListAsync(cancellationToken));
+        => mapper.Map<IReadOnlyCollection<ProductDto>>(await context.Products.AsNoTracking().ToListAsync(cancellationToken));
 }
 

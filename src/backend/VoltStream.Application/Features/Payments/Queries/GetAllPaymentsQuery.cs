@@ -14,6 +14,7 @@ public class GetAllPaymentsQueryHandler(
 {
     public async Task<IReadOnlyCollection<PaymentDto>> Handle(GetAllPaymentsQuery request, CancellationToken cancellationToken)
         => mapper.Map<IReadOnlyCollection<PaymentDto>>(await context.Payments
+            .AsNoTracking()
             .Include(p => p.CustomerOperation)
             .ToListAsync(cancellationToken));
 }
