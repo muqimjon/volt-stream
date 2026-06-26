@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
+    xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
     Title="Sotuv tarixi"
     d:DesignHeight="450"
     d:DesignWidth="900"
@@ -17,141 +18,137 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <Grid Margin="0,0,0,10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+        <Border
+            Margin="0,0,0,12"
+            Padding="18,16"
+            Background="White"
+            BorderBrush="#E6E8EF"
+            BorderThickness="1"
+            CornerRadius="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-            <TextBlock
-                VerticalAlignment="Center"
-                FontSize="13"
-                Text="Mijoz" />
-            <ComboBox
-                x:Name="cbxCustomer"
-                Grid.Column="1"
-                Width="200"
-                Margin="10,0"
-                DisplayMemberPath="Name"
-                FontSize="14"
-                IsEditable="True"
-                ItemsSource="{Binding Customers}"
-                SelectedItem="{Binding SelectedCustomer}" />
+                <!--  Filtrlar (bitta qator)  -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <!--  Boshlanish  -->
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock Margin="2,0,0,4" FontSize="12" Foreground="#8A94A6" Text="Boshlanish" />
+                        <controls:UserCalendar
+                            x:Name="beginDate"
+                            Width="120"
+                            utils:EnterKeyTab.IsEnabled="True"
+                            LostFocus="BeginDate_LostFocus"
+                            SelectedDate="{Binding BeginDate, Mode=TwoWay}" />
+                    </StackPanel>
 
-            <TextBlock
-                Grid.Row="1"
-                Margin="0,5,0,0"
-                VerticalAlignment="Center"
-                FontSize="13"
-                Text="Xisobot davri" />
-            <StackPanel
-                Grid.Row="1"
-                Grid.Column="1"
-                Margin="10,5,10,0"
-                Orientation="Horizontal">
-                <controls:UserCalendar
-                    x:Name="beginDate"
-                    Width="110"
-                    FontSize="14"
-                    LostFocus="BeginDate_LostFocus"
-                    SelectedDate="{Binding BeginDate, Mode=TwoWay}"
-                    utils:EnterKeyTab.IsEnabled="True" />
-                <TextBlock
-                    Margin="5,0"
-                    VerticalAlignment="Center"
-                    FontSize="13"
-                    Text="dan" />
-                <controls:UserCalendar
-                    x:Name="endDate"
-                    Width="110"
-                    FontSize="14"
-                    LostFocus="EndDate_LostFocus"
-                    SelectedDate="{Binding EndDate, Mode=TwoWay}"
-                    utils:EnterKeyTab.IsEnabled="True" />
-                <TextBlock
-                    Margin="5,0"
-                    VerticalAlignment="Center"
-                    FontSize="13"
-                    Text="gacha" />
-            </StackPanel>
+                    <!--  Tugash  -->
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock Margin="2,0,0,4" FontSize="12" Foreground="#8A94A6" Text="Tugash" />
+                        <controls:UserCalendar
+                            x:Name="endDate"
+                            Width="120"
+                            utils:EnterKeyTab.IsEnabled="True"
+                            LostFocus="EndDate_LostFocus"
+                            SelectedDate="{Binding EndDate, Mode=TwoWay}" />
+                    </StackPanel>
 
-            <TextBlock
-                Grid.Column="2"
-                VerticalAlignment="Center"
-                FontSize="13"
-                Text="Mahsulot turi" />
-            <ComboBox
-                x:Name="cbxCategory"
-                Grid.Column="3"
-                Width="180"
-                Margin="10,0"
-                DisplayMemberPath="Name"
-                FontSize="14"
-                IsEditable="True"
-                ItemsSource="{Binding Categories}"
-                SelectedItem="{Binding SelectedCategory}" />
+                    <!--  Mijoz  -->
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock Margin="2,0,0,4" FontSize="12" Foreground="#8A94A6" Text="Mijozni tanlang" />
+                        <ComboBox
+                            x:Name="cbxCustomer"
+                            Width="200"
+                            DisplayMemberPath="Name"
+                            IsEditable="True"
+                            ItemsSource="{Binding Customers}"
+                            SelectedItem="{Binding SelectedCustomer}"
+                            Style="{StaticResource ModernCombo}" />
+                    </StackPanel>
 
-            <TextBlock
-                Grid.Row="1"
-                Grid.Column="2"
-                Margin="0,5,0,0"
-                VerticalAlignment="Center"
-                FontSize="13"
-                Text="Nomi" />
-            <ComboBox
-                x:Name="cbxProductName"
-                Grid.Row="1"
-                Grid.Column="3"
-                Width="180"
-                Margin="10,5,10,0"
-                DisplayMemberPath="Name"
-                FontSize="14"
-                IsEditable="True"
-                ItemsSource="{Binding Products}"
-                SelectedItem="{Binding SelectedProduct}" />
+                    <!--  Mahsulot turi  -->
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock Margin="2,0,0,4" FontSize="12" Foreground="#8A94A6" Text="Mahsulot turi" />
+                        <ComboBox
+                            x:Name="cbxCategory"
+                            Width="170"
+                            DisplayMemberPath="Name"
+                            IsEditable="True"
+                            ItemsSource="{Binding Categories}"
+                            SelectedItem="{Binding SelectedCategory}"
+                            Style="{StaticResource ModernCombo}" />
+                    </StackPanel>
 
-            <Button
-                Grid.Column="4"
-                Width="100"
-                Command="{Binding PreviewCommand}"
-                Content="📄 Ko‘rish"
-                FontSize="13" />
-            <Button
-                Grid.Row="1"
-                Grid.Column="4"
-                Width="100"
-                Margin="0,5,0,0"
-                Command="{Binding ClearFilterCommand}"
-                Content="🧹 Tozalash"
-                FontSize="13" />
+                    <!--  Nomi  -->
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock Margin="2,0,0,4" FontSize="12" Foreground="#8A94A6" Text="Nomi" />
+                        <ComboBox
+                            x:Name="cbxProductName"
+                            Width="170"
+                            DisplayMemberPath="Name"
+                            IsEditable="True"
+                            ItemsSource="{Binding Products}"
+                            SelectedItem="{Binding SelectedProduct}"
+                            Style="{StaticResource ModernCombo}" />
+                    </StackPanel>
 
-            <Button
-                Grid.Column="5"
-                Width="100"
-                Margin="10,0"
-                Command="{Binding PrintCommand}"
-                Content="🖨 Pechat"
-                FontSize="13" />
-            <Button
-                Grid.Row="1"
-                Grid.Column="5"
-                Width="100"
-                Margin="10,5,10,0"
-                Command="{Binding ExportToExcelCommand}"
-                Content="📊 Excel"
-                FontSize="13" />
-        </Grid>
+                    <!--  Tozalash  -->
+                    <Button
+                        VerticalAlignment="Bottom"
+                        Background="White"
+                        BorderBrush="#D0D5DD"
+                        BorderThickness="1.5"
+                        Command="{Binding ClearFilterCommand}"
+                        Foreground="#0A003A"
+                        Style="{StaticResource ToolButton}"
+                        ToolTip="Tozalash">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconImage VerticalAlignment="Center" Width="14" Height="14" Foreground="#475467" Icon="Broom" />
+                            <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Text="Tozalash" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!--  Amallar (ikonali) - ma'lumot bo'lmasa o'chiriladi  -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
+                    <Button
+                        Width="44"
+                        Margin="0,0,8,0"
+                        Padding="0"
+                        Background="#6C5CE7"
+                        Command="{Binding PreviewCommand}"
+                        IsEnabled="{Binding FilteredSaleItemsView.IsEmpty, Converter={StaticResource InverseBoolToBoolConverter}}"
+                        Style="{StaticResource ToolButton}"
+                        ToolTip="Ko‘rish">
+                        <fa:IconImage Width="16" Height="16" Foreground="White" Icon="Eye" />
+                    </Button>
+                    <Button
+                        Width="44"
+                        Margin="0,0,8,0"
+                        Padding="0"
+                        Background="#EC407A"
+                        Command="{Binding PrintCommand}"
+                        IsEnabled="{Binding FilteredSaleItemsView.IsEmpty, Converter={StaticResource InverseBoolToBoolConverter}}"
+                        Style="{StaticResource ToolButton}"
+                        ToolTip="Pechat">
+                        <fa:IconImage Width="16" Height="16" Foreground="White" Icon="Print" />
+                    </Button>
+                    <Button
+                        Width="44"
+                        Padding="0"
+                        Background="#1D8A4E"
+                        Command="{Binding ExportToExcelCommand}"
+                        IsEnabled="{Binding FilteredSaleItemsView.IsEmpty, Converter={StaticResource InverseBoolToBoolConverter}}"
+                        Style="{StaticResource ToolButton}"
+                        ToolTip="Excel">
+                        <fa:IconImage Width="16" Height="16" Foreground="White" Icon="FileExcel" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
 
         <DataGrid
             Grid.Row="1"

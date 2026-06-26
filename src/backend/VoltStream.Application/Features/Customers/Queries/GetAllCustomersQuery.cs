@@ -14,6 +14,7 @@ public class GetAllCustomersQueryHandler(
 {
     public async Task<IReadOnlyCollection<CustomerDto>> Handle(GetAllCustomersQuery request, CancellationToken cancellationToken)
         => mapper.Map<IReadOnlyCollection<CustomerDto>>(await context.Customers
+            .AsNoTracking()
             .Include(c => c.Accounts)
             .ToListAsync(cancellationToken));
 }

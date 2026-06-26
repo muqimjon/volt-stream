@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:VoltStream.WPF.Commons.UserControls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
     Title="TurnoversPage"
@@ -17,134 +18,195 @@
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <Grid Margin="0,0,0,10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+        <Border
+            Margin="0,0,0,12"
+            Padding="18,14"
+            Background="White"
+            BorderBrush="#E6E8EF"
+            BorderThickness="1"
+            CornerRadius="12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-            <TextBlock
-                VerticalAlignment="Center"
-                FontSize="13"
-                Text="Xisobot davri" />
-            <StackPanel
-                Grid.Column="1"
-                Margin="10,0"
-                Orientation="Horizontal">
-                <controls:UserCalendar
-                    Width="110"
-                    FontSize="14"
-                    SelectedDate="{Binding BeginDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    utils:EnterKeyTab.IsEnabled="True" />
-                <TextBlock
-                    Margin="5,0"
-                    VerticalAlignment="Center"
-                    FontSize="13"
-                    Text="dan" />
-                <controls:UserCalendar
-                    Width="110"
-                    FontSize="14"
-                    SelectedDate="{Binding EndDate, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                    utils:EnterKeyTab.IsEnabled="True" />
-                <TextBlock
-                    Margin="5,0"
-                    VerticalAlignment="Center"
-                    FontSize="13"
-                    Text="gacha" />
-            </StackPanel>
+                <!--  Sanalar + mijoz + tozalash  -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock
+                            Margin="2,0,0,4"
+                            FontSize="12"
+                            Foreground="#8A94A6"
+                            Text="Boshlanish" />
+                        <controls:UserCalendar
+                            Width="130"
+                            utils:EnterKeyTab.IsEnabled="True"
+                            SelectedDate="{Binding BeginDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
 
-            <TextBlock
-                Grid.Row="1"
-                Margin="0,5,0,0"
-                VerticalAlignment="Center"
-                FontSize="13"
-                Text="Mijoz" />
-            <ComboBox
-                x:Name="cbxCustomer"
-                Grid.Row="1"
-                Grid.Column="1"
-                Width="280"
-                Margin="10,5,10,0"
-                HorizontalAlignment="Left"
-                DisplayMemberPath="Name"
-                FontSize="14"
-                IsEditable="True"
-                ItemsSource="{Binding Customers}"
-                SelectedItem="{Binding SelectedCustomer}" />
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock
+                            Margin="2,0,0,4"
+                            FontSize="12"
+                            Foreground="#8A94A6"
+                            Text="Tugash" />
+                        <controls:UserCalendar
+                            Width="130"
+                            utils:EnterKeyTab.IsEnabled="True"
+                            SelectedDate="{Binding EndDate, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                    </StackPanel>
 
-            <Button
-                Grid.Column="2"
-                Width="100"
-                Command="{Binding PreviewCommand}"
-                Content="📄 Ko‘rish"
-                FontSize="13" />
-            <Button
-                Grid.Row="1"
-                Grid.Column="2"
-                Width="100"
-                Margin="0,5,0,0"
-                Command="{Binding ClearFilterCommand}"
-                Content="🧹 Tozalash"
-                FontSize="13" />
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock
+                            Margin="2,0,0,4"
+                            FontSize="12"
+                            Foreground="#8A94A6"
+                            Text="Mijozni tanlang" />
+                        <ComboBox
+                            x:Name="cbxCustomer"
+                            Width="240"
+                            DisplayMemberPath="Name"
+                            IsEditable="True"
+                            ItemsSource="{Binding Customers}"
+                            SelectedItem="{Binding SelectedCustomer}"
+                            Style="{StaticResource ModernCombo}" />
+                    </StackPanel>
 
-            <Button
-                Grid.Column="3"
-                Width="100"
-                Margin="10,0"
-                Command="{Binding PrintCommand}"
-                Content="🖨 Pechat"
-                FontSize="13" />
-            <Button
-                Grid.Row="1"
-                Grid.Column="3"
-                Width="100"
-                Margin="10,5,10,0"
-                Command="{Binding ExportToExcelCommand}"
-                Content="📊 Excel"
-                FontSize="13" />
+                    <Button
+                        VerticalAlignment="Bottom"
+                        Background="White"
+                        BorderBrush="#D0D5DD"
+                        BorderThickness="1.5"
+                        Command="{Binding ClearFilterCommand}"
+                        Foreground="#0A003A"
+                        Style="{StaticResource ToolButton}"
+                        ToolTip="Tozalash">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconImage
+                                Width="14"
+                                Height="14"
+                                VerticalAlignment="Center"
+                                Foreground="#475467"
+                                Icon="Broom" />
+                            <TextBlock
+                                Margin="8,0,0,0"
+                                VerticalAlignment="Center"
+                                Text="Tozalash" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
 
-            <TextBlock
-                Grid.Column="4"
-                Margin="20,0,10,0"
-                VerticalAlignment="Center"
-                FontSize="14"
-                Text="Boshlang'ich qoldiq:" />
-            <TextBlock
-                Grid.Column="5"
-                VerticalAlignment="Center"
-                FontSize="14"
-                FontWeight="SemiBold"
-                Text="{Binding BeginBalance, StringFormat={}{0:N2}}" />
+                <!--  Qoldiqlar  -->
+                <Border
+                    Grid.Column="1"
+                    Margin="0,0,16,0"
+                    Padding="14,8"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Background="#F8F9FC"
+                    CornerRadius="8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            Foreground="#667085"
+                            Text="Boshlang'ich qoldiq:" />
+                        <TextBlock
+                            Grid.Column="1"
+                            Margin="12,0,0,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Foreground="#0A003A"
+                            Text="{Binding BeginBalance, StringFormat={}{0:N2}}" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Margin="0,6,0,0"
+                            VerticalAlignment="Center"
+                            FontSize="13"
+                            Foreground="#667085"
+                            Text="Oxirgi qoldiq:" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="12,6,0,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            FontSize="14"
+                            FontWeight="Bold"
+                            Foreground="#0A003A"
+                            Text="{Binding LastBalance, StringFormat={}{0:N2}}" />
+                    </Grid>
+                </Border>
 
-            <TextBlock
-                Grid.Row="1"
-                Grid.Column="4"
-                Margin="20,5,10,0"
-                VerticalAlignment="Center"
-                FontSize="14"
-                Text="Oxirgi qoldiq:" />
-            <TextBlock
-                Grid.Row="1"
-                Grid.Column="5"
-                Margin="0,5,0,0"
-                VerticalAlignment="Center"
-                FontSize="14"
-                FontWeight="SemiBold"
-                Text="{Binding LastBalance, StringFormat={}{0:N2}}" />
-        </Grid>
+                <!--  Amallar (ikonali) - ma'lumot bo'lmasa o'chiriladi  -->
+                <StackPanel
+                    Grid.Column="2"
+                    VerticalAlignment="Bottom"
+                    Orientation="Horizontal">
+                    <Button
+                        Width="44"
+                        Margin="0,0,8,0"
+                        Padding="0"
+                        Background="#6C5CE7"
+                        Command="{Binding PreviewCommand}"
+                        IsEnabled="{Binding CustomerOperationsForDisplay.Count, Converter={StaticResource CountToBool}}"
+                        Style="{StaticResource ToolButton}"
+                        ToolTip="Ko‘rish">
+                        <fa:IconImage
+                            Width="16"
+                            Height="16"
+                            Foreground="White"
+                            Icon="Eye" />
+                    </Button>
+                    <Button
+                        Width="44"
+                        Margin="0,0,8,0"
+                        Padding="0"
+                        Background="#EC407A"
+                        Command="{Binding PrintCommand}"
+                        IsEnabled="{Binding CustomerOperationsForDisplay.Count, Converter={StaticResource CountToBool}}"
+                        Style="{StaticResource ToolButton}"
+                        ToolTip="Pechat">
+                        <fa:IconImage
+                            Width="16"
+                            Height="16"
+                            Foreground="White"
+                            Icon="Print" />
+                    </Button>
+                    <Button
+                        Width="44"
+                        Padding="0"
+                        Background="#1D8A4E"
+                        Command="{Binding ExportToExcelCommand}"
+                        IsEnabled="{Binding CustomerOperationsForDisplay.Count, Converter={StaticResource CountToBool}}"
+                        Style="{StaticResource ToolButton}"
+                        ToolTip="Excel">
+                        <fa:IconImage
+                            Width="16"
+                            Height="16"
+                            Foreground="White"
+                            Icon="FileExcel" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
 
         <DataGrid
             x:Name="MyDataGrid"
             Grid.Row="1"
+            utils:DataGridRowNumbering.IsEnabled="True"
             AlternatingRowBackground="#F5F5F5"
             AutoGenerateColumns="False"
             CanUserAddRows="False"
@@ -153,8 +215,7 @@
             HeadersVisibility="Column, Row"
             IsReadOnly="True"
             ItemsSource="{Binding CustomerOperationsForDisplay}"
-            SelectionMode="Single"
-            utils:DataGridRowNumbering.IsEnabled="True">
+            SelectionMode="Single">
             <DataGrid.Columns>
                 <DataGridTextColumn
                     Width="0.7*"
@@ -175,7 +236,11 @@
                 </DataGridTextColumn>
                 <DataGridTemplateColumn Width="3*">
                     <DataGridTemplateColumn.Header>
-                        <TextBlock Text="Izoh" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" />
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontWeight="Bold"
+                            Text="Izoh" />
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -197,45 +262,54 @@
                     </DataGridTemplateColumn.HeaderStyle>
                     <DataGridTemplateColumn.Header>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Debit" Foreground="DarkRed" FontWeight="Bold"/>
-                            <TextBlock Text=" / " Foreground="Black" FontWeight="Bold"/>
-                            <TextBlock Text="Kredit" Foreground="Black" FontWeight="Bold"/>
+                            <TextBlock
+                                FontWeight="Bold"
+                                Foreground="DarkRed"
+                                Text="Debit" />
+                            <TextBlock
+                                FontWeight="Bold"
+                                Foreground="Black"
+                                Text=" / " />
+                            <TextBlock
+                                FontWeight="Bold"
+                                Foreground="Black"
+                                Text="Kredit" />
                         </StackPanel>
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Grid Margin="5,0">
                                 <TextBlock
-                                    Text="{Binding Debit, StringFormat={}{0:N0}}"
+                                    HorizontalAlignment="Right"
                                     Foreground="DarkRed"
-                                    HorizontalAlignment="Right">
+                                    Text="{Binding Debit, StringFormat={}{0:N0}}">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Setter Property="Visibility" Value="Collapsed" />
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding Debit, Converter={x:Null}}" Value="0">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Setter Property="Visibility" Value="Collapsed" />
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding OperationType}" Value="Sale">
-                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Setter Property="Visibility" Value="Visible" />
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding Credit}" Value="0">
-                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Setter Property="Visibility" Value="Visible" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
                                 <TextBlock
-                                    Text="{Binding Credit, StringFormat={}{0:N0}}"
+                                    HorizontalAlignment="Right"
                                     Foreground="Black"
-                                    HorizontalAlignment="Right">
+                                    Text="{Binding Credit, StringFormat={}{0:N0}}">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Setter Property="Visibility" Value="Collapsed" />
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding Debit}" Value="0">
-                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Setter Property="Visibility" Value="Visible" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>

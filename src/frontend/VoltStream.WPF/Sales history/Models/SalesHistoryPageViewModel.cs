@@ -327,27 +327,93 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
 
     private FixedDocument CreateFixedDocumentForPrint()
     {
-        double pageWidth = 793.7;
-        double pageHeight = 1122.5;
-        double margin = 20;
+        const double pageWidth = 793.7;
+        const double pageHeight = 1122.5;
+        const double margin = 20;
+
+        // Footer ("N-bet") va oxirgi betdagi JAMI qatori uchun joy qoldiramiz.
+        // Shu tufayli oxirgi qator footerga tegmaydi (har betda ~1 qator yetmay qoladi).
+        const double footerZone = 45;
+        const double jamiReserve = 28;
 
         var fixedDoc = new FixedDocument();
         fixedDoc.DocumentPaginator.PageSize = new Size(pageWidth, pageHeight);
 
-        int maxRowsPerPage = 45;
-        int pageNumber = 0;
+        double[] columnWidths = { 60, 90, 80, 90, 60, 60, 50, 50, 80, 100 };
+        double gridWidth = columnWidths.Sum();
+        var headers = new[]
+        {
+            "Sana","Mijoz","Mahsulot turi","Nomi","To'plamda","To'plam soni","Jami","O‘lchov","Narxi","Umumiy summa"
+        };
 
         var items = FilteredSaleItemsView.Cast<ProductItemViewModel>().ToList();
-        int totalPages = (int)Math.Ceiling(items.Count / (double)maxRowsPerPage);
-        int processedItems = 0;
 
-        while (processedItems < items.Count)
+        // Yacheyka (bir xil ko'rinishda - ham o'lchash, ham chizish uchun)
+        static Border BuildCell(string text, double fontSize, bool bold, TextAlignment align, Thickness padding, Brush? background = null)
+            => new()
+            {
+                BorderBrush = Brushes.Black,
+                BorderThickness = new Thickness(0.5),
+                Background = background ?? Brushes.Transparent,
+                Padding = padding,
+                Child = new TextBlock
+                {
+                    Text = text,
+                    FontSize = fontSize,
+                    FontWeight = bold ? FontWeights.Bold : FontWeights.Normal,
+                    TextAlignment = align,
+                    TextWrapping = TextWrapping.Wrap
+                }
+            };
+
+        // Bitta qatorning haqiqiy balandligini o'lchaymiz (matn ustun kengligida o'raladi)
+        double MeasureRowHeight(string[] values, bool isHeader)
         {
-            pageNumber++;
+            var g = new Grid();
+            foreach (var w in columnWidths)
+                g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(w, GridUnitType.Pixel) });
+            g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            for (int i = 0; i < values.Length; i++)
+            {
+                var cell = isHeader
+                    ? BuildCell(values[i], 10, true, TextAlignment.Center, new Thickness(2), Brushes.LightGray)
+                    : BuildCell(values[i], 9, false, i >= 4 ? TextAlignment.Right : TextAlignment.Left, new Thickness(4));
+                Grid.SetRow(cell, 0);
+                Grid.SetColumn(cell, i);
+                g.Children.Add(cell);
+            }
+            g.Measure(new Size(gridWidth, double.PositiveInfinity));
+            return g.DesiredSize.Height;
+        }
+
+        static string[] ValuesOf(ProductItemViewModel item) =>
+        [
+            item.OperationDate?.ToString("dd.MM.yyyy") ?? "",
+            item.Customer ?? "",
+            item.Category ?? "",
+            item.Name ?? "",
+            item.RollLength?.ToString("N0") ?? "",
+            item.Quantity?.ToString("N0") ?? "",
+            item.TotalCount?.ToString("N0") ?? "",
+            item.Unit ?? "",
+            item.Price?.ToString("N2") ?? "",
+            item.TotalAmount?.ToString("N2") ?? ""
+        ];
+
+        double headerHeight = MeasureRowHeight(headers, true);
+
+        var pageNumberTexts = new List<TextBlock>();
+        int idx = 0;
+
+        while (idx < items.Count)
+        {
+            bool isFirst = pageNumberTexts.Count == 0;
+            double gridTopMargin = isFirst ? 45 : 20;
+            double maxContentHeight = pageHeight - gridTopMargin - footerZone - jamiReserve;
 
             var page = new FixedPage { Width = pageWidth, Height = pageHeight, Background = Brushes.White };
 
-            if (pageNumber == 1)
+            if (isFirst)
             {
                 var title = new TextBlock
                 {
@@ -361,148 +427,81 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
                 page.Children.Add(title);
             }
 
-            double gridTopMargin = (pageNumber == 1) ? 45 : 20;
-            var grid = new Grid { Margin = new Thickness(margin, gridTopMargin, margin, 40) };
+            var grid = new Grid();
+            foreach (var w in columnWidths)
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(w, GridUnitType.Pixel) });
 
-            double[] columnWidths = { 60, 90, 80, 90, 60, 60, 50, 50, 80, 100 };
+            double usedHeight = 0;
+            int rowIndex = -1;
 
-            var headers = new[]
+            // Sarlavha (header) faqat birinchi betda chiqadi
+            if (isFirst)
             {
-                "Sana","Mijoz","Mahsulot turi","Nomi","To'plamda","To'plam soni","Jami","O‘lchov","Narxi","Umumiy summa"
-            };
-
-            for (int i = 0; i < headers.Length; i++)
-            {
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(columnWidths[i], GridUnitType.Pixel) });
-            }
-
-            int row = 0;
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-            for (int i = 0; i < headers.Length; i++)
-            {
-                var border = new Border
-                {
-                    BorderBrush = Brushes.Black,
-                    BorderThickness = new Thickness(0.5),
-                    Background = Brushes.LightGray,
-                    Padding = new Thickness(2)
-                };
-                var text = new TextBlock
-                {
-                    Text = headers[i],
-                    FontWeight = FontWeights.Bold,
-                    FontSize = 10,
-                    TextAlignment = TextAlignment.Center,
-                    TextWrapping = TextWrapping.Wrap
-                };
-                border.Child = text;
-                Grid.SetRow(border, row);
-                Grid.SetColumn(border, i);
-                grid.Children.Add(border);
-            }
-
-            var pageItems = items.Skip(processedItems).Take(maxRowsPerPage).ToList();
-
-            foreach (var item in pageItems)
-            {
-                row++;
+                rowIndex++;
                 grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-                string[] values =
+                for (int i = 0; i < headers.Length; i++)
                 {
-                    item.OperationDate?.ToString("dd.MM.yyyy") ?? "",
-                    item.Customer ?? "",
-                    item.Category ?? "",
-                    item.Name ?? "",
-                    item.RollLength?.ToString("N0") ?? "",
-                    item.Quantity?.ToString("N0") ?? "",
-                    item.TotalCount?.ToString("N0") ?? "",
-                    item.Unit ?? "",
-                    item.Price?.ToString("N2") ?? "",
-                    item.TotalAmount?.ToString("N2") ?? ""
-                };
+                    var cell = BuildCell(headers[i], 10, true, TextAlignment.Center, new Thickness(2), Brushes.LightGray);
+                    Grid.SetRow(cell, rowIndex);
+                    Grid.SetColumn(cell, i);
+                    grid.Children.Add(cell);
+                }
+                usedHeight += headerHeight;
+            }
 
+            int dataCount = 0;
+
+            // Ma'lumot qatorlari - balandlik sig'gancha
+            while (idx < items.Count)
+            {
+                var values = ValuesOf(items[idx]);
+                double rowH = MeasureRowHeight(values, false);
+
+                // Sig'masa to'xtaymiz; lekin betda hech bo'lmasa 1 qator bo'lishi shart (cheksiz tsikldan saqlanish)
+                if (dataCount > 0 && usedHeight + rowH > maxContentHeight)
+                    break;
+
+                rowIndex++;
+                dataCount++;
+                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                 for (int i = 0; i < values.Length; i++)
                 {
-                    var border = new Border
-                    {
-                        BorderBrush = Brushes.Black,
-                        BorderThickness = new Thickness(0.5),
-                        Padding = new Thickness(4)
-                    };
-                    var text = new TextBlock
-                    {
-                        Text = values[i],
-                        FontSize = 9,
-                        TextAlignment = (i >= 4 ? TextAlignment.Right : TextAlignment.Left),
-                        TextWrapping = TextWrapping.Wrap
-                    };
-                    border.Child = text;
-                    Grid.SetRow(border, row);
-                    Grid.SetColumn(border, i);
-                    grid.Children.Add(border);
+                    var cell = BuildCell(values[i], 9, false, i >= 4 ? TextAlignment.Right : TextAlignment.Left, new Thickness(4));
+                    Grid.SetRow(cell, rowIndex);
+                    Grid.SetColumn(cell, i);
+                    grid.Children.Add(cell);
                 }
+                usedHeight += rowH;
+                idx++;
             }
 
-            processedItems += pageItems.Count;
-
-            if (processedItems >= items.Count)
+            // Oxirgi betda JAMI (joy oldindan ajratilgan)
+            if (idx >= items.Count)
             {
-                row++;
+                rowIndex++;
                 grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-                var totalBorder = new Border
-                {
-                    BorderBrush = Brushes.Black,
-                    BorderThickness = new Thickness(0.5),
-                    Padding = new Thickness(4, 4, 10, 4)
-                };
+                var totalLabel = BuildCell("JAMI:", 10, true, TextAlignment.Left, new Thickness(4, 4, 10, 4));
+                Grid.SetRow(totalLabel, rowIndex);
+                Grid.SetColumn(totalLabel, 0);
+                Grid.SetColumnSpan(totalLabel, 9);
+                grid.Children.Add(totalLabel);
 
-                var totalLabel = new TextBlock
-                {
-                    Text = "JAMI:",
-                    FontWeight = FontWeights.Bold,
-                    FontSize = 10,
-                    TextAlignment = TextAlignment.Left
-                };
-                totalBorder.Child = totalLabel;
-
-                Grid.SetRow(totalBorder, row);
-                Grid.SetColumn(totalBorder, 0);
-                Grid.SetColumnSpan(totalBorder, 9);
-                grid.Children.Add(totalBorder);
-
-                var valueBorder = new Border
-                {
-                    BorderBrush = Brushes.Black,
-                    BorderThickness = new Thickness(0.5),
-                    Padding = new Thickness(4)
-                };
-
-                var totalValue = new TextBlock
-                {
-                    Text = (FinalAmount ?? 0).ToString("N2"),
-                    FontWeight = FontWeights.Bold,
-                    FontSize = 10,
-                    TextAlignment = TextAlignment.Right
-                };
-                valueBorder.Child = totalValue;
-
-                Grid.SetRow(valueBorder, row);
-                Grid.SetColumn(valueBorder, 9);
-                grid.Children.Add(valueBorder);
+                var totalValue = BuildCell((FinalAmount ?? 0).ToString("N2"), 10, true, TextAlignment.Right, new Thickness(4));
+                Grid.SetRow(totalValue, rowIndex);
+                Grid.SetColumn(totalValue, 9);
+                grid.Children.Add(totalValue);
             }
 
             var pageNumberText = new TextBlock
             {
-                Text = $"{pageNumber}-bet / {totalPages}",
                 FontSize = 10,
                 HorizontalAlignment = HorizontalAlignment.Right
             };
             FixedPage.SetBottom(pageNumberText, 15);
             FixedPage.SetRight(pageNumberText, 30);
             page.Children.Add(pageNumberText);
+            pageNumberTexts.Add(pageNumberText);
 
             FixedPage.SetLeft(grid, margin);
             FixedPage.SetTop(grid, gridTopMargin);
@@ -512,6 +511,10 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
             ((IAddChild)pageContent).AddChild(page);
             fixedDoc.Pages.Add(pageContent);
         }
+
+        int totalPages = pageNumberTexts.Count;
+        for (int i = 0; i < totalPages; i++)
+            pageNumberTexts[i].Text = $"{i + 1}-bet / {totalPages}";
 
         return fixedDoc;
     }

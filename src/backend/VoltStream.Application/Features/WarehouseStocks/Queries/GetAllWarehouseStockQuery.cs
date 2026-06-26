@@ -15,6 +15,7 @@ public class GetAllWarehouseStockQueryHandler(
 {
     public async Task<IReadOnlyCollection<WarehouseStockDto>> Handle(GetAllWarehouseStockQuery request, CancellationToken cancellationToken)
          => mapper.Map<IReadOnlyCollection<WarehouseStockDto>>(await context.WarehouseStocks
+             .AsNoTracking()
              .Include(i => i.Product)
              .Where(w => w.IsDeleted != true)
              .ToListAsync(cancellationToken));

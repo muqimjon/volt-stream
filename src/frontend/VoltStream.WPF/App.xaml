@@ -16,6 +16,7 @@
 
 
                 <ResourceDictionary Source="/Commons/Styles/ScrollBarStyles.xaml" />
+                <ResourceDictionary Source="/Commons/Styles/ModernControls.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
 

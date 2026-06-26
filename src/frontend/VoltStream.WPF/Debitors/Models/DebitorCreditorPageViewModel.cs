@@ -399,7 +399,9 @@ public partial class DebitorCreditorPageViewModel : ViewModelBase
         var fixedDoc = new FixedDocument();
         fixedDoc.DocumentPaginator.PageSize = new Size(pageWidth, pageHeight);
 
-        const int maxRowsPerPage = 50;
+        // A4 balandligiga (margin + sarlavha + "Jami/Umumiy" qatorlari bilan birga) sig'adigan
+        // qatorlar soni. Avval 50 edi - bu sahifadan oshib ketib, pastki qatorlar kesilib qolardi.
+        const int maxRowsPerPage = 33;
         int pageNumber = 0;
         var items = FilteredDebitorCreditorItems.ToList();
         int totalPages = (int)Math.Ceiling(items.Count / (double)maxRowsPerPage);

@@ -12,11 +12,12 @@
       d:DesignWidth="800"
       Title="SupplyPage">
 
-	<Grid Margin="10">
+	<Grid Margin="10" Background="#F4F5FA">
         <Grid.RowDefinitions>
-            <RowDefinition Height="175" />
+            <RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
 		</Grid.RowDefinitions>
+        <Border Grid.Row="0" Background="White" CornerRadius="10" BorderBrush="#E6E8EF" BorderThickness="1" Padding="12,4" Margin="0,0,0,6">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.5*"
@@ -30,12 +31,12 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="35" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid  Grid.Row="0"
                        Grid.Column="0">
@@ -53,7 +54,7 @@
 						<ColumnDefinition/>
 					</Grid.ColumnDefinitions>
 
-					<controls:UserCalendar x:Name="date"
+					<controls:UserCalendar x:Name="date" Margin="0,4"
                                            SelectedDate="{Binding SelectedDate, Mode=TwoWay}"
                                            VerticalAlignment="Center"
                                            HorizontalAlignment="Left"
@@ -86,10 +87,10 @@
                                Visibility="{Binding ElementName=cbxCategory, Path=Text.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"
                                Grid.ColumnSpan="2" />
 
-                    <ComboBox x:Name="cbxCategory"
+                    <ComboBox x:Name="cbxCategory" Style="{StaticResource RoundedCombo}" Height="28"
                               IsEditable="True"
                               StaysOpenOnEdit="True"
-                              Margin="0,0,10,0"
+                              Margin="0,4,10,4"
                               ItemsSource="{Binding Categories}"
                               SelectedItem="{Binding SelectedCategory}"
                               Text="{Binding CategoryText, UpdateSourceTrigger=LostFocus}"
@@ -107,7 +108,7 @@
                                Panel.ZIndex="1"
                                Visibility="{Binding ElementName=cbxProduct,Path=Text.IsEmpty,Converter={StaticResource BooleanToVisibilityConverter}}" />
 
-                    <ComboBox x:Name="cbxProduct"
+                    <ComboBox x:Name="cbxProduct" Style="{StaticResource RoundedCombo}" Height="28" Margin="0,4"
                               Grid.Column="2"
                               IsEditable="True"
                               ItemsSource="{Binding Products}"
@@ -131,7 +132,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-					<ComboBox x:Name="cbxWarehouseStock"
+					<ComboBox x:Name="cbxWarehouseStock" Style="{StaticResource RoundedCombo}" Height="28"
                               IsEditable="True"
                               ItemsSource="{Binding WarehouseStocks}"
                               SelectedItem="{Binding SelectedWarehouseStock}"
@@ -139,7 +140,7 @@
                               utils:NumericInput.IsNumeric="True"
                               utils:NumericInput.Precision="2"
                               DisplayMemberPath="LengthPerRoll"
-                              Margin="0,0,10,0"
+                              Margin="0,4,10,4"
                               HorizontalAlignment="Stretch"
                               HorizontalContentAlignment="Right"
                               VerticalAlignment="Center"
@@ -152,7 +153,7 @@
                                FontSize="14"
                                Margin="0,0,5,0" />
                     <TextBox Grid.Column="2"
-                             x:Name="tbxRollCount"
+                             x:Name="tbxRollCount" Style="{StaticResource RoundedTextBox}" Height="28" Margin="0,4"
                              utils:NumericInput.Value="{Binding RollCount, UpdateSourceTrigger=PropertyChanged}"
                              utils:NumericInput.Precision="0"
                              VerticalAlignment="Center"
@@ -177,14 +178,14 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <TextBox Grid.Column="0"
-                             x:Name="totalMeters"
+                             x:Name="totalMeters" Style="{StaticResource RoundedTextBox}" Height="28"
                              utils:NumericInput.Value="{Binding TotalQuantity, Mode=OneWay}"
                              utils:NumericInput.Precision="2"
                              VerticalAlignment="Center"
                              HorizontalAlignment="Stretch"
                              HorizontalContentAlignment="Right"
                              FontSize="14"
-                             Margin="0,0,10,0"
+                             Margin="0,4,10,4"
                              Validation.ErrorTemplate="{x:Null}"
                              utils:NumericInput.IsNumeric="True"
                              IsTabStop="False"
@@ -195,7 +196,7 @@
                            Margin="10,0"
                            FontSize="14" />
                     <ComboBox Grid.Column="2"
-                              x:Name="cbxUnit"
+                              x:Name="cbxUnit" Style="{StaticResource RoundedCombo}" Height="28" Margin="0,4"
                               Text="{Binding Unit, UpdateSourceTrigger=PropertyChanged}"
                               StaysOpenOnEdit="True"
                           VerticalAlignment="Center"
@@ -221,7 +222,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <TextBox Grid.Column="0" 
-                             x:Name="txtUnitPrice"
+                             x:Name="txtUnitPrice" Style="{StaticResource RoundedTextBox}" Height="28"
                              utils:NumericInput.Value="{Binding UnitPrice, UpdateSourceTrigger=PropertyChanged}"
                              utils:NumericInput.IsNumeric="True"
                              utils:NumericInput.Precision="2"
@@ -230,7 +231,7 @@
                              HorizontalContentAlignment="Right"
                              FontSize="14"
                              Validation.ErrorTemplate="{x:Null}"
-                             Margin="0,0,10,0"       
+                             Margin="0,4,10,4"       
                               />
                     <Label Grid.Column="1"
                            Content="Chegirma: %"
@@ -238,7 +239,7 @@
                            FontSize="14"
                            Margin="-10,0,0,0" />
                     <TextBox Grid.Column="2"
-                             x:Name="tbxDiscountRate"
+                             x:Name="tbxDiscountRate" Style="{StaticResource RoundedTextBox}" Height="28" Margin="0,4"
                              utils:NumericInput.Value="{Binding DiscountRate, UpdateSourceTrigger=PropertyChanged}"
                              utils:NumericInput.Precision="2"
                              VerticalAlignment="Center"
@@ -257,6 +258,9 @@
                     
                     <Button Grid.Column="0"
                             x:Name="addSupplyBtn"
+                            Style="{StaticResource RoundedButton}"
+                            Background="#0A003A"
+                            Foreground="White"
                             Content="{Binding IsEditing, Converter={StaticResource BoolToTextConverter}, ConverterParameter=' Saqlash  🗹 | Qoshish  🗹 '}"
                             Command="{Binding SaveCommand}"
                             VerticalAlignment="Center"
@@ -266,6 +270,9 @@
 
                     <Button Grid.Column="1"
                             x:Name="cancelBtn"
+                            Style="{StaticResource RoundedButton}"
+                            Background="#EEF0F4"
+                            Foreground="#0A003A"
                             Content=" Bekor qilish ❌ "
                             Command="{Binding CancelEditCommand}"
                             Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -288,6 +295,7 @@
                 </Border>
             </Grid>
         </Grid>
+        </Border>
         <DataGrid Grid.Row="1"
                   x:Name="supplyDataGrid"
                   ItemsSource="{Binding Supplies}"

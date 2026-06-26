@@ -42,6 +42,11 @@ public partial class ProductPageViewModel : ViewModelBase
 
     [ObservableProperty] private decimal? finalAmount;
 
+    // Belgilanganda 0 qoldiqli mahsulotlar ham ko'rsatiladi (aks holda faqat qoldig'i bor mahsulotlar).
+    [ObservableProperty] private bool showAllBalances;
+
+    partial void OnShowAllBalancesChanged(bool value) => ApplyFilter();
+
     private async Task LoadInitialDataAsync()
     {
         await Task.WhenAll(
@@ -57,12 +62,11 @@ public partial class ProductPageViewModel : ViewModelBase
     {
         SelectedCategory = null;
         SelectedProduct = null;
+        ShowAllBalances = false;
 
         Products = new ObservableCollection<ProductResponse>(AllProducts);
 
-        FilteredProductItems = new ObservableCollection<ProductItemViewModel>(ProductItems);
-
-        FinalAmount = FilteredProductItems.Sum(x => x.TotalAmount);
+        ApplyFilter();
     }
 
     [RelayCommand]
@@ -468,7 +472,10 @@ public partial class ProductPageViewModel : ViewModelBase
 
     private void ApplyFilter()
     {
-        IEnumerable<ProductItemViewModel> filtered = ProductItems.Where(pi => pi.TotalCount > 0);
+        // ShowAllBalances belgilangan bo'lsa 0 qoldiqlar ham ko'rsatiladi.
+        IEnumerable<ProductItemViewModel> filtered = ShowAllBalances
+            ? ProductItems
+            : ProductItems.Where(pi => pi.TotalCount > 0);
 
         if (SelectedCategory != null)
             filtered = filtered.Where(x => x.Category == SelectedCategory.Name);
