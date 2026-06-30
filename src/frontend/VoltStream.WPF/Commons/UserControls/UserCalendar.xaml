@@ -25,13 +25,13 @@
                 Grid.Column="0"
                 Margin="0"
                 Padding="8,0"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
                 Background="Transparent"
                 BorderThickness="0"
                 CaretBrush="#0A003A"
                 FontSize="14"
-                Foreground="#2D3436"
-                HorizontalContentAlignment="Center"
-                VerticalContentAlignment="Center" />
+                Foreground="#2D3436" />
 
             <Button
                 Grid.Column="1"
@@ -42,7 +42,10 @@
                 IsTabStop="False">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="bd" Background="Transparent" CornerRadius="0,7,7,0">
+                        <Border
+                            x:Name="bd"
+                            Background="Transparent"
+                            CornerRadius="0,7,7,0">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>

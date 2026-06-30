@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 
@@ -23,25 +24,22 @@ public class SimpleDiscoveryResponder(IServer server, IHostEnvironment env, ICon
         {
             try
             {
-                if (udp.Available > 0)
-                {
-                    var result = await udp.ReceiveAsync(stoppingToken);
-                    var msg = Encoding.UTF8.GetString(result.Buffer).Trim();
+                var result = await udp.ReceiveAsync(stoppingToken);
+                var msg = Encoding.UTF8.GetString(result.Buffer).Trim();
 
-                    if (msg == "DISCOVER")
-                    {
-                        var ip = ResolveIp();
-                        var port = ResolvePort();
-                        var scheme = ResolveScheme();
-                        var response = $"{scheme}://{ip}:{port}";
+                if (msg != "DISCOVER")
+                    continue;
 
-                        var bytes = Encoding.UTF8.GetBytes(response);
-                        await udp.SendAsync(bytes, bytes.Length, result.RemoteEndPoint);
-                        logger.LogInformation("✅ Sent discovery response: {response} to {remote}", response, result.RemoteEndPoint);
-                    }
-                }
+                var ip = ResolveIp();
+                var response = $"{ResolveScheme()}://{ip}:{ResolvePort()}";
 
-                await Task.Delay(10, stoppingToken);
+                var bytes = Encoding.UTF8.GetBytes(response);
+                await udp.SendAsync(bytes, bytes.Length, result.RemoteEndPoint);
+                logger.LogInformation("✅ Discovery response: {response} → {remote}", response, result.RemoteEndPoint);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
             }
             catch (Exception ex)
             {
@@ -92,30 +90,50 @@ public class SimpleDiscoveryResponder(IServer server, IHostEnvironment env, ICon
 
     private string ResolveIp()
     {
+        // 1) Ixtiyoriy qo'lda override (faqat zarur bo'lsa). Odatda KERAK EMAS — avtomatik ishlaydi.
+        var advertise = config["Discovery:AdvertiseIp"]
+                     ?? config["DISCOVERY_ADVERTISE_IP"]
+                     ?? config["ADVERTISE_IP"];
+        if (!string.IsNullOrWhiteSpace(advertise) && IPAddress.TryParse(advertise.Trim(), out _))
+            return advertise.Trim();
+
         if (env.IsDevelopment())
             return "localhost";
 
-        // Docker gateway IP (host IP from container)
-        if (!string.IsNullOrWhiteSpace(config["DISCOVERY_PORT"]))
-        {
-            var dockerGateway = GetDockerGatewayIp();
-            if (dockerGateway is not null)
-                return dockerGateway;
-        }
-
-        // Productionda global IP
-        var global = GetGlobalIp();
-        return global ?? "localhost";
+        // 2) Avtomatik: WiFi/LAN tarmog'idagi tashqi IPv4 (host yoki host-network rejimida ishlaydi).
+        //    Har so'rovda qayta hisoblanadi → server IP'si o'zgarsa (DHCP) ham mos keladi.
+        return GetLanIp() ?? GetOutboundIp() ?? "localhost";
     }
 
-    private string? GetDockerGatewayIp()
+    // Faol jismoniy interfeys (Ethernet/Wi-Fi) dan private IPv4 ni tanlaydi;
+    // virtual/Docker/WSL adapterlarini chetlab o'tib, WiFi/LAN diapazonini
+    // (192.168.* eng avval, keyin 10.*) afzal ko'radi.
+    private static string? GetLanIp()
     {
         try
         {
-            using var client = new UdpClient();
-            client.Connect("8.8.8.8", 80); // Google DNS
-            var endpoint = client.Client.LocalEndPoint as IPEndPoint;
-            return endpoint?.Address.ToString();
+            var addresses = NetworkInterface.GetAllNetworkInterfaces()
+                .Where(ni => ni.OperationalStatus == OperationalStatus.Up)
+                .Where(ni => ni.NetworkInterfaceType is NetworkInterfaceType.Ethernet
+                                                      or NetworkInterfaceType.Wireless80211)
+                .Where(ni => !ni.Description.Contains("virtual", StringComparison.OrdinalIgnoreCase)
+                          && !ni.Description.Contains("docker", StringComparison.OrdinalIgnoreCase)
+                          && !ni.Name.Contains("vEthernet", StringComparison.OrdinalIgnoreCase)
+                          && !ni.Name.Contains("WSL", StringComparison.OrdinalIgnoreCase)
+                          && !ni.Name.StartsWith("docker", StringComparison.OrdinalIgnoreCase)
+                          && !ni.Name.StartsWith("br-", StringComparison.OrdinalIgnoreCase)
+                          && !ni.Name.StartsWith("veth", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(ni => ni.GetIPProperties().UnicastAddresses)
+                .Select(ua => ua.Address)
+                .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip))
+                .Select(ip => ip.ToString())
+                .Where(ip => !ip.StartsWith("169.254"))
+                .ToList();
+
+            return addresses.FirstOrDefault(ip => ip.StartsWith("192.168."))
+                ?? addresses.FirstOrDefault(ip => ip.StartsWith("10."))
+                ?? addresses.FirstOrDefault(IsPrivate172)
+                ?? addresses.FirstOrDefault();
         }
         catch
         {
@@ -123,18 +141,23 @@ public class SimpleDiscoveryResponder(IServer server, IHostEnvironment env, ICon
         }
     }
 
-    private string? GetGlobalIp()
+    private static bool IsPrivate172(string ip)
+    {
+        // 172.16.0.0 – 172.31.255.255 (Docker shu diapazondan foydalanadi — eng oxirgi tanlov)
+        var parts = ip.Split('.');
+        return parts.Length == 4 && parts[0] == "172"
+            && int.TryParse(parts[1], out var second) && second is >= 16 and <= 31;
+    }
+
+    // Tashqi manzilga "ulanib" (haqiqiy paket yubormasdan) qaysi local IPv4 chiqishini aniqlaydi.
+    // Host yoki host-network rejimida WiFi IP'sini beradi.
+    private static string? GetOutboundIp()
     {
         try
         {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            return host.AddressList
-                .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork)
-                .Where(ip => !IPAddress.IsLoopback(ip))
-                .Where(ip => !ip.ToString().StartsWith("169.254")) // ignore link-local
-                .OrderByDescending(ip => ip.ToString().StartsWith("192.") || ip.ToString().StartsWith("10.") || ip.ToString().StartsWith("172."))
-                .FirstOrDefault()
-                ?.ToString();
+            using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            socket.Connect("8.8.8.8", 65530);
+            return (socket.LocalEndPoint as IPEndPoint)?.Address.ToString();
         }
         catch
         {

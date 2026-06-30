@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using VoltStream.WPF.Commons;
 using VoltStream.WPF.Commons.Services;
+using VoltStream.WPF.Commons.ViewModels;
 using VoltStream.WPF.Configurations;
 using VoltStream.WPF.LoginPages.Models;
 using VoltStream.WPF.LoginPages.Views;
@@ -34,6 +35,13 @@ public partial class App : Application
             }).Build();
 
         Services = host.Services;
+
+        // Server manzilini login/API chaqiruvidan OLDIN aniqlab olamiz va TO'LIQ kutamiz.
+        // Saqlangan URL ishlasa — o'shani ishlatamiz; aks holda tarmoqdan avtomatik topamiz.
+        // Shu sabab dev (localhost) ham, production (Docker) ham static sozlovsiz ishlaydi.
+        // Discovery ichki jihatdan cheklangan (broadcast + skan parallel, har bir probe timeoutli),
+        // shuning uchun cheksiz osilib qolmaydi; topgunicha kutamiz, keyin login.
+        await EnsureServerDiscoveredAsync();
 
         var secureCreds = DevKeyService.TryGetSecureCredentials();
         bool autoLoginSuccess = false;
@@ -81,6 +89,34 @@ public partial class App : Application
 
         host?.Dispose();
         base.OnExit(e);
+    }
+
+    // Serverni topib, ApiConnectionViewModel.Url ni o'rnatadi (auto-save config'ga yozadi).
+    private static async Task EnsureServerDiscoveredAsync()
+    {
+        if (Services is null)
+            return;
+
+        var apiConnection = Services.GetRequiredService<ApiConnectionViewModel>();
+        DiscoveryClient.ResetDiag();
+
+        // 1) Saqlangan URL hali ishlayaptimi? (tez yo'l — har safar qaytadan qidirmaymiz)
+        var savedAlive = await DiscoveryClient.IsAliveAsync(apiConnection.Url);
+        DiscoveryClient.Diag($"Startup: saqlangan url='{apiConnection.Url}' tirik={savedAlive}");
+        if (savedAlive)
+            return;
+
+        // 2) Aks holda tarmoqdan avtomatik topamiz (broadcast + LAN skan parallel).
+        var uri = await DiscoveryClient.DiscoverAsync();
+        if (uri is not null)
+        {
+            apiConnection.Url = $"{uri.Scheme}://{uri.Host}:{uri.Port}/";
+            DiscoveryClient.Diag($"Startup: url o'rnatildi = {apiConnection.Url}");
+        }
+        else
+        {
+            DiscoveryClient.Diag("Startup: server TOPILMADI — eski url o'zgarmadi");
+        }
     }
 
     private static void ConfigureUiServices(IServiceCollection services)
