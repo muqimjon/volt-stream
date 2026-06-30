@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 
@@ -16,32 +17,40 @@ public class SimpleDiscoveryResponder(IServer server, IHostEnvironment env, ICon
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var udp = new UdpClient(ListenPort);
+        using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+        // Har bir datagramma qaysi LOCAL (qabul qiluvchi) IP'ga kelganini bilish uchun:
+        socket.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.PacketInformation, true);
+        socket.Bind(new IPEndPoint(IPAddress.Any, ListenPort));
+
         logger.LogInformation("📡 Discovery responder listening on UDP port {port}", ListenPort);
+
+        var buffer = new byte[1024];
 
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                if (udp.Available > 0)
-                {
-                    var result = await udp.ReceiveAsync(stoppingToken);
-                    var msg = Encoding.UTF8.GetString(result.Buffer).Trim();
+                EndPoint remote = new IPEndPoint(IPAddress.Any, 0);
+                var result = await socket.ReceiveMessageFromAsync(buffer, SocketFlags.None, remote, stoppingToken);
+                var msg = Encoding.UTF8.GetString(buffer, 0, result.ReceivedBytes).Trim();
 
-                    if (msg == "DISCOVER")
-                    {
-                        var ip = ResolveIp();
-                        var port = ResolvePort();
-                        var scheme = ResolveScheme();
-                        var response = $"{scheme}://{ip}:{port}";
+                if (msg != "DISCOVER")
+                    continue;
 
-                        var bytes = Encoding.UTF8.GetBytes(response);
-                        await udp.SendAsync(bytes, bytes.Length, result.RemoteEndPoint);
-                        logger.LogInformation("✅ Sent discovery response: {response} to {remote}", response, result.RemoteEndPoint);
-                    }
-                }
+                // result.PacketInformation.Address = DISCOVER aynan qaysi local IP'ga kelgani.
+                // Bu — client serverga ulanish uchun ishlatgan IP, demak kafolatlangan to'g'ri manzil.
+                var ip = ResolveIp(result.PacketInformation.Address);
+                var response = $"{ResolveScheme()}://{ip}:{ResolvePort()}";
 
-                await Task.Delay(10, stoppingToken);
+                var bytes = Encoding.UTF8.GetBytes(response);
+                await socket.SendToAsync(bytes, SocketFlags.None, result.RemoteEndPoint, stoppingToken);
+                logger.LogInformation("✅ Discovery response: {response} → {remote} (qabul qilingan IP: {local})",
+                    response, result.RemoteEndPoint, result.PacketInformation.Address);
+            }
+            catch (OperationCanceledException)
+            {
+                break;
             }
             catch (Exception ex)
             {
@@ -90,32 +99,66 @@ public class SimpleDiscoveryResponder(IServer server, IHostEnvironment env, ICon
     }
 
 
-    private string ResolveIp()
+    private string ResolveIp(IPAddress? receivedOn)
     {
+        // 1) Ixtiyoriy qo'lda override (faqat zarur bo'lsa). Odatda KERAK EMAS — avtomatik ishlaydi.
+        var advertise = config["Discovery:AdvertiseIp"]
+                     ?? config["DISCOVERY_ADVERTISE_IP"]
+                     ?? config["ADVERTISE_IP"];
+        if (!string.IsNullOrWhiteSpace(advertise) && IPAddress.TryParse(advertise.Trim(), out _))
+            return advertise.Trim();
+
         if (env.IsDevelopment())
             return "localhost";
 
-        // Docker gateway IP (host IP from container)
-        if (!string.IsNullOrWhiteSpace(config["DISCOVERY_PORT"]))
-        {
-            var dockerGateway = GetDockerGatewayIp();
-            if (dockerGateway is not null)
-                return dockerGateway;
-        }
+        // 2) ENG ISHONCHLI: DISCOVER aynan shu local IP'ga kelgan — ya'ni client serverga
+        //    aynan shu manzil orqali yetib kelgan. Demak bu IP o'sha client uchun kafolatlangan
+        //    to'g'ri (WiFi/LAN) manzil. Har so'rovda qayta hisoblanadi → IP o'zgarsa ham mos keladi.
+        if (IsUsableLanIp(receivedOn))
+            return receivedOn!.ToString();
 
-        // Productionda global IP
-        var global = GetGlobalIp();
-        return global ?? "localhost";
+        // 3) Zaxira: tarmoq interfeyslaridan WiFi/LAN IPv4 ni avtomatik tanlash.
+        return GetLanIp() ?? GetOutboundIp() ?? "localhost";
     }
 
-    private string? GetDockerGatewayIp()
+    // Loopback, link-local (169.254) va Docker-ichki (172.16–31) bo'lmagan, haqiqiy LAN IPv4mi?
+    private static bool IsUsableLanIp(IPAddress? ip)
+    {
+        if (ip is null || ip.AddressFamily != AddressFamily.InterNetwork || IPAddress.IsLoopback(ip))
+            return false;
+        var s = ip.ToString();
+        return !s.StartsWith("169.254") && !IsPrivate172(s);
+    }
+
+    // Faol jismoniy interfeys (Ethernet/Wi-Fi) dan private IPv4 ni tanlaydi;
+    // virtual/Docker/WSL adapterlarini chetlab o'tib, WiFi/LAN diapazonini
+    // (192.168.* eng avval, keyin 10.*) afzal ko'radi.
+    private static string? GetLanIp()
     {
         try
         {
-            using var client = new UdpClient();
-            client.Connect("8.8.8.8", 80); // Google DNS
-            var endpoint = client.Client.LocalEndPoint as IPEndPoint;
-            return endpoint?.Address.ToString();
+            var addresses = NetworkInterface.GetAllNetworkInterfaces()
+                .Where(ni => ni.OperationalStatus == OperationalStatus.Up)
+                .Where(ni => ni.NetworkInterfaceType is NetworkInterfaceType.Ethernet
+                                                      or NetworkInterfaceType.Wireless80211)
+                .Where(ni => !ni.Description.Contains("virtual", StringComparison.OrdinalIgnoreCase)
+                          && !ni.Description.Contains("docker", StringComparison.OrdinalIgnoreCase)
+                          && !ni.Name.Contains("vEthernet", StringComparison.OrdinalIgnoreCase)
+                          && !ni.Name.Contains("WSL", StringComparison.OrdinalIgnoreCase)
+                          && !ni.Name.StartsWith("docker", StringComparison.OrdinalIgnoreCase)
+                          && !ni.Name.StartsWith("br-", StringComparison.OrdinalIgnoreCase)
+                          && !ni.Name.StartsWith("veth", StringComparison.OrdinalIgnoreCase))
+                .SelectMany(ni => ni.GetIPProperties().UnicastAddresses)
+                .Select(ua => ua.Address)
+                .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip))
+                .Select(ip => ip.ToString())
+                .Where(ip => !ip.StartsWith("169.254"))
+                .ToList();
+
+            return addresses.FirstOrDefault(ip => ip.StartsWith("192.168."))
+                ?? addresses.FirstOrDefault(ip => ip.StartsWith("10."))
+                ?? addresses.FirstOrDefault(IsPrivate172)
+                ?? addresses.FirstOrDefault();
         }
         catch
         {
@@ -123,18 +166,23 @@ public class SimpleDiscoveryResponder(IServer server, IHostEnvironment env, ICon
         }
     }
 
-    private string? GetGlobalIp()
+    private static bool IsPrivate172(string ip)
+    {
+        // 172.16.0.0 – 172.31.255.255 (Docker shu diapazondan foydalanadi — eng oxirgi tanlov)
+        var parts = ip.Split('.');
+        return parts.Length == 4 && parts[0] == "172"
+            && int.TryParse(parts[1], out var second) && second is >= 16 and <= 31;
+    }
+
+    // Tashqi manzilga "ulanib" (haqiqiy paket yubormasdan) qaysi local IPv4 chiqishini aniqlaydi.
+    // Host yoki host-network rejimida WiFi IP'sini beradi.
+    private static string? GetOutboundIp()
     {
         try
         {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            return host.AddressList
-                .Where(ip => ip.AddressFamily == AddressFamily.InterNetwork)
-                .Where(ip => !IPAddress.IsLoopback(ip))
-                .Where(ip => !ip.ToString().StartsWith("169.254")) // ignore link-local
-                .OrderByDescending(ip => ip.ToString().StartsWith("192.") || ip.ToString().StartsWith("10.") || ip.ToString().StartsWith("172."))
-                .FirstOrDefault()
-                ?.ToString();
+            using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            socket.Connect("8.8.8.8", 65530);
+            return (socket.LocalEndPoint as IPEndPoint)?.Address.ToString();
         }
         catch
         {
