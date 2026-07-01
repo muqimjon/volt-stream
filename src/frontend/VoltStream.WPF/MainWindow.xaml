@@ -64,10 +64,6 @@
             </Grid.ColumnDefinitions>
 
             <Grid x:Name="Sidebar">
-                <Grid.RowDefinitions>
-                    <RowDefinition />
-                    <RowDefinition Height="50" />
-                </Grid.RowDefinitions>
                 <StackPanel>
                     <ToggleButton
                         Width="250"
@@ -192,32 +188,6 @@
                     </RadioButton>
 
                 </StackPanel>
-
-                <Grid
-                    Grid.Row="1"
-                    Margin="5,0"
-                    Visibility="{Binding ApiConnection.ShowIndicator, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Ellipse
-                        x:Name="ServerStatusIndicator"
-                        Width="10"
-                        Height="10"
-                        Margin="20,0,5,0"
-                        Fill="Gray" />
-
-                    <TextBlock
-                        Grid.Column="1"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center"
-                        FontSize="14"
-                        FontWeight="Bold"
-                        Foreground="{DynamicResource SidebarItemText}"
-                        Text="{Binding ApiConnection.StatusText}" />
-                </Grid>
 
             </Grid>
 

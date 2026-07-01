@@ -7,7 +7,6 @@ using System.Text.Json.Serialization;
 using VoltStream.Application;
 using VoltStream.Infrastructure;
 using VoltStream.WebApi.Conventions;
-using VoltStream.WebApi.Utils;
 
 public static class DependencyInjection
 {
@@ -15,7 +14,6 @@ public static class DependencyInjection
     {
         services.AddApplicationServices();
         services.AddInfrastructureServices(conf);
-        services.AddHostedService<SimpleDiscoveryResponder>();
 
         services.AddControllers(opt => opt.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())))
                 .AddApplicationPart(typeof(DependencyInjection).Assembly)
@@ -63,9 +61,6 @@ public static class DependencyInjection
 
     public static void UseVoltStreamPipeline(this WebApplication app)
     {
-        app.UseWhen(
-            ctx => !ctx.Request.Path.StartsWithSegments("/api/health"),
-            b => b.UseHttpsRedirection());
         app.UseStaticFiles();
         app.UseCors(s => s.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
         app.UseAuthentication();

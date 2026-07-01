@@ -15,35 +15,25 @@ public class ApiConnectionStore
         Converters = { new JsonStringEnumConverter() }
     };
 
-    private sealed record ApiConnectionDto(
-        string Url,
-        bool AutoReconnectEnabled,
-        bool CheckUrlEnabled,
-        bool ShowIndicator);
+    private sealed record ApiConnectionDto(string Url);
 
     public ApiConnectionViewModel Load()
     {
         try
         {
             if (!File.Exists(ConfigPath))
-                return new() { AutoReconnectEnabled = true };
+                return new();
 
             var json = File.ReadAllText(ConfigPath);
             var dto = JsonSerializer.Deserialize<ApiConnectionDto>(json, jsonOptions);
             if (dto is null)
-                return new() { AutoReconnectEnabled = true };
+                return new();
 
-            return new ApiConnectionViewModel
-            {
-                Url = dto.Url,
-                AutoReconnectEnabled = dto.AutoReconnectEnabled,
-                CheckUrlEnabled = dto.CheckUrlEnabled,
-                ShowIndicator = dto.ShowIndicator
-            };
+            return new ApiConnectionViewModel { Url = dto.Url };
         }
         catch
         {
-            return new() { AutoReconnectEnabled = true };
+            return new();
         }
     }
 
@@ -51,7 +41,7 @@ public class ApiConnectionStore
     {
         try
         {
-            var dto = new ApiConnectionDto(model.Url, model.AutoReconnectEnabled, model.CheckUrlEnabled, model.ShowIndicator);
+            var dto = new ApiConnectionDto(model.Url);
             var json = JsonSerializer.Serialize(dto, jsonOptions);
             Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath)!);
             File.WriteAllText(ConfigPath, json);
@@ -63,7 +53,7 @@ public class ApiConnectionStore
     {
         model.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName is nameof(model.Url) or nameof(model.AutoReconnectEnabled))
+            if (e.PropertyName is nameof(model.Url))
                 Save(model);
         };
     }

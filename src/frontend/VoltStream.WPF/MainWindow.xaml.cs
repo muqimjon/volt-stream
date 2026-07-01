@@ -2,14 +2,12 @@
 
 using FontAwesome.Sharp;
 using Microsoft.Extensions.DependencyInjection;
-using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using VoltStream.WPF.Commons.Animations;
 using VoltStream.WPF.Commons.Enums;
 using VoltStream.WPF.Commons.Services;
-using VoltStream.WPF.Commons.ViewModels;
 using VoltStream.WPF.ViewModels;
 
 public partial class MainWindow : Window
@@ -39,13 +37,7 @@ public partial class MainWindow : Window
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         if (vm is not null)
-        {
             vm.PropertyChanged += ViewModel_PropertyChanged;
-            vm.ApiConnection.PropertyChanged += ApiConnection_PropertyChanged;
-
-            ApiConnection_PropertyChanged(vm.ApiConnection,
-                new PropertyChangedEventArgs(nameof(vm.ApiConnection.Status)));
-        }
     }
 
     private void Header_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -140,24 +132,5 @@ public partial class MainWindow : Window
             foreach (var childOfChild in FindVisualChildren<T>(child))
                 yield return childOfChild;
         }
-    }
-
-    private void ApiConnection_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (sender is not ApiConnectionViewModel api)
-            return;
-
-        if (e.PropertyName == nameof(api.Status))
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                var key = api.Status switch
-                {
-                    ConnectionStatus.Disconnected => "Danger",
-                    ConnectionStatus.Connected => "Success",
-                    ConnectionStatus.Connecting => "Warning",
-                    _ => "TextTertiary",
-                };
-                ServerStatusIndicator.Fill = TryFindResource(key) as Brush ?? Brushes.Gray;
-            });
     }
 }

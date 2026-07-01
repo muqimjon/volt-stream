@@ -4,6 +4,7 @@ using ApiServices.Handlers;
 using ApiServices.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using VoltStream.WPF.Commons.ViewModels;
@@ -34,7 +35,6 @@ public static class ApiService
 
         services.AddSingleton(store);
         services.AddSingleton(apiConnection);
-        services.AddSingleton<ConnectionTester>();
         services.AddTransient<AuthHeaderHandler>();
         services.AddTransient<PagingHeaderHandler>();
 
@@ -48,6 +48,13 @@ public static class ApiService
                     {
                         var state = provider.GetRequiredService<ApiConnectionViewModel>();
                         client.BaseAddress = new Uri(state.Url + "api");
+                        client.Timeout = apiType == typeof(IHealthCheckApi)
+                            ? TimeSpan.FromSeconds(3)
+                            : TimeSpan.FromSeconds(10);
+                    })
+                    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = (_, _, _, _) => true
                     })
                     .AddHttpMessageHandler<AuthHeaderHandler>()
                     .AddHttpMessageHandler<PagingHeaderHandler>();

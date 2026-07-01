@@ -111,17 +111,6 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Connection Behaviors -->
-                <Border Style="{StaticResource CardBorder}">
-                    <StackPanel>
-                        <TextBlock Text="Ulanish xatti-harakatlari" Style="{StaticResource SubtitleText}" Margin="0,0,0,12"/>
-
-                        <CheckBox Content="Avto-ulanish yoqilgan"
-                                  Style="{StaticResource ModernCheck}"
-                                  IsChecked="{Binding ApiConnection.AutoReconnectEnabled}"/>
-                    </StackPanel>
-                </Border>
-
                 <!-- Error/Success Messages -->
                 <TextBlock Text="{Binding Error}"
                            Foreground="{DynamicResource Danger}"

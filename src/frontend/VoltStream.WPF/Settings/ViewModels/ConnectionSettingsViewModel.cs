@@ -22,22 +22,20 @@ public partial class ConnectionSettingsViewModel : ViewModelBase
     [RelayCommand]
     private async Task TestConnection()
     {
-        await ApiConnection.Save();
+        IsLoading = true;
+        var ok = await ApiConnection.CheckAsync();
+        IsLoading = false;
 
-        if (ApiConnection.IsConnected)
+        if (ok)
             Success = "✓ Server bilan aloqa muvaffaqiyatli!";
         else Error = "✗ Server bilan bog'lanib bo'lmadi";
     }
 
     [RelayCommand]
-    private async Task SaveAndClose()
+    private void SaveAndClose()
     {
-        IsLoading = true;
-
+        ApiConnection.Save();
         closeAction?.Invoke();
-        await ApiConnection.Save();
-
-        IsLoading = false;
     }
 
     #endregion Commands

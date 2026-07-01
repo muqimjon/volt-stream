@@ -67,25 +67,6 @@
                 </StackPanel>
             </Border>
 
-            <!-- Real-time sozlamalar -->
-            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,15">
-                <StackPanel>
-                    <TextBlock Text="Ulanish xatti-harakatlari" Style="{StaticResource SubtitleText}" Margin="0,0,0,12" />
-
-                    <CheckBox Content="Avto-ulanish yoqilgan"
-                              Style="{StaticResource ModernCheck}"
-                              IsChecked="{Binding AutoReconnectEnabled}"
-                              Margin="0,0,0,10" />
-                    <CheckBox Content="URLni tekshirish"
-                              Style="{StaticResource ModernCheck}"
-                              IsChecked="{Binding CheckUrlEnabled}"
-                              Margin="0,0,0,10" />
-                    <CheckBox Content="Indikator ko‘rsatiladi"
-                              Style="{StaticResource ModernCheck}"
-                              IsChecked="{Binding ShowIndicator}"
-                              Visibility="{Binding CheckUrlEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                </StackPanel>
-            </Border>
         </StackPanel>
 
         <!-- Save Button -->

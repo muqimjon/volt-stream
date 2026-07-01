@@ -2,7 +2,6 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.DependencyInjection;
 using VoltStream.WPF.Commons.Enums;
 using VoltStream.WPF.Configurations;
 
@@ -10,9 +9,6 @@ public partial class ApiConnectionViewModel : ViewModelBase
 {
     [ObservableProperty] private string url = string.Empty;
     [ObservableProperty] private bool isConnected;
-    [ObservableProperty] private bool autoReconnectEnabled = true;
-    [ObservableProperty] private bool showIndicator;
-    [ObservableProperty] private bool checkUrlEnabled;
     [ObservableProperty] private bool isHttps;
     [ObservableProperty] private string host = "localhost";
     [ObservableProperty] private int port = 5000;
@@ -22,63 +18,42 @@ public partial class ApiConnectionViewModel : ViewModelBase
     #region Commands
 
     [RelayCommand]
-    public async Task Save()
+    public void Save()
+    {
+        if (TrySetUrl())
+            _ = VerifyAsync();
+    }
+
+    public async Task<bool> CheckAsync()
+        => TrySetUrl() && await VerifyAsync();
+
+    private bool TrySetUrl()
     {
         Error = string.Empty;
         Success = string.Empty;
 
         var scheme = IsHttps ? "https" : "http";
-        var candidateUrl = $"{scheme}://{Host}:{Port}/";
-
-        if (!Uri.TryCreate(candidateUrl, UriKind.Absolute, out var uri))
+        if (!Uri.TryCreate($"{scheme}://{Host}:{Port}/", UriKind.Absolute, out var uri))
         {
             Error = "Kiritilgan manzil yaroqsiz";
-            return;
+            return false;
         }
 
         Url = uri.ToString();
-        Status = ConnectionStatus.Connecting;
-
-        IsConnected = await App.Services!
-            .GetRequiredService<ConnectionTester>()
-            .TestAsync();
-
-        Status = IsConnected
-            ? ConnectionStatus.Connected
-            : ConnectionStatus.Disconnected;
-
-        if (IsConnected)
-        {
-            Success = "✓ Sozlamalar saqlandi va server bilan aloqa o'rnatildi";
-        }
-        else
-        {
-            Error = "✗ Sozlamalar saqlandi, lekin server bilan bog'lanib bo'lmadi";
-        }
+        return true;
     }
 
-    [RelayCommand]
-    private void ToggleAutoReconnect() => AutoReconnectEnabled = !AutoReconnectEnabled;
-
-    [RelayCommand]
-    private void ToggleCheckUrl() => CheckUrlEnabled = !CheckUrlEnabled;
-
-    [RelayCommand]
-    private void ToggleShowIndicator() => ShowIndicator = !ShowIndicator;
+    private async Task<bool> VerifyAsync()
+    {
+        Status = ConnectionStatus.Connecting;
+        IsConnected = await ServerHealth.IsAliveAsync(Url);
+        Status = IsConnected ? ConnectionStatus.Connected : ConnectionStatus.Disconnected;
+        return IsConnected;
+    }
 
     #endregion Commands
 
     #region PropertyChanged
-
-    partial void OnCheckUrlEnabledChanged(bool value)
-    {
-        ShowIndicator = value;
-    }
-
-    partial void OnAutoReconnectEnabledChanged(bool value)
-    {
-        UpdateStatus();
-    }
 
     partial void OnIsConnectedChanged(bool value)
     {
@@ -122,9 +97,7 @@ public partial class ApiConnectionViewModel : ViewModelBase
     {
         Status = IsConnected
             ? ConnectionStatus.Connected
-            : AutoReconnectEnabled
-                ? ConnectionStatus.Connecting
-                : ConnectionStatus.Disconnected;
+            : ConnectionStatus.Disconnected;
     }
 
     #endregion Private helper

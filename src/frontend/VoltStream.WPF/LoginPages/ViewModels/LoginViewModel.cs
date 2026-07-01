@@ -6,12 +6,10 @@ using ApiServices.Models.Requests;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
-using System.Windows;
 using VoltStream.WPF.Commons;
 using VoltStream.WPF.Commons.Services;
+using VoltStream.WPF.Commons.ViewModels;
 using VoltStream.WPF.Configurations;
-using VoltStream.WPF.Settings.ViewModels;
-using VoltStream.WPF.Settings.Views;
 
 public partial class LoginViewModel : ViewModelBase
 {
@@ -58,22 +56,25 @@ public partial class LoginViewModel : ViewModelBase
             return;
         }
 
-        var connectionTester = services.GetRequiredService<ConnectionTester>();
-        var isConnected = await connectionTester.TestAsync(isLoading => IsLoading = isLoading);
+        var apiConnection = services.GetRequiredService<ApiConnectionViewModel>();
+
+        IsLoading = true;
+        var isConnected = await ServerHealth.IsAliveAsync(apiConnection.Url);
+        IsLoading = false;
 
         if (!isConnected)
         {
             Error = "⚠ Server bilan bog'lanib bo'lmadi";
-            await Task.Delay(1000);
-            var result = OpenConnectionSettings();
 
-            if (result != true)
+            if (!OpenConnectionSettings())
             {
                 Error = "Aloqa sozlanmadi. Iltimos, qaytadan urinib ko'ring.";
                 return;
             }
 
-            var recheckResult = await connectionTester.TestAsync(isLoading => IsLoading = isLoading);
+            IsLoading = true;
+            var recheckResult = await ServerHealth.IsAliveAsync(apiConnection.Url);
+            IsLoading = false;
 
             if (!recheckResult)
             {
@@ -133,17 +134,11 @@ public partial class LoginViewModel : ViewModelBase
         return false;
     }
 
-    private bool? OpenConnectionSettings()
+    private bool OpenConnectionSettings()
     {
         try
         {
-            var viewModel = services.GetRequiredService<ConnectionSettingsViewModel>();
-            var window = new ConnectionSettingsWindow(viewModel)
-            {
-                WindowStartupLocation = WindowStartupLocation.CenterScreen
-            };
-
-            return window.ShowDialog();
+            return services.GetRequiredService<ConnectionRecovery>().Prompt();
         }
         catch (Exception ex)
         {

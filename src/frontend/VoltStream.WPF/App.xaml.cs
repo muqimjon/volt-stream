@@ -61,13 +61,8 @@ public partial class App : Application
 
             var apiConnection = Services!.GetRequiredService<ApiConnectionViewModel>();
 
-            for (var i = 0; i < 30 && !mainShown; i++)
-            {
-                if (await DiscoveryClient.IsAliveAsync(apiConnection.Url) && await vm.TryAutoLoginAsync())
-                    return;
-
-                await Task.Delay(1000);
-            }
+            if (await ServerHealth.IsAliveAsync(apiConnection.Url))
+                await vm.TryAutoLoginAsync();
         }
         catch { }
     }
@@ -139,10 +134,9 @@ public partial class App : Application
 
     private static void ConfigureCoreServices(IServiceCollection services)
     {
-        services.AddSingleton<DiscoveryClient>();
         services.AddSingleton<CredentialStore>();
         services.AddSingleton<Sales.ViewModels.SaleSession>();
-        services.AddHostedService<ConnectionMonitor>();
+        services.AddSingleton<ConnectionRecovery>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<ISessionService, SessionService>();
         services.AddSingleton<NamozTimeService>();

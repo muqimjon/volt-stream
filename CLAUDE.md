@@ -10,10 +10,10 @@ Kabel zavodi uchun hisob-kitob (savdo, ta'minot, to'lovlar, debitor/kreditor, om
 - `VoltStream.Domain` — entitilar, enumlar.
 - `VoltStream.Application` — CQRS komandalar/so'rovlar, validatsiya, interfeyslar.
 - `VoltStream.Infrastructure` — EF Core (PostgreSQL/Npgsql), `AppDbContext`, JWT, Excel seeding (`ExcelDataSeeder`, `SeedData/*.xlsx` orqali), `DatabaseInitializer` (migratsiya + seeding fon `BackgroundService`).
-- `VoltStream.WebApi` — controllerlar, middleware, Scalar API hujjati, UDP discovery responder (`SimpleDiscoveryResponder`). Kompozitsiya `WebApiHostBuilder.Build` da; `Program.cs` shuni chaqiradi.
+- `VoltStream.WebApi` — controllerlar, middleware, Scalar API hujjati. Kompozitsiya `WebApiHostBuilder.Build` da; `Program.cs` shuni chaqiradi.
 
 **Frontend** (`src/frontend`) — WPF (MVVM, CommunityToolkit.Mvvm, Mapster):
-- `VoltStream.WPF` — oynalar/sahifalar/ViewModel'lar, DI uchun generic `Host`, fon `ConnectionMonitor`.
+- `VoltStream.WPF` — oynalar/sahifalar/ViewModel'lar, DI uchun generic `Host`.
 - `ApiServices` — Refit klient interfeyslari (`I*Api`) va modellar.
 
 ## Ishga tushirish
@@ -31,11 +31,12 @@ WebApi seeding'dan OLDIN tinglay boshlaydi (migratsiya/seeding `DatabaseInitiali
 
 ## Klient ↔ server ulanishi
 
-- WPF ishga tushganda darrov login oynasini ko'rsatadi; ulanish va (USB kalit bo'lsa) avto-login fonda bo'ladi.
-- `ConnectionMonitor` (har 5s) server bilan aloqani tekshiradi va uzilsa `DiscoveryClient` orqali qayta topadi (saqlangan URL → UDP broadcast + LAN skan).
-- Server manzili `config/api-connection.json` ga saqlanadi (`ApiConnectionStore`, faqat `Url`/`AutoReconnectEnabled`/… durable maydonlar).
-- Portlar: dev `7285` (https), `5123` (http); native production `5000`. Discovery UDP `5001`.
-- `/api/health` HTTPS-redirect'dan ozod va `[AllowAnonymous]` — har ikki sxemada 200 qaytaradi.
+- Server manzili QO'LDA kiritiladi (host/port/https) va `config/api-connection.json` ga saqlanadi (`ApiConnectionStore`, faqat `Url`). Avto-kashf (discovery/broadcast/skan) va fon qayta-ulanish YO'Q.
+- WPF ishga tushganda login oynasini ko'rsatadi. Saqlangan URL bir marta tekshiriladi (`ServerHealth.IsAliveAsync` → `/api/health`); tirik bo'lsa va USB kalit/eslab qolingan parol bo'lsa avto-login.
+- Login bosilganda URL bir marta tekshiriladi; ulanmasa `ConnectionRecovery` ulanish sozlamalari oynasini ochadi — foydalanuvchi qo'lda tuzatib davom etadi.
+- Ish jarayonida biror API chaqiruvi serverga ulanolmasa (`AuthHeaderHandler`) o'sha sozlamalar oynasi ochiladi (bitta oyna, debounce).
+- Portlar: dev `7285` (https), `5123` (http); native production `5000`.
+- `/api/health` `[AllowAnonymous]` — ulanish tekshiruvi shu endpointga tayanadi.
 - Avto-login: removable USB diskdagi `voltstream.key` (`DevKeyService`). Kalit bo'lmasa — qo'lda login.
 
 ## Kod uslubi
