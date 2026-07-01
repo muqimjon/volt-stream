@@ -24,6 +24,14 @@ public partial class ApiConnectionViewModel : ViewModelBase
             _ = VerifyAsync();
     }
 
+    [RelayCommand]
+    private async Task Test()
+    {
+        IsLoading = true;
+        await CheckAsync();
+        IsLoading = false;
+    }
+
     public async Task<bool> CheckAsync()
         => TrySetUrl() && await VerifyAsync();
 

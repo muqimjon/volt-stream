@@ -156,16 +156,14 @@
                                 Height="28"
                                 Margin="2,2,10,2"
                                 HorizontalAlignment="Stretch"
-                                VerticalAlignment="Center"
-                                BorderBrush="{DynamicResource BorderStrong}"
-                                BorderThickness="0.5">
+                                VerticalAlignment="Center">
                                 <CheckBox
                                     x:Name="checkedDiscount"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
                                     utils:EnterKeyTab.IsEnabled="True"
                                     Click="CheckedDiscount_Click"
-                                    FontSize="12"
+                                    Style="{StaticResource ModernCheck}"
                                     IsChecked="{Binding IsDiscountApplied}" />
                             </Border>
                         </Grid>
