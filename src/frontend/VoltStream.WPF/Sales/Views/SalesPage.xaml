@@ -80,7 +80,7 @@
                             utils:EnterKeyTab.IsEnabled="True"
                             FontSize="14"
                             LostFocus="SupplyDate_LostFocus"
-                            SelectedDate="{Binding OperationDate}" />
+                            SelectedDate="{Binding OperationDate, Mode=TwoWay}" />
                     </Grid>
                     <Grid Grid.Row="1" Grid.Column="1">
                         <ComboBox

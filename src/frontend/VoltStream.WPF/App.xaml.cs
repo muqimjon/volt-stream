@@ -141,6 +141,7 @@ public partial class App : Application
     {
         services.AddSingleton<DiscoveryClient>();
         services.AddSingleton<CredentialStore>();
+        services.AddSingleton<Sales.ViewModels.SaleSession>();
         services.AddHostedService<ConnectionMonitor>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<ISessionService, SessionService>();

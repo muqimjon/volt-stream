@@ -25,12 +25,15 @@ public partial class SalesPage : Page
     private readonly ICurrenciesApi currenciesApi;
     private readonly ISaleApi salesApi;
 
-    public Sale sale = new();
+    private readonly SaleSession saleSession;
+    public Sale sale;
 
     public SalesPage(IServiceProvider services)
     {
         InitializeComponent();
         this.services = services;
+        saleSession = services.GetRequiredService<SaleSession>();
+        sale = saleSession.Current;
         DataContext = sale;
         categoriesApi = services.GetRequiredService<ICategoriesApi>();
         productsApi = services.GetRequiredService<IProductsApi>();
@@ -682,7 +685,8 @@ public partial class SalesPage : Page
 
     private async void ClearButton_Click(object sender, RoutedEventArgs e)
     {
-        sale = new();
+        saleSession.Reset();
+        sale = saleSession.Current;
         await ClearUI();
     }
 
@@ -742,7 +746,8 @@ public partial class SalesPage : Page
         if (response.IsSuccess)
         {
             sale.Success = "Sotuv muvaffaqiyatli saqlandi!";
-            sale = new();
+            saleSession.Reset();
+            sale = saleSession.Current;
             await ClearUI();
             CustomerName.Focus();
         }
@@ -791,7 +796,9 @@ public partial class SalesPage : Page
             CurrencyType.DisplayMemberPath = "Name";
             CurrencyType.SelectedValuePath = "Id";
             CurrencyType.ItemsSource = currencies;
-            var index = currencies.FindIndex(c => c.IsDefault);
+            var index = sale.CurrencyId > 0
+                ? currencies.FindIndex(c => c.Id == sale.CurrencyId)
+                : currencies.FindIndex(c => c.IsDefault);
             CurrencyType.SelectedIndex = index >= 0 ? index : 0;
         }
     }
