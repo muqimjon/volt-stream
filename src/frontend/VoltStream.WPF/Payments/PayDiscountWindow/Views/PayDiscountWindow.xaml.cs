@@ -10,7 +10,7 @@ public partial class PayDiscountWindow : Window
         txtCustomer.Text = name;
         AmauntDiscount.Text = bonus.ToString("N2");
         inCash.GotFocus += InCash_GotFocus;
-        reСalculation.GotFocus += Recalculation_GotFocus;
+        reCalculation.GotFocus += Recalculation_GotFocus;
         DiscountSum.Focus();
     }
     public dynamic? ResultOfDiscount { get; private set; }
@@ -21,13 +21,13 @@ public partial class PayDiscountWindow : Window
 
     private void Recalculation_GotFocus(object sender, RoutedEventArgs e)
     {
-        reСalculation.IsChecked = true;
+        reCalculation.IsChecked = true;
     }
 
     private void Button_Click(object sender, RoutedEventArgs e)
     {
         DiscountSum.Text = AmauntDiscount.Text;
-        reСalculation.Focus();
+        reCalculation.Focus();
     }
     private void SaveDiscount_Click(object sender, RoutedEventArgs e)
     {

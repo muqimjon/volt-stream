@@ -1,5 +1,6 @@
 ﻿namespace VoltStream.WPF.Configurations;
 
+using ApiServices.Handlers;
 using ApiServices.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
@@ -35,6 +36,7 @@ public static class ApiService
         services.AddSingleton(apiConnection);
         services.AddSingleton<ConnectionTester>();
         services.AddTransient<AuthHeaderHandler>();
+        services.AddTransient<PagingHeaderHandler>();
 
         typeof(IHealthCheckApi).Assembly.GetTypes()
             .Where(t => t.IsInterface && t.Name.EndsWith("Api"))
@@ -47,7 +49,8 @@ public static class ApiService
                         var state = provider.GetRequiredService<ApiConnectionViewModel>();
                         client.BaseAddress = new Uri(state.Url + "api");
                     })
-                    .AddHttpMessageHandler<AuthHeaderHandler>();
+                    .AddHttpMessageHandler<AuthHeaderHandler>()
+                    .AddHttpMessageHandler<PagingHeaderHandler>();
             });
 
         return services;

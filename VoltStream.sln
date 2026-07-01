@@ -21,8 +21,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoltStream.WPF", "src\front
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiServices", "src\frontend\ApiServices\ApiServices.csproj", "{23569106-EF6A-449D-B063-AC9C6F1CA0CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoltStream.ServerManager", "src\backend\VoltStream.ServerManager\VoltStream.ServerManager.csproj", "{B3114AD2-12BC-4DC0-8098-3DFE89DF130F}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,10 +51,6 @@ Global
 		{23569106-EF6A-449D-B063-AC9C6F1CA0CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23569106-EF6A-449D-B063-AC9C6F1CA0CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{23569106-EF6A-449D-B063-AC9C6F1CA0CC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B3114AD2-12BC-4DC0-8098-3DFE89DF130F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B3114AD2-12BC-4DC0-8098-3DFE89DF130F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B3114AD2-12BC-4DC0-8098-3DFE89DF130F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B3114AD2-12BC-4DC0-8098-3DFE89DF130F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -70,7 +64,6 @@ Global
 		{36D591C7-65C7-A0D1-1CBC-10CDE441BDC8} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{E7011431-CC9D-463E-8049-480FD7BEC6D7} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 		{23569106-EF6A-449D-B063-AC9C6F1CA0CC} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
-		{B3114AD2-12BC-4DC0-8098-3DFE89DF130F} = {95C9440C-E9CD-462F-9C8E-82405CE04378}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5E2D1F20-4151-4F4C-9BA3-1F8168A1AB90}

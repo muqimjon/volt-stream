@@ -23,7 +23,7 @@ partial class PaymentPageViewModel : ViewModelBase
     public readonly IPaymentApi paymentApi;
     public readonly IMapper mapper;
 
-    [ObservableProperty] private ObservableCollection<PaymentViewModel> historyPayments = [];
+    [ObservableProperty] private ObservableCollection<PaymentViewModel> pagedHistoryPayments = [];
     [ObservableProperty] private ObservableCollection<CurrencyViewModel> availableCurrencies = [];
     [ObservableProperty] private ObservableCollection<CustomerViewModel> availableCustomers = [];
     [ObservableProperty] private PaymentViewModel payment;
@@ -31,12 +31,16 @@ partial class PaymentPageViewModel : ViewModelBase
 
     private long customerId;
 
+    public PaginationViewModel Pagination { get; }
+
     public PaymentPageViewModel(IServiceProvider services)
     {
         customersApi = services.GetRequiredService<ICustomersApi>();
         currenciesApi = services.GetRequiredService<ICurrenciesApi>();
         paymentApi = services.GetRequiredService<IPaymentApi>();
         mapper = services.GetRequiredService<IMapper>();
+
+        Pagination = new PaginationViewModel(LoadPageAsync);
 
         payment = new();
         payment.PropertyChanged += OnPaymentFieldsChanged;
@@ -109,10 +113,25 @@ partial class PaymentPageViewModel : ViewModelBase
 
     private async Task LoadDatagrid()
     {
-        var request = new FilteringRequest { Filters = new() { ["paidAt"] = [$"{Payment.PaidAt ?? DateTime.Today:yyyy.MM.dd}"], ["customer"] = ["include"], ["currency"] = ["include"] } };
+        Pagination.Reset();
+        await LoadPageAsync();
+    }
+
+    private async Task LoadPageAsync()
+    {
+        var request = new FilteringRequest
+        {
+            Page = Pagination.Page,
+            PageSize = Pagination.PageSize,
+            Filters = new() { ["paidAt"] = [$"{Payment.PaidAt ?? DateTime.Today:yyyy.MM.dd}"], ["customer"] = ["include"], ["currency"] = ["include"] }
+        };
+
+        using var scope = PagingScope.Begin();
         var response = await paymentApi.FilterAsync(request).Handle(l => IsLoading = l);
-        if (response.IsSuccess)
-            HistoryPayments = mapper.Map<ObservableCollection<PaymentViewModel>>(response.Data);
+        if (!response.IsSuccess) return;
+
+        Pagination.Apply(PagingScope.Result);
+        PagedHistoryPayments = mapper.Map<ObservableCollection<PaymentViewModel>>(response.Data);
     }
 
     private async Task LoadCurrenciesAsync()

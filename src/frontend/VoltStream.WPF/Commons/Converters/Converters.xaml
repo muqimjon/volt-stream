@@ -15,5 +15,7 @@
     <converter:BoolToTextConverter x:Key="BoolToTextConverter" />
     <converter:InverseBoolToBoolConverter x:Key="InverseBoolToBoolConverter" />
     <converter:CountToBoolConverter x:Key="CountToBool" />
+    <converter:CountToEmptyVisibilityConverter x:Key="CountToEmptyVisibility" />
+    <converter:EnumToBooleanConverter x:Key="EnumToBoolean" />
 
 </ResourceDictionary>

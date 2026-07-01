@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 public class ConnectionTester(IServiceProvider services)
 {
-    private const int MaxRetries = 5;
+    private const int MaxRetries = 3;
     private const int InitialDelayMs = 500;
     
     public async Task<bool> TestAsync(Action<bool>? setLoading = null)

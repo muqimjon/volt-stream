@@ -19,6 +19,7 @@ public record DashboardDto
     public IReadOnlyList<TopCustomerDto> TopCustomers { get; init; } = [];
     public IReadOnlyList<TopProductDto> TopSellingProducts { get; init; } = [];
     public IReadOnlyList<DailySalesDto> WeeklySales { get; init; } = [];
+    public IReadOnlyList<DailySalesDto> WeeklyPayments { get; init; } = [];
 }
 
 public record TopCustomerDto
@@ -36,5 +37,6 @@ public record TopProductDto
 public record DailySalesDto
 {
     public DateTime Date { get; init; }
+    public string Label { get; init; } = string.Empty;
     public decimal Amount { get; init; }
 }

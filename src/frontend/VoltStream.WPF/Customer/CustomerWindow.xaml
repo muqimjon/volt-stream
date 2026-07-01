@@ -9,7 +9,7 @@
     xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
     Title="Yangi Xaridor"
     Width="440"
-    Height="300"
+    Height="430"
     AllowsTransparency="True"
     Background="Transparent"
     WindowStartupLocation="CenterScreen"
@@ -17,12 +17,10 @@
     ResizeMode="NoResize"
     mc:Ignorable="d">
 
-	<Border BorderBrush="LightGray" Margin="25"
-            BorderThickness="1" 
-            Background="White"  CornerRadius="5">
-		<Border.Effect>
-			<DropShadowEffect BlurRadius="20"       ShadowDepth="10"        Direction="270"        Color="Black"          Opacity="0.4"/>
-		</Border.Effect>
+	<Border BorderBrush="{DynamicResource Border}" Margin="25"
+            BorderThickness="1"
+            Background="{DynamicResource Surface}"  CornerRadius="{DynamicResource RadiusLg}"
+            Effect="{DynamicResource CardShadow}">
 
 		<Grid Margin="10">
 			<Grid.RowDefinitions>
@@ -39,14 +37,31 @@
 				<ColumnDefinition Width="*" />
 			</Grid.ColumnDefinitions>
 
-			<TextBlock
-                Margin="0,5"
-                Grid.ColumnSpan="2"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Center"
-                FontSize="14"
-                FontWeight="SemiBold"
-                Text="Yangi mijoz ma'lumotlari:" />
+			<Border Grid.Row="0" Grid.ColumnSpan="2"
+                    Background="{DynamicResource SurfaceAlt}"
+                    CornerRadius="{DynamicResource RadiusMd}"
+                    Padding="12,6"
+                    Margin="0,0,0,10">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<TextBlock VerticalAlignment="Center"
+                               Style="{StaticResource SubtitleText}"
+                               Text="Yangi mijoz ma'lumotlari" />
+					<Button Grid.Column="1"
+                            Style="{StaticResource IconButton}"
+                            Width="30" Height="30"
+                            IsCancel="True"
+                            ToolTip="Yopish">
+						<Path Width="12" Height="12"
+                              Stroke="{DynamicResource TextSecondary}"
+                              StrokeThickness="1.6"
+                              Data="M0,0 L12,12 M12,0 L0,12" />
+					</Button>
+				</Grid>
+			</Border>
 
 			<TextBlock
                 Grid.Row="1"
@@ -59,6 +74,7 @@
                 Grid.Row="1"
                 Grid.Column="1"
                 Margin="0,5"
+                Style="{StaticResource ModernTextBox}"
                 utils:TextBoxTabBehavior.EnableTabOnKeys="True"
                 FontSize="14" />
 			<TextBlock
@@ -72,6 +88,7 @@
                 Grid.Row="2"
                 Grid.Column="1"
                 Margin="0,5"
+                Style="{StaticResource ModernTextBox}"
                 utils:TextBoxTabBehavior.EnableTabOnKeys="True"
                 FontSize="14" />
 			<TextBlock
@@ -85,6 +102,7 @@
                 Grid.Row="3"
                 Grid.Column="1"
                 Margin="0,5"
+                Style="{StaticResource ModernTextBox}"
                 utils:TextBoxTabBehavior.EnableTabOnKeys="True"
                 FontSize="14" />
 			<TextBlock
@@ -102,31 +120,33 @@
                     Grid.Column="0"
                     Margin="15,5"
                     Panel.ZIndex="1"
-                    Foreground="IndianRed"
+                    Foreground="{DynamicResource Danger}"
                     IsHitTestVisible="False"
-                    Text="qazdorlik"
+                    Text="qarzdorlik"
                     Visibility="{Binding ElementName=txtBeginningSum, Path=Text.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
 				<TextBox
                     x:Name="txtBeginningSum"
                     Grid.Column="0"
                     Margin="0,5,3,5"
+                    Style="{StaticResource ModernTextBox}"
                     utils:NumericInput.IsNumeric="True"
                     utils:TextBoxTabBehavior.EnableTabOnKeys="True"
                     FontSize="14"
-                    Foreground="Red"
+                    Foreground="{DynamicResource Danger}"
                     Visibility="{Binding ElementName=txtBeginningSum2, Path=Text.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
 				<TextBlock
                     Grid.Column="1"
                     Margin="15,5"
                     Panel.ZIndex="1"
-                    Foreground="#888"
+                    Foreground="{DynamicResource TextSecondary}"
                     IsHitTestVisible="False"
-                    Text="xaqdorlik"
+                    Text="haqdorlik"
                     Visibility="{Binding ElementName=txtBeginningSum2, Path=Text.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
 				<TextBox
                     x:Name="txtBeginningSum2"
                     Grid.Column="1"
                     Margin="3,5,0,5"
+                    Style="{StaticResource ModernTextBox}"
                     utils:NumericInput.IsNumeric="True"
                     utils:TextBoxTabBehavior.EnableTabOnKeys="True"
                     FontSize="14"
@@ -143,6 +163,7 @@
                 Grid.Row="5"
                 Grid.Column="1"
                 Margin="0,5"
+                Style="{StaticResource ModernTextBox}"
                 utils:TextBoxTabBehavior.EnableTabOnKeys="True"
                 FontSize="14" />
 			<StackPanel
@@ -154,11 +175,13 @@
 				<Button
                     Width="100"
                     Margin="5"
+                    Style="{StaticResource PrimaryButton}"
                     Click="Save_Click"
                     Content="Saqlash" />
 				<Button
                     Width="100"
                     Margin="5"
+                    Style="{StaticResource SecondaryButton}"
                     Content="Bekor qilish"
                     IsCancel="True" />
 			</StackPanel>

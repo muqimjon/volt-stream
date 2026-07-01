@@ -111,7 +111,7 @@ public class CreateSaleCommandHandler(
             descriptionBuilder.Append($"{product.Name} - {item.TotalLength:N2} x {item.UnitPrice:N2} = {item.TotalAmount:N2}");
 
             if (item.DiscountAmount != 0)
-                descriptionBuilder.Append($" [ch: {item.DiscountRate}% = {item.DiscountAmount:N2}]");
+                descriptionBuilder.Append($" [ch: {item.DiscountRate:0.##}% = {item.DiscountAmount:N2}]");
 
             if (saleItems.IndexOf(item) < saleItems.Count - 1)
                 descriptionBuilder.Append(";\n");

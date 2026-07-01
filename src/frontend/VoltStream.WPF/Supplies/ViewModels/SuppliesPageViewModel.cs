@@ -25,6 +25,8 @@ public partial class SuppliesPageViewModel : ViewModelBase
     private readonly IWarehouseStocksApi warehouseItemsApi;
     private readonly IMapper mapper;
 
+    public PaginationViewModel Pagination { get; }
+
     public SuppliesPageViewModel(IServiceProvider services)
     {
         productsApi = services.GetRequiredService<IProductsApi>();
@@ -32,6 +34,8 @@ public partial class SuppliesPageViewModel : ViewModelBase
         suppliesApi = services.GetRequiredService<ISuppliesApi>();
         warehouseItemsApi = services.GetRequiredService<IWarehouseStocksApi>();
         mapper = services.GetRequiredService<IMapper>();
+
+        Pagination = new PaginationViewModel(LoadPageAsync);
 
         SelectedDate = DateTime.Now;
 
@@ -57,18 +61,17 @@ public partial class SuppliesPageViewModel : ViewModelBase
     [ObservableProperty] private decimal? discountRate;
     [ObservableProperty] private string? unit;
 
-    [ObservableProperty] private ObservableCollection<SupplyViewModel> supplies = [];
+    [ObservableProperty] private ObservableCollection<SupplyViewModel> pagedSupplies = [];
     [ObservableProperty] private SupplyViewModel? selectedSupply;
 
     [ObservableProperty] private SupplyViewModel? editingItemBackup;
-    private int editingItemIndex = -1;
     private bool _isFilingForm;
 
     public decimal? TotalQuantity => WarehouseStockValue * RollCount;
 
     #region Property Change Handlers
 
-    partial void OnSelectedDateChanged(DateTime value) => _ = LoadSuppliesAsync();
+    partial void OnSelectedDateChanged(DateTime value) => _ = ReloadAsync();
 
     partial void OnSelectedCategoryChanged(CategoryViewModel? value)
     {
@@ -165,7 +168,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
     {
         await Task.WhenAll(
             LoadCategoriesAsync(),
-            LoadSuppliesAsync()
+            LoadPageAsync()
         );
     }
 
@@ -192,26 +195,34 @@ public partial class SuppliesPageViewModel : ViewModelBase
         }
     }
 
-    private async Task LoadSuppliesAsync()
+    private FilteringRequest BuildFilters() => new()
     {
-        var filter = new FilteringRequest
+        Filters = new()
         {
-            Filters = new()
-            {
-                ["date"] = [$"{SelectedDate:yyyy-MM-dd}"],
-                ["product"] = ["include:category"]
-            },
-            Descending = true
-        };
+            ["date"] = [$"{SelectedDate:yyyy-MM-dd}"],
+            ["product"] = ["include:category"]
+        },
+        Descending = true
+    };
 
-        var result = await suppliesApi.Filter(filter).Handle(isLoading => IsLoading = isLoading);
-        if (result.IsSuccess)
-        {
-            Supplies.Clear();
-            foreach (var item in result.Data)
-                Supplies.Add(MapToViewModel(item));
-        }
-        else Error = result.Message ?? "Ta'minotlarni yuklashda xatolik";
+    private async Task ReloadAsync()
+    {
+        Pagination.Reset();
+        await LoadPageAsync();
+    }
+
+    private async Task LoadPageAsync()
+    {
+        var request = BuildFilters();
+        request.Page = Pagination.Page;
+        request.PageSize = Pagination.PageSize;
+
+        using var scope = PagingScope.Begin();
+        var response = await suppliesApi.Filter(request).Handle(isLoading => IsLoading = isLoading);
+        if (!response.IsSuccess) { Error = response.Message ?? "Ta'minotlarni yuklashda xatolik"; return; }
+
+        Pagination.Apply(PagingScope.Result);
+        PagedSupplies = new ObservableCollection<SupplyViewModel>(response.Data!.Select(MapToViewModel));
     }
 
     private async Task LoadWarehouseStocksAsync(long productId)
@@ -271,7 +282,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
         {
             if (IsEditing) ResetEditState();
             else ClearForm();
-            await LoadSuppliesAsync();
+            await ReloadAsync();
         }
         else Error = errorMsg;
     }
@@ -284,13 +295,8 @@ public partial class SuppliesPageViewModel : ViewModelBase
         if (IsFormDirty() && !Confirm("Formada saqlanmagan ma'lumotlar mavjud. Agar davom ettirsangiz, ular o'chib ketadi. Davom ettirishni istaysizmi?"))
             return;
 
-        if (editingItemIndex > -1 && EditingItemBackup is not null)
-            Supplies.Insert(editingItemIndex, EditingItemBackup);
-
         IsEditing = true;
         EditingItemBackup = item;
-        editingItemIndex = Supplies.IndexOf(item);
-        Supplies.Remove(item);
 
         await FillFormFromItem(item);
     }
@@ -300,14 +306,10 @@ public partial class SuppliesPageViewModel : ViewModelBase
 
     private void ResetEditState()
     {
-        if (!IsEditing || EditingItemBackup == null) return;
-        if (editingItemIndex >= 0) Supplies.Insert(editingItemIndex, EditingItemBackup);
-        else Supplies.Add(EditingItemBackup);
-
+        if (!IsEditing) return;
         ClearForm();
         IsEditing = false;
         EditingItemBackup = null;
-        editingItemIndex = -1;
     }
 
     [RelayCommand]
@@ -318,7 +320,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
         if (!Confirm("Haqiqatan ham o'chirmoqchimisiz?")) return;
 
         var response = await suppliesApi.DeleteSupplyAsync(item.Id).Handle(isLoading => IsLoading = isLoading);
-        if (response.IsSuccess && response.Data) Supplies.Remove(item);
+        if (response.IsSuccess && response.Data) await LoadPageAsync();
         else Error = response.Message ?? "O'chirishda xatolik yuz berdi.";
     }
 

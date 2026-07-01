@@ -25,6 +25,7 @@ public class ClientIpMiddleware(RequestDelegate next)
         }
 
         var allowed = await db.AllowedClients.FirstOrDefaultAsync(c => c.IpAddress == ip);
+        bool isActive;
 
         if (allowed is null)
         {
@@ -35,15 +36,17 @@ public class ClientIpMiddleware(RequestDelegate next)
                 CreatedAt = DateTime.UtcNow,
                 LastRequestAt = DateTime.UtcNow
             });
+            isActive = false;
         }
         else
         {
             allowed.LastRequestAt = DateTime.UtcNow;
+            isActive = allowed.IsActive;
         }
 
         await db.SaveAsync(default);
 
-        if (allowed is not null && !allowed.IsActive)
+        if (!isActive)
         {
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             await context.Response.WriteAsync("Forbidden: IP is blocked.");

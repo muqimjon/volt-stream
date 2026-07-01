@@ -12,10 +12,10 @@ public interface IAccountApi
     [Post("/accounts")]
     Task<Response<long>> CreateAsync([Body] AccountRequest request);
 
-    [Put("/accounts​")]
+    [Put("/accounts")]
     Task<Response<bool>> UpdateAsync([Body] AccountRequest request);
 
-    [Delete("/accounts​/{id}")]
+    [Delete("/accounts/{id}")]
     Task<Response<bool>> DeleteAsync(long id);
 
     [Get("/accounts/{id}")]

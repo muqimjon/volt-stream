@@ -784,15 +784,15 @@ public partial class SalesPage : Page
 
     private async Task LoadCurrencyAsync()
     {
-        FilteringRequest request = new() { Filters = new() { ["isdefault"] = ["true"] } };
+        var response = await currenciesApi.Filter(new FilteringRequest { Filters = new() }).Handle();
 
-        var response = await currenciesApi.Filter(request).Handle();
-
-        if (response.IsSuccess)
+        if (response.IsSuccess && response.Data is { Count: > 0 } currencies)
         {
-            CurrencyType.ItemsSource = response.Data;
+            CurrencyType.DisplayMemberPath = "Name";
             CurrencyType.SelectedValuePath = "Id";
-            CurrencyType.SelectedItem = response.Data.FirstOrDefault();
+            CurrencyType.ItemsSource = currencies;
+            var index = currencies.FindIndex(c => c.IsDefault);
+            CurrencyType.SelectedIndex = index >= 0 ? index : 0;
         }
     }
 

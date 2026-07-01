@@ -55,7 +55,7 @@ public partial class SalesHistoryPage : Page
             beginDate.Focus();
             return;
         }
-        await vm.LoadSalesHistoryAsync();
+        await vm.ReloadAsync();
 
     }
 
@@ -82,6 +82,6 @@ public partial class SalesHistoryPage : Page
             endDate.Focus();
             return;
         }
-        await vm.LoadSalesHistoryAsync();
+        await vm.ReloadAsync();
     }
 }

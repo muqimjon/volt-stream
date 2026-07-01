@@ -1,8 +1,10 @@
 ﻿namespace VoltStream.WebApi.Controllers.Common;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VoltStream.WebApi.Models;
 
+[AllowAnonymous]
 public class HealthController : BaseController
 {
     [HttpGet]

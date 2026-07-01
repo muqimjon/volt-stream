@@ -20,11 +20,12 @@ public partial class App : Application
     public static IServiceProvider? Services { get; private set; }
     private IHost? host;
 
+    private bool mainShown;
+
     protected override async void OnStartup(StartupEventArgs e)
     {
-        AppDomain.CurrentDomain.UnhandledException += (s, ev) =>
-            MessageBox.Show(ev.ExceptionObject.ToString(), "Jiddiy Xato!");
-
+        RegisterGlobalExceptionHandlers();
+        ThemeManager.Initialize();
         base.OnStartup(e);
 
         host = Host.CreateDefaultBuilder()
@@ -35,51 +36,71 @@ public partial class App : Application
             }).Build();
 
         Services = host.Services;
-
-        // Server manzilini login/API chaqiruvidan OLDIN aniqlab olamiz va TO'LIQ kutamiz.
-        // Saqlangan URL ishlasa — o'shani ishlatamiz; aks holda tarmoqdan avtomatik topamiz.
-        // Shu sabab dev (localhost) ham, production (Docker) ham static sozlovsiz ishlaydi.
-        // Discovery ichki jihatdan cheklangan (broadcast + skan parallel, har bir probe timeoutli),
-        // shuning uchun cheksiz osilib qolmaydi; topgunicha kutamiz, keyin login.
-        await EnsureServerDiscoveredAsync();
-
-        var secureCreds = DevKeyService.TryGetSecureCredentials();
-        bool autoLoginSuccess = false;
-
-        if (secureCreds.HasValue)
-        {
-            var loginViewModel = Services.GetRequiredService<LoginViewModel>();
-            loginViewModel.Username = secureCreds.Value.login;
-            loginViewModel.Password = secureCreds.Value.password;
-
-            var sessionService = Services.GetRequiredService<ISessionService>();
-
-            loginViewModel.LoginSucceeded += () =>
-            {
-                autoLoginSuccess = true;
-            };
-
-            await loginViewModel.Login();
-
-            if (autoLoginSuccess && sessionService.CurrentUser != null)
-            {
-                var mainWindow = Services.GetRequiredService<MainWindow>();
-                mainWindow.Show();
-                return;
-            }
-        }
+        await host.StartAsync();
 
         var loginWindow = Services.GetRequiredService<LoginWindow>();
         var vm = (LoginViewModel)loginWindow.DataContext!;
+        vm.LoginSucceeded += () => Dispatcher.Invoke(() => ShowMainWindow(loginWindow));
+        loginWindow.Show();
 
-        vm.LoginSucceeded += () =>
+        _ = TryAutoConnectAndLoginAsync(vm);
+    }
+
+    private async Task TryAutoConnectAndLoginAsync(LoginViewModel vm)
+    {
+        try
         {
-            var mainWindow = Services.GetRequiredService<MainWindow>();
-            mainWindow.Show();
-            loginWindow.Close();
+            var secureCreds = DevKeyService.TryGetSecureCredentials();
+            if (!secureCreds.HasValue)
+                return;
+
+            vm.Username = secureCreds.Value.login;
+            vm.Password = secureCreds.Value.password;
+
+            var apiConnection = Services!.GetRequiredService<ApiConnectionViewModel>();
+
+            for (var i = 0; i < 30 && !mainShown; i++)
+            {
+                if (await DiscoveryClient.IsAliveAsync(apiConnection.Url) && await vm.TryAutoLoginAsync())
+                    return;
+
+                await Task.Delay(1000);
+            }
+        }
+        catch { }
+    }
+
+    private void ShowMainWindow(Window loginWindow)
+    {
+        if (mainShown)
+            return;
+
+        mainShown = true;
+        var mainWindow = Services!.GetRequiredService<MainWindow>();
+        mainWindow.Show();
+        loginWindow.Close();
+    }
+
+    private void RegisterGlobalExceptionHandlers()
+    {
+        AppDomain.CurrentDomain.UnhandledException += (s, ev) =>
+            ShowError(ev.ExceptionObject as Exception);
+
+        DispatcherUnhandledException += (s, ev) =>
+        {
+            ShowError(ev.Exception);
+            ev.Handled = true;
         };
 
-        loginWindow.Show();
+        TaskScheduler.UnobservedTaskException += (s, ev) => ev.SetObserved();
+    }
+
+    private void ShowError(Exception? ex)
+    {
+        if (ex is null)
+            return;
+
+        Dispatcher.Invoke(() => MessageBox.Show(ex.Message, "Jiddiy Xato!"));
     }
 
     protected override async void OnExit(ExitEventArgs e)
@@ -89,34 +110,6 @@ public partial class App : Application
 
         host?.Dispose();
         base.OnExit(e);
-    }
-
-    // Serverni topib, ApiConnectionViewModel.Url ni o'rnatadi (auto-save config'ga yozadi).
-    private static async Task EnsureServerDiscoveredAsync()
-    {
-        if (Services is null)
-            return;
-
-        var apiConnection = Services.GetRequiredService<ApiConnectionViewModel>();
-        DiscoveryClient.ResetDiag();
-
-        // 1) Saqlangan URL hali ishlayaptimi? (tez yo'l — har safar qaytadan qidirmaymiz)
-        var savedAlive = await DiscoveryClient.IsAliveAsync(apiConnection.Url);
-        DiscoveryClient.Diag($"Startup: saqlangan url='{apiConnection.Url}' tirik={savedAlive}");
-        if (savedAlive)
-            return;
-
-        // 2) Aks holda tarmoqdan avtomatik topamiz (broadcast + LAN skan parallel).
-        var uri = await DiscoveryClient.DiscoverAsync();
-        if (uri is not null)
-        {
-            apiConnection.Url = $"{uri.Scheme}://{uri.Host}:{uri.Port}/";
-            DiscoveryClient.Diag($"Startup: url o'rnatildi = {apiConnection.Url}");
-        }
-        else
-        {
-            DiscoveryClient.Diag("Startup: server TOPILMADI — eski url o'zgarmadi");
-        }
     }
 
     private static void ConfigureUiServices(IServiceCollection services)

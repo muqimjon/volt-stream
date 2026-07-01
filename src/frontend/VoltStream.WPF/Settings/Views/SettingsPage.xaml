@@ -4,16 +4,35 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:modules="clr-namespace:VoltStream.WPF.Settings.Views.Modules"
       xmlns:controls="clr-namespace:VoltStream.WPF.Commons.UserControls"
+      xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+      Background="{DynamicResource Canvas}"
       Title="Sozlamalar">
 	<Grid Margin="10">
-		<TabControl x:Name="SettingsTabControl" FontSize="14" SelectionChanged="SettingsTabControl_SelectionChanged">
+		<TabControl x:Name="SettingsTabControl" FontSize="{DynamicResource FontSizeBody}" SelectionChanged="SettingsTabControl_SelectionChanged">
 
-			<TabItem Header="Aloqa">
+			<TabItem>
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<fa:IconImage Icon="Plug" Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center"
+                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}" />
+						<TextBlock Text="Aloqa" VerticalAlignment="Center" />
+					</StackPanel>
+				</TabItem.Header>
 				<modules:ConnectionSettingsView DataContext="{Binding ApiConnection}" />
 			</TabItem>
 
-			<TabItem Header="Valyutalar">
-				<controls:AdminLockOverlay x:Name="CurrencyLock" 
+			<TabItem>
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<fa:IconImage Icon="Coins" Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center"
+                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}" />
+						<TextBlock Text="Valyutalar" VerticalAlignment="Center" />
+						<fa:IconImage Icon="Lock" Width="11" Height="11" Margin="8,0,0,0" VerticalAlignment="Center"
+                                      Foreground="{DynamicResource TextTertiary}"
+                                      Visibility="{Binding IsLocked, ElementName=CurrencyLock, Converter={StaticResource BooleanToVisibilityConverter}}" />
+					</StackPanel>
+				</TabItem.Header>
+				<controls:AdminLockOverlay x:Name="CurrencyLock"
                                           DataContext="{Binding ElementName=RootPage, Path=DataContext}"
                                           LockMessage="Valyuta sozlamalari bloklangan">
 					<controls:AdminLockOverlay.InnerContent>
@@ -22,7 +41,17 @@
 				</controls:AdminLockOverlay>
 			</TabItem>
 
-			<TabItem Header="Kategoriyalar">
+			<TabItem>
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<fa:IconImage Icon="Tags" Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center"
+                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}" />
+						<TextBlock Text="Kategoriyalar" VerticalAlignment="Center" />
+						<fa:IconImage Icon="Lock" Width="11" Height="11" Margin="8,0,0,0" VerticalAlignment="Center"
+                                      Foreground="{DynamicResource TextTertiary}"
+                                      Visibility="{Binding IsLocked, ElementName=CategoryLock, Converter={StaticResource BooleanToVisibilityConverter}}" />
+					</StackPanel>
+				</TabItem.Header>
 				<controls:AdminLockOverlay x:Name="CategoryLock"
                                           DataContext="{Binding ElementName=RootPage, Path=DataContext.CategorySettings}"
                                           LockMessage="Kategoriyalarni tahrirlash cheklangan">
@@ -32,7 +61,17 @@
 				</controls:AdminLockOverlay>
 			</TabItem>
 
-			<TabItem Header="Mahsulotlar">
+			<TabItem>
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<fa:IconImage Icon="Boxes" Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center"
+                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}" />
+						<TextBlock Text="Mahsulotlar" VerticalAlignment="Center" />
+						<fa:IconImage Icon="Lock" Width="11" Height="11" Margin="8,0,0,0" VerticalAlignment="Center"
+                                      Foreground="{DynamicResource TextTertiary}"
+                                      Visibility="{Binding IsLocked, ElementName=ProductLock, Converter={StaticResource BooleanToVisibilityConverter}}" />
+					</StackPanel>
+				</TabItem.Header>
 				<controls:AdminLockOverlay x:Name="ProductLock"
                                           DataContext="{Binding ElementName=RootPage, Path=DataContext.ProductSettings}"
                                           LockMessage="Mahsulotlar omboriga ruxsat talab qilinadi">
@@ -42,7 +81,17 @@
 				</controls:AdminLockOverlay>
 			</TabItem>
 
-			<TabItem Header="Mijozlar">
+			<TabItem>
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<fa:IconImage Icon="Users" Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center"
+                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}" />
+						<TextBlock Text="Mijozlar" VerticalAlignment="Center" />
+						<fa:IconImage Icon="Lock" Width="11" Height="11" Margin="8,0,0,0" VerticalAlignment="Center"
+                                      Foreground="{DynamicResource TextTertiary}"
+                                      Visibility="{Binding IsLocked, ElementName=CustomerLock, Converter={StaticResource BooleanToVisibilityConverter}}" />
+					</StackPanel>
+				</TabItem.Header>
 				<controls:AdminLockOverlay x:Name="CustomerLock"
                                           DataContext="{Binding ElementName=RootPage, Path=DataContext.CustomerSettings}"
                                           LockMessage="Mijozlar ma'lumotlari himoyalangan">

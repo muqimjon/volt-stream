@@ -18,6 +18,7 @@ public static class DependencyInjection
         services.AddHostedService<SimpleDiscoveryResponder>();
 
         services.AddControllers(opt => opt.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())))
+                .AddApplicationPart(typeof(DependencyInjection).Assembly)
                 .AddJsonOptions(opt => opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
         services.AddOpenApi(options =>
@@ -62,7 +63,9 @@ public static class DependencyInjection
 
     public static void UseVoltStreamPipeline(this WebApplication app)
     {
-        app.UseHttpsRedirection();
+        app.UseWhen(
+            ctx => !ctx.Request.Path.StartsWithSegments("/api/health"),
+            b => b.UseHttpsRedirection());
         app.UseStaticFiles();
         app.UseCors(s => s.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
         app.UseAuthentication();

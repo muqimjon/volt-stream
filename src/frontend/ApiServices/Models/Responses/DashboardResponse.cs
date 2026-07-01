@@ -15,6 +15,7 @@ public record DashboardResponse
     public List<TopCustomerResponse> TopCustomers { get; set; } = [];
     public List<TopProductResponse> TopSellingProducts { get; set; } = [];
     public List<DailySalesResponse> WeeklySales { get; set; } = [];
+    public List<DailySalesResponse> WeeklyPayments { get; set; } = [];
 }
 
 public record TopCustomerResponse
@@ -32,5 +33,6 @@ public record TopProductResponse
 public record DailySalesResponse
 {
     public DateTime Date { get; set; }
+    public string Label { get; set; } = string.Empty;
     public decimal Amount { get; set; }
 }

@@ -3,308 +3,158 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:VoltStream.WPF.LoginPages.Views"
+        xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
         xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
-        xmlns:converter="clr-namespace:VoltStream.WPF.Commons.Converters"
         mc:Ignorable="d"
-        Title="LoginView"
-        Height="550"
-        Width="800"
+        Title="VoltStream"
+        Height="560"
+        Width="900"
         WindowStyle="None"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Background="Transparent"
         AllowsTransparency="True">
 
-    <Border CornerRadius="12">
-        <Border.Background>
-            <ImageBrush ImageSource="/Commons/Source/Images/oramkabel.png"
-                        Stretch="Uniform" />
-        </Border.Background>
+    <Window.Resources>
+        <Style x:Key="LoginPasswordBox" TargetType="PasswordBox">
+            <Setter Property="Height" Value="{DynamicResource ControlHeight}" />
+            <Setter Property="FontSize" Value="{DynamicResource FontSizeBody}" />
+            <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            <Setter Property="Background" Value="{DynamicResource Surface}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderStrong}" />
+            <Setter Property="CaretBrush" Value="{DynamicResource TextPrimary}" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border x:Name="bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1.5"
+                                CornerRadius="{DynamicResource RadiusMd}">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource Focus}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 
-        <Border CornerRadius="10"                    
-           BorderThickness="2"
-           Opacity="0.93">
+    <Border CornerRadius="14" Background="{DynamicResource Canvas}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="420" />
+            </Grid.ColumnDefinitions>
 
-            <Border.BorderBrush>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="{StaticResource winBorderColor1}" Offset="0"/>
-                    <GradientStop Color="{StaticResource winBorderColor2}" Offset="0.75"/>
-                    <GradientStop Color="{StaticResource winBorderColor3}" Offset="1"/>
-                </LinearGradientBrush>
-            </Border.BorderBrush>
+            <!--  Brand panel  -->
+            <Border CornerRadius="14,0,0,14">
+                <Border.Background>
+                    <ImageBrush ImageSource="/Commons/Source/Images/oramkabel.png" Stretch="UniformToFill" />
+                </Border.Background>
+                <Border>
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="{DynamicResource BrandPressedColor}" Offset="0" />
+                            <GradientStop Color="{DynamicResource BrandColor}" Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Border.OpacityMask>
+                        <SolidColorBrush Color="Black" Opacity="0.82" />
+                    </Border.OpacityMask>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Image Width="110" Height="110" Source="/Commons/Source/Images/LogoVolt.png" />
+                        <TextBlock Margin="0,12,0,0"
+                                   HorizontalAlignment="Center"
+                                   FontSize="34"
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   Text="VoltStream" />
+                        <TextBlock Width="280"
+                                   Margin="0,8,0,0"
+                                   HorizontalAlignment="Center"
+                                   Foreground="#E6E9F0"
+                                   TextAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   Text="Kabel zavodi hisob-kitobini oson va tez boshqaring." />
+                    </StackPanel>
+                </Border>
+            </Border>
 
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0,1" EndPoint="1,0">
-                    <GradientStop Color="{StaticResource primaryBackColor1}" Offset="0"/>
-                    <GradientStop Color="{StaticResource primaryBackColor2}" Offset="1"/>
-                </LinearGradientBrush>
-            </Border.Background>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="30"/>
-					<RowDefinition/>
-					<RowDefinition Height="Auto"/>
-				</Grid.RowDefinitions>
+            <!--  Form panel  -->
+            <Border Grid.Column="1" Background="{DynamicResource Surface}" CornerRadius="0,14,14,0">
+                <Grid Margin="40,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0">
-
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition Width="25"/>
-                        <ColumnDefinition Width="25"/>
-                        <ColumnDefinition Width="5"/>
-                    </Grid.ColumnDefinitions>
-
-                    <TextBlock Text="LOG IN"
-                              Foreground="DarkGray"
-                              FontSize="10"
-                              FontFamily="Montserrat"
-                              Grid.Column="0"
-                              VerticalAlignment="Center"
-                              Margin="10,0,0,0"/>
-
-                    <Button x:Name="btnMinimize" 
-                            Focusable="False"
-                           BorderThickness="0"
-                           Content="-"
-                           Foreground="White"
-                           FontSize="16"
-                           FontFamily="Montserrat"
-                           Cursor="Hand"
-                           Grid.Column="1"
-                            Click="BtnMinimize_Click">
-
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Background" Value="#28AEED"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#278BEF"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Width="18" Height="18"
-                                       CornerRadius="9"
-                                       Background="{TemplateBinding Background}">
-                                    <ContentPresenter VerticalAlignment="Center"
-                                                     HorizontalAlignment="Center"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-
-                    </Button>
-
-                    <Button x:Name="btnClose"
-                            Focusable="False"
-                           BorderThickness="0"
-                           Content="X"
-                           Foreground="White"
-                           FontSize="12"
-                           FontFamily="Montserrat"
-                           Cursor="Hand"
-                           Grid.Column="2"
-                            Click="BtnClose_Click">
-
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Background" Value="#DA34AE"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#C62DAE"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Width="18" Height="18"
-                                       CornerRadius="9"
-                                       Background="{TemplateBinding Background}">
-                                    <ContentPresenter VerticalAlignment="Center"
-                                                     HorizontalAlignment="Center"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
-                </Grid>
-
-				<StackPanel Width="240"
-                           Grid.Row="1"
-                           Orientation="Vertical">
-
-					<Image Source="/Commons/Source/Images/LogoVolt.png"
-                          Width="100" Height="100" />
-
-					<TextBlock Text="VoltStream"
-                              Foreground="White"
-                              FontSize="35"
-                              FontWeight="Medium"
-                              FontFamily="Montserrat"
-                              HorizontalAlignment="Center"/>
-
-					<TextBlock Text="Using the program expands your capabilities and saves you time."
-                              Foreground="LightGray"
-                              FontSize="12"
-                              FontWeight="Medium"
-                              FontFamily="Montserrat"
-                              TextWrapping="Wrap"
-                              TextAlignment="Center"
-                              Margin="0,5,0,0"/>
-
-
-					<TextBlock Text="Username"
-                              Foreground="DarkGray"
-                              FontSize="12"
-                              FontWeight="Medium"
-                              FontFamily="Montserrat"                             
-                              Margin="0,35,0,0"/>
-
-					<TextBox x:Name="txtUser"
-                            Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
-                            FontSize="16"
-                            FontWeight="Medium"
-                            FontFamily="Montserrat"                            
-                            Foreground="White"
-                            CaretBrush="LightGray"
-                            BorderBrush="DarkGray"
-                            BorderThickness="0,0,0,2"
-                            Height="28"
-                            VerticalContentAlignment="Center"
-                            Margin="0,5,0,20"
-                            Padding="20,0,0,0"
-                            utils:EnterKeyTab.IsEnabled="True"
-                             >
-
-						<TextBox.Background>
-							<ImageBrush ImageSource="/Commons/Source/Images/user-icon.png"
-                                       Stretch="None"
-                                       AlignmentX="Left"/>
-						</TextBox.Background>
-					</TextBox>
-
-					<TextBlock Text="Password"
-                              Foreground="DarkGray"
-                              FontSize="12"
-                              FontWeight="Medium"
-                              FontFamily="Montserrat"                             
-                              Margin="0,15,0,0"/>
-					<PasswordBox x:Name="tbxPassword"
-                                 PasswordChanged="TbxPassword_PasswordChanged"
-                                 FontSize="16"
-                                 FontWeight="Medium"
-                                 FontFamily="Montserrat"                            
-                                 Foreground="White"
-                                 CaretBrush="LightGray"
-                                 BorderBrush="DarkGray"
-                                 BorderThickness="0,0,0,2"
-                                PreviewKeyDown="TbxPassword_PreviewKeyDown"
-                                 Height="28"
-                                 VerticalContentAlignment="Center"
-                                 Margin="0,5,0,0"
-                                 Padding="20,0,0,0"
-                                 utils:EnterKeyTab.IsEnabled="True">
-						<PasswordBox.Background>
-							<ImageBrush ImageSource="/VoltStream.WPF;component/Commons/Source/Images/key-icon.png"
-                                        Stretch="None"
-                                        AlignmentX="Left"/>
-						</PasswordBox.Background>
-					</PasswordBox>
-
-
-					<TextBlock Text="{Binding Error}"
-                              Foreground="#FF6B6B"
-                              FontSize="12"
-                              FontFamily="Montserrat"
-                              TextWrapping="Wrap"
-                              Margin="0,10,0,0"
-                              Visibility="{Binding Error, Converter={StaticResource StringToVisibilityConverter}}"/>
-
-					<TextBlock Text="{Binding Success}"
-                                Foreground="#51CF66"
-                                FontSize="12"
-                                FontFamily="Montserrat"
-                                TextWrapping="Wrap"
-                                Margin="0,15,0,0"
-                                Visibility="{Binding Success, Converter={StaticResource StringToVisibilityConverter}}"/>
-
-					<TextBlock Text="{Binding Warning}"
-                                  Foreground="#FFD43B"
-                                  FontSize="12"
-                                  FontFamily="Montserrat"
-                                  TextWrapping="Wrap"
-                                  Margin="0,15,0,0"
-                                  Visibility="{Binding Warning, Converter={StaticResource StringToVisibilityConverter}}"/>
-				</StackPanel>
-
-				<StackPanel Grid.Row="2"
-                            Orientation="Vertical"
-                            Width="150"
-                            VerticalAlignment="Center"
-                            Margin="0 0 0 50">
-					<Button x:Name="btnLogin" 
-                            Command="{Binding LoginCommand}"
-                            IsEnabled="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            BorderThickness="0"
-                            Content="LOG IN"
-                            Foreground="White"
-                            FontSize="12"
-                            FontFamily="Montserrat"
-                            Cursor="Hand"                           
-                            Margin="0,20,0,0">
-
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Background" Value="#462AD8"/>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#28AEED"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Button.Style>
-
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Width="150" Height="40"
-                                       CornerRadius="20"
-                                       Background="{TemplateBinding Background}">
-                                    <ContentPresenter VerticalAlignment="Center"
-                                                     HorizontalAlignment="Center"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
-
-                    <StackPanel Orientation="Horizontal"
-                               HorizontalAlignment="Center"
-                               Margin="0,15,0,0">
-
-                        <TextBlock Text="Forgot Password?"
-                              Foreground="DarkGray"
-                              FontSize="12"
-                              FontWeight="Medium"
-                              FontFamily="Montserrat"/>
-
-                        <TextBlock Text="Reset"
-                              Foreground="White"
-                              FontSize="12"
-                              FontWeight="Medium"
-                              FontFamily="Montserrat"
-                              Cursor="Hand"
-                              Margin="8,0,0,0"/>
-
+                    <StackPanel Grid.Row="0" HorizontalAlignment="Right" Orientation="Horizontal">
+                        <Button x:Name="btnMinimize" Click="BtnMinimize_Click" Style="{StaticResource IconButton}" Width="30" Height="28" ToolTip="Kichraytirish">
+                            <Path Data="M 0,8 H 10" Stroke="{DynamicResource TextSecondary}" StrokeThickness="1.5" />
+                        </Button>
+                        <Button x:Name="btnClose" Click="BtnClose_Click" Style="{StaticResource IconButton}" Width="30" Height="28" Margin="6,0,0,0" ToolTip="Yopish">
+                            <Path Data="M 0,0 L 10,10 M 0,10 L 10,0" Stroke="{DynamicResource TextSecondary}" StrokeThickness="1.5" />
+                        </Button>
                     </StackPanel>
 
-                </StackPanel>
+                    <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                        <TextBlock FontSize="{DynamicResource FontSizeDisplay}" FontWeight="Bold" Text="Xush kelibsiz" />
+                        <TextBlock Margin="0,4,0,0" Foreground="{DynamicResource TextSecondary}" Text="Davom etish uchun tizimga kiring" />
 
-            </Grid>
-        </Border>
+                        <TextBlock Margin="0,28,0,6" Style="{StaticResource FieldLabel}" Text="Foydalanuvchi nomi" />
+                        <Grid>
+                            <TextBox x:Name="txtUser"
+                                     Style="{StaticResource ModernTextBox}"
+                                     Padding="38,0,10,0"
+                                     Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                                     utils:EnterKeyTab.IsEnabled="True" />
+                            <fa:IconImage Width="15" Height="15" Margin="12,0,0,0"
+                                          HorizontalAlignment="Left" VerticalAlignment="Center"
+                                          Foreground="{DynamicResource TextTertiary}" Icon="User" IsHitTestVisible="False" />
+                        </Grid>
 
+                        <TextBlock Margin="0,16,0,6" Style="{StaticResource FieldLabel}" Text="Parol" />
+                        <Grid>
+                            <PasswordBox x:Name="tbxPassword"
+                                         Style="{StaticResource LoginPasswordBox}"
+                                         Padding="38,0,10,0"
+                                         PasswordChanged="TbxPassword_PasswordChanged"
+                                         PreviewKeyDown="TbxPassword_PreviewKeyDown"
+                                         utils:EnterKeyTab.IsEnabled="True" />
+                            <fa:IconImage Width="15" Height="15" Margin="12,0,0,0"
+                                          HorizontalAlignment="Left" VerticalAlignment="Center"
+                                          Foreground="{DynamicResource TextTertiary}" Icon="Lock" IsHitTestVisible="False" />
+                        </Grid>
+
+                        <TextBlock Margin="0,12,0,0" Foreground="{DynamicResource Danger}" TextWrapping="Wrap"
+                                   Text="{Binding Error}"
+                                   Visibility="{Binding Error, Converter={StaticResource StringToVisibilityConverter}}" />
+                        <TextBlock Margin="0,12,0,0" Foreground="{DynamicResource Success}" TextWrapping="Wrap"
+                                   Text="{Binding Success}"
+                                   Visibility="{Binding Success, Converter={StaticResource StringToVisibilityConverter}}" />
+                        <TextBlock Margin="0,12,0,0" Foreground="{DynamicResource Warning}" TextWrapping="Wrap"
+                                   Text="{Binding Warning}"
+                                   Visibility="{Binding Warning, Converter={StaticResource StringToVisibilityConverter}}" />
+
+                        <Button x:Name="btnLogin"
+                                Margin="0,24,0,0"
+                                Command="{Binding LoginCommand}"
+                                IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolToBoolConverter}}"
+                                Style="{StaticResource PrimaryButton}"
+                                Content="KIRISH" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
     </Border>
 </Window>

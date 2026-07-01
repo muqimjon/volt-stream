@@ -18,4 +18,12 @@ public class CustomersController
     [HttpPost("filter")]
     public async Task<IActionResult> GetFiltered(CustomerFilterQuery query)
         => Ok(new Response { Data = await Mediator.Send(query) });
+
+    [HttpPost("balances")]
+    public async Task<IActionResult> GetBalances(CustomerBalanceQuery query)
+        => Ok(new Response { Data = await Mediator.Send(query) });
+
+    [HttpPost("balances/summary")]
+    public async Task<IActionResult> GetBalancesSummary(CustomerBalanceSummaryQuery query)
+        => Ok(new Response { Data = await Mediator.Send(query) });
 }

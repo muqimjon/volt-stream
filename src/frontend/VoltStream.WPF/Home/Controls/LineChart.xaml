@@ -1,0 +1,12 @@
+<UserControl
+    x:Class="VoltStream.WPF.Home.Controls.LineChart"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Canvas
+        x:Name="canvas"
+        Background="Transparent"
+        ClipToBounds="True"
+        MouseLeave="OnMouseLeave"
+        MouseMove="OnMouseMove"
+        SizeChanged="OnSizeChanged" />
+</UserControl>

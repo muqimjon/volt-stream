@@ -6,17 +6,16 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <!--  begin::Converters  -->
+                <ResourceDictionary Source="pack://application:,,,/VoltStream.WPF;component/Commons/Styles/Theme/Tokens.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/VoltStream.WPF;component/Commons/Styles/Theme/Light.xaml" />
+
                 <ResourceDictionary Source="pack://application:,,,/VoltStream.WPF;component/Commons/Converters/Converters.xaml" />
-                <!--  end::Converters  -->
 
                 <ResourceDictionary Source="pack://application:,,,/VoltStream.WPF;component/Commons/Styles/ButtonStyles.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/VoltStream.WPF;component/Commons/Styles/Colors.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/VoltStream.WPF;component/Commons/Styles/FloatingLable.xaml" />
-
-
                 <ResourceDictionary Source="/Commons/Styles/ScrollBarStyles.xaml" />
                 <ResourceDictionary Source="/Commons/Styles/ModernControls.xaml" />
+                <ResourceDictionary Source="/Commons/Styles/BaseStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
 

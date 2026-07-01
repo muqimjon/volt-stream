@@ -7,40 +7,43 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
     Title="To'lovni tahrirlash"
+    Background="{DynamicResource Canvas}"
     d:DesignHeight="450"
     d:DesignWidth="950"
     mc:Ignorable="d">
 
 	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto" />
-			<RowDefinition Height="*" />
-			<RowDefinition Height="Auto" />
-		</Grid.RowDefinitions>
-
-		<!-- Yuqori qism -->
-		<Grid Grid.Row="0" Margin="10">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="350" />
-				<ColumnDefinition Width="*" />
-			</Grid.ColumnDefinitions>
-
-			<!-- Chap tomon -->
-			<Grid Grid.Column="0">
+		<Border Style="{StaticResource CardBorder}" Margin="10">
+			<Grid>
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto" />
-					<RowDefinition Height="Auto" />
+					<RowDefinition Height="*" />
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto" />
-					<ColumnDefinition Width="*" />
-				</Grid.ColumnDefinitions>
 
-				<Label Grid.Row="0" Content="Sana:" VerticalAlignment="Center" FontSize="14" Margin="5,0,0,0" />
-				<Label Grid.Row="1" Content="Mijoz:" VerticalAlignment="Center" FontSize="14" Margin="5,0,0,0" />
-				<Label Grid.Row="2" Content="Val. turi:" VerticalAlignment="Center" FontSize="14" Margin="5,0,0,0" />
-				<controls:UserCalendar
+				<!-- Yuqori qism -->
+				<Grid Grid.Row="0">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="350" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+
+					<!-- Chap tomon -->
+					<Grid Grid.Column="0">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+							<RowDefinition Height="Auto" />
+						</Grid.RowDefinitions>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+
+						<Label Grid.Row="0" Content="Sana:" VerticalAlignment="Center" FontSize="14" Margin="5,0,0,0" />
+						<Label Grid.Row="1" Content="Mijoz:" VerticalAlignment="Center" FontSize="14" Margin="5,0,0,0" />
+						<Label Grid.Row="2" Content="Val. turi:" VerticalAlignment="Center" FontSize="14" Margin="5,0,0,0" />
+						<controls:UserCalendar
                         Grid.Column="1"
                         Width="150"
                         Margin="5,5,30,5"
@@ -49,9 +52,9 @@
                         utils:EnterKeyTab.IsEnabled="True"
                         FontSize="14"
                         SelectedDate="{Binding Payment.PaidAt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-				
 
-				<ComboBox
+
+						<ComboBox
                     Grid.Row="1"
                     Grid.Column="1"
                     Margin="5"
@@ -59,171 +62,165 @@
                     FontSize="14"
                     IsEditable="False"
                     IsEnabled="False"
+                    Style="{StaticResource ModernCombo}"
                     ItemsSource="{Binding Customers}"
                     SelectedItem="{Binding Payment.Customer}" />
 
-				<Grid Grid.Row="2" Grid.Column="1">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*" />
-						<ColumnDefinition Width="Auto" />
-						<ColumnDefinition Width="70" />
-					</Grid.ColumnDefinitions>
+						<Grid Grid.Row="2" Grid.Column="1">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="70" />
+							</Grid.ColumnDefinitions>
 
-					<ComboBox
+							<ComboBox
                         Margin="5"
                         DisplayMemberPath="Name"
                         FontSize="14"
                         IsEditable="False"
                         IsEnabled="False"
+                        Style="{StaticResource ModernCombo}"
                         ItemsSource="{Binding Currencies}"
                         SelectedItem="{Binding Payment.Currency}" />
 
-					<TextBlock
+							<TextBlock
                         Grid.Column="1"
                         Margin="20,2,5,2"
                         VerticalAlignment="Center"
                         FontSize="14"
                         Text="kurs /(%)" />
 
-					<TextBox
+							<TextBox
                         Grid.Column="2"
                         Margin="5,2"
                         FontSize="14"
                         IsEnabled="{Binding Payment.Currency.IsEditable}"
+                        Style="{StaticResource ModernTextBox}"
                         Text="{Binding Payment.ExchangeRate}"
                         utils:NumericInput.IsNumeric="True" />
-				</Grid>
-			</Grid>
+						</Grid>
+					</Grid>
 
-			<!-- O'ng tomon -->
-			<Grid Grid.Column="1">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="210" />
-					<ColumnDefinition Width="*" />
-				</Grid.ColumnDefinitions>
+					<!-- O'ng tomon -->
+					<Grid Grid.Column="1">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="210" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
 
-				<Grid Grid.Column="0">
-					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto" />
-						<RowDefinition Height="Auto" />
-						<RowDefinition Height="Auto" />
-					</Grid.RowDefinitions>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="Auto" />
-						<ColumnDefinition Width="*" />
-					</Grid.ColumnDefinitions>
+						<Grid Grid.Column="0">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
 
-					<Label Content="Summa:" FontSize="12" FontStyle="Italic" Foreground="#888" Margin="5,0,0,0" VerticalAlignment="Center" />
-					<Label Grid.Row="1" Content="Kirim:" FontSize="14" Margin="5,0,0,0" VerticalAlignment="Center" />
-					<Label Grid.Row="2" Content="Chiqim:" FontSize="14" Margin="5,0,0,0" VerticalAlignment="Center" />
+							<Label Content="Summa:" FontSize="12" FontStyle="Italic" Foreground="{DynamicResource TextSecondary}" Margin="5,0,0,0" VerticalAlignment="Center" />
+							<Label Grid.Row="1" Content="Kirim:" FontSize="14" Margin="5,0,0,0" VerticalAlignment="Center" />
+							<Label Grid.Row="2" Content="Chiqim:" FontSize="14" Margin="5,0,0,0" VerticalAlignment="Center" />
 
-					<TextBox
+							<TextBox
                         Grid.Column="1"
                         Margin="5,2"
-                        Background="Transparent"
-                        BorderThickness="0"
                         FontSize="14"
-                        FontStyle="Italic"
-                        IsReadOnly="True"
-                        IsTabStop="False"
+                        Style="{StaticResource ReadOnlyValue}"
                         Text="{Binding Payment.Amount, StringFormat=N2}"
                         utils:NumericInput.IsNumeric="True" />
 
-					<TextBox
+							<TextBox
                         Grid.Row="1"
                         Grid.Column="1"
                         Margin="5,2"
                         FontSize="14"
                         IsEnabled="{Binding Payment.IsIncomeEnabled}"
+                        Style="{StaticResource ModernTextBox}"
                         Text="{Binding Payment.IncomeAmount}"
                         utils:NumericInput.IsNumeric="True" />
 
-					<TextBox
+							<TextBox
                         Grid.Row="2"
                         Grid.Column="1"
                         Margin="5,2"
                         FontSize="14"
                         IsEnabled="{Binding Payment.IsExpenseEnabled}"
+                        Style="{StaticResource ModernTextBox}"
                         Text="{Binding Payment.ExpenseAmount}"
                         utils:NumericInput.IsNumeric="True" />
-				</Grid>
+						</Grid>
 
-				<Grid Grid.Column="1">
-					<Grid.RowDefinitions>
-						<RowDefinition Height="Auto" />
-						<RowDefinition Height="Auto" />
-					</Grid.RowDefinitions>
+						<Grid Grid.Column="1">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto" />
+								<RowDefinition Height="Auto" />
+							</Grid.RowDefinitions>
 
-					<Grid Grid.Row="0">
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="Auto" />
-							<ColumnDefinition Width="Auto" />
-							<ColumnDefinition Width="Auto" />
-							<ColumnDefinition Width="Auto" />
-						</Grid.ColumnDefinitions>
+							<Grid Grid.Row="0">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto" />
+									<ColumnDefinition Width="Auto" />
+									<ColumnDefinition Width="Auto" />
+									<ColumnDefinition Width="Auto" />
+								</Grid.ColumnDefinitions>
 
-						<TextBlock Text="Balans:" FontSize="12" FontStyle="Italic" Foreground="#888" Margin="5,0,0,0" VerticalAlignment="Center" />
-						<TextBox
+								<TextBlock Text="Balans:" FontSize="12" FontStyle="Italic" Foreground="{DynamicResource TextSecondary}" Margin="5,0,0,0" VerticalAlignment="Center" />
+								<TextBox
                             Grid.Column="1"
                             Margin="5,2"
-                            Background="Transparent"
-                            BorderThickness="0"
                             FontSize="14"
-                            FontStyle="Italic"
-                            IsReadOnly="True"
+                            Style="{StaticResource ReadOnlyValue}"
                             Text="{Binding BeginBalance, StringFormat=N2}"
                             utils:NumericInput.IsNumeric="True" />
 
-						<TextBlock Grid.Column="2" Text="Natija:" FontSize="12" FontStyle="Italic" Foreground="#888" Margin="5,0,0,0" VerticalAlignment="Center" />
-						<TextBox
+								<TextBlock Grid.Column="2" Text="Natija:" FontSize="12" FontStyle="Italic" Foreground="{DynamicResource TextSecondary}" Margin="5,0,0,0" VerticalAlignment="Center" />
+								<TextBox
                             Grid.Column="3"
                             Margin="5,2"
-                            Background="Transparent"
-                            BorderThickness="0"
                             FontSize="14"
-                            FontStyle="Italic"
-                            IsReadOnly="True"
+                            Style="{StaticResource ReadOnlyValue}"
                             Text="{Binding LastBalance, StringFormat=N2}"
                             utils:NumericInput.IsNumeric="True" />
-					</Grid>
+							</Grid>
 
-					<Grid Grid.Row="1">
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="60" />
-							<ColumnDefinition Width="*" />
-						</Grid.ColumnDefinitions>
+							<Grid Grid.Row="1">
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="60" />
+									<ColumnDefinition Width="*" />
+								</Grid.ColumnDefinitions>
 
-						<Label Content="Izox:" FontSize="14" Margin="5,0,11,0" VerticalAlignment="Center" />
-						<TextBox
+								<Label Content="Izox:" FontSize="14" Margin="5,0,11,0" VerticalAlignment="Center" />
+								<TextBox
                             Grid.Column="1"
                             Margin="5,2"
                             FontSize="14"
+                            Style="{StaticResource ModernTextBox}"
                             Text="{Binding Payment.Description}" />
+							</Grid>
+						</Grid>
 					</Grid>
 				</Grid>
-			</Grid>
-		</Grid>
 
-		<!-- Pastki qism - tugmalar -->
-		<Grid Grid.Row="2" Margin="10">
-			<StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-				<Button
-                    Margin="0,0,6,0"
-                    Padding="20,5"
-                    Background="#E74C3C"
+				<!-- Pastki qism - tugmalar -->
+				<Grid Grid.Row="2">
+					<StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+						<Button
+                    Margin="0,0,8,0"
                     Command="{Binding CancelCommand}"
                     Content="Bekor qilish"
-                    FontSize="14"
-                    Foreground="White" />
+                    Style="{StaticResource SecondaryButton}" />
 
-				<Button
-                    Padding="20,5"
-                    Background="#27AE60"
+						<Button
                     Command="{Binding SaveCommand}"
                     Content="Saqlash"
-                    FontSize="14"
-                    Foreground="White" />
-			</StackPanel>
-		</Grid>
+                    Style="{StaticResource PrimaryButton}" />
+					</StackPanel>
+				</Grid>
+			</Grid>
+		</Border>
+
+		<controls:BusyOverlay IsBusy="{Binding IsLoading}" Message="Saqlanmoqda..." />
 	</Grid>
 </Page>

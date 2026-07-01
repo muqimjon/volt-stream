@@ -15,8 +15,6 @@
     ResizeMode="CanResizeWithGrip"
     WindowStartupLocation="CenterScreen"
     WindowStyle="None"
-    MaxHeight="{x:Static SystemParameters.MaximizedPrimaryScreenHeight}"
-    MaxWidth="{x:Static SystemParameters.MaximizedPrimaryScreenWidth}"
     mc:Ignorable="d">
 
     <WindowChrome.WindowChrome>
@@ -29,7 +27,7 @@
 
     <Border
         x:Name="MainBorder"
-        Background="#0A003A"
+        Background="{DynamicResource SidebarBg}"
         BorderThickness="2"
         CornerRadius="8">
         <Border.BorderBrush>
@@ -37,9 +35,9 @@
                 <LinearGradientBrush.RelativeTransform>
                     <RotateTransform x:Name="BorderRotateTransform" CenterX="0.5" CenterY="0.5" />
                 </LinearGradientBrush.RelativeTransform>
-                <GradientStop Color="{StaticResource winBorderColor1}" Offset="0" />
-                <GradientStop Color="{StaticResource winBorderColor2}" Offset="0.5" />
-                <GradientStop Color="{StaticResource winBorderColor3}" Offset="1" />
+                <GradientStop Color="{DynamicResource winBorderColor1}" Offset="0" />
+                <GradientStop Color="{DynamicResource winBorderColor2}" Offset="0.5" />
+                <GradientStop Color="{DynamicResource winBorderColor3}" Offset="1" />
             </LinearGradientBrush>
         </Border.BorderBrush>
 
@@ -87,7 +85,7 @@
                                 VerticalAlignment="Center"
                                 FontSize="20"
                                 FontWeight="Bold"
-                                Foreground="White"
+                                Foreground="{DynamicResource TextPrimary}"
                                 Text="Volt Stream" />
                         </StackPanel>
                     </ToggleButton>
@@ -217,7 +215,7 @@
                         VerticalAlignment="Center"
                         FontSize="14"
                         FontWeight="Bold"
-                        Foreground="White"
+                        Foreground="{DynamicResource SidebarItemText}"
                         Text="{Binding ApiConnection.StatusText}" />
                 </Grid>
 
@@ -242,9 +240,9 @@
                             Margin="20,0,0,0"
                             VerticalAlignment="Center"
                             FontSize="16"
-                            Foreground="White"
-                            Text="{Binding CurrentPageTitle}"
-                            Visibility="{Binding IsSidebarCollapsed, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            FontWeight="SemiBold"
+                            Foreground="{DynamicResource HeaderText}"
+                            Text="{Binding CurrentPageTitle}" />
                     </Border>
                     <Grid Grid.Row="0" Grid.Column="1">
                         <StackPanel
@@ -254,52 +252,52 @@
                             <TextBlock
                                 Margin="5,10"
                                 FontWeight="Bold"
-                                Foreground="#E0E1F1"
+                                Foreground="{DynamicResource HeaderText}"
                                 Text="{Binding DateLabel}" />
                             <TextBlock
                                 Margin="5,10"
-                                Foreground="#E0E1F1"
+                                Foreground="{DynamicResource HeaderText}"
                                 Text="Bomdod:" />
                             <TextBlock
                                 Margin="5,10"
                                 FontWeight="Bold"
-                                Foreground="#E0E1F1"
+                                Foreground="{DynamicResource HeaderText}"
                                 Text="{Binding Bomdod}" />
                             <TextBlock
                                 Margin="5,10"
-                                Foreground="#E0E1F1"
+                                Foreground="{DynamicResource HeaderText}"
                                 Text=" |    Peshin:" />
                             <TextBlock
                                 Margin="5,10"
                                 FontWeight="Bold"
-                                Foreground="#E0E1F1"
+                                Foreground="{DynamicResource HeaderText}"
                                 Text="{Binding Peshin}" />
                             <TextBlock
                                 Margin="5,10"
-                                Foreground="#E0E1F1"
+                                Foreground="{DynamicResource HeaderText}"
                                 Text=" |    Asr:" />
                             <TextBlock
                                 Margin="5,10"
                                 FontWeight="Bold"
-                                Foreground="#E0E1F1"
+                                Foreground="{DynamicResource HeaderText}"
                                 Text="{Binding Asr}" />
                             <TextBlock
                                 Margin="5,10"
-                                Foreground="#E0E1F1"
+                                Foreground="{DynamicResource HeaderText}"
                                 Text=" |    Shom:" />
                             <TextBlock
                                 Margin="5,10"
                                 FontWeight="Bold"
-                                Foreground="#E0E1F1"
+                                Foreground="{DynamicResource HeaderText}"
                                 Text="{Binding Shom}" />
                             <TextBlock
                                 Margin="5,10"
-                                Foreground="#E0E1F1"
+                                Foreground="{DynamicResource HeaderText}"
                                 Text=" |    Xufton:" />
                             <TextBlock
                                 Margin="5,10"
                                 FontWeight="Bold"
-                                Foreground="#E0E1F1"
+                                Foreground="{DynamicResource HeaderText}"
                                 Text="{Binding Xufton}" />
                         </StackPanel>
                     </Grid>
@@ -330,6 +328,19 @@
                         </StackPanel.Resources>
 
                         <Button
+                            x:Name="ThemeToggleButton"
+                            Click="ThemeToggle_Click"
+                            Style="{StaticResource WindowControlButtonStyle}"
+                            ToolTip="Mavzu (Light/Dark)">
+                            <fa:IconImage
+                                x:Name="ThemeToggleIcon"
+                                Width="14"
+                                Height="14"
+                                Foreground="{DynamicResource HeaderText}"
+                                Icon="Moon" />
+                        </Button>
+
+                        <Button
                             Click="BtnMinimize_Click"
                             Style="{StaticResource WindowControlButtonStyle}">
                             <Button.Triggers>
@@ -338,7 +349,7 @@
                                         <Storyboard>
                                             <ColorAnimation
                                                 Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)"
-                                                To="#25FFFFFF"
+                                                To="#33808080"
                                                 Duration="0:0:0.1" />
 											</Storyboard>
 									</BeginStoryboard>
@@ -356,7 +367,7 @@
                             </Button.Triggers>
                             <Path
                                 Data="M 0,8 H 10"
-                                Stroke="White"
+                                Stroke="{DynamicResource HeaderText}"
                                 StrokeThickness="1.5" />
                         </Button>
 
@@ -369,7 +380,7 @@
                                         <Storyboard>
                                             <ColorAnimation
                                                 Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)"
-                                                To="#25FFFFFF"
+                                                To="#33808080"
                                                 Duration="0:0:0.1" />
                                         </Storyboard>
                                     </BeginStoryboard>
@@ -387,7 +398,7 @@
                             </Button.Triggers>
                             <Path
                                 Data="M 0,0 H 10 V 10 H 0 Z"
-                                Stroke="White"
+                                Stroke="{DynamicResource HeaderText}"
                                 StrokeThickness="1.5" />
                         </Button>
 
@@ -418,7 +429,7 @@
                             </Button.Triggers>
                             <Path
                                 Data="M 0,0 L 10,10 M 0,10 L 10,0"
-                                Stroke="White"
+                                Stroke="{DynamicResource HeaderText}"
                                 StrokeThickness="1.5" />
                         </Button>
                     </StackPanel>
@@ -427,7 +438,7 @@
                 <Border
                     Grid.Row="1"
                     Margin="0,0,8,8"
-                    Background="#F8F9FA"
+                    Background="{DynamicResource Canvas}"
                     CornerRadius="0,0,12,0">
                     <Grid>
                         <StackPanel

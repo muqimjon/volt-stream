@@ -27,4 +27,10 @@ public interface ICustomersApi
 
     [Post("/customers/filter")]
     Task<Response<List<CustomerResponse>>> FilterAsync(FilteringRequest request);
+
+    [Post("/customers/balances")]
+    Task<Response<List<CustomerBalanceResponse>>> FilterBalances(CustomerBalanceRequest request);
+
+    [Post("/customers/balances/summary")]
+    Task<Response<CustomerBalanceSummaryResponse>> BalancesSummary(CustomerBalanceRequest request);
 }

@@ -15,13 +15,13 @@
     Loaded="Page_Loaded"
     mc:Ignorable="d">
 
-    <Grid Margin="10" Background="#F4F5FA">
+    <Grid Margin="10" Background="{DynamicResource Canvas}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="35" />
+            <RowDefinition Height="48" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Border Grid.Row="0" Background="White" CornerRadius="10" BorderBrush="#E6E8EF" BorderThickness="1" Padding="12,0" Margin="0,0,0,3">
+        <Border Grid.Row="0" Style="{StaticResource CardBorder}" Padding="12,4" Margin="0,0,0,3">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" MaxWidth="500" />
@@ -100,17 +100,16 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <ComboBox
-                            x:Name="CurrencyType" Height="28"
+                            x:Name="CurrencyType" Height="28" Style="{StaticResource RoundedCombo}"
                             Margin="0,2,10,2"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Center"
                             DisplayMemberPath="Name"
                             FontSize="14"
-                            IsEditable="False"
-                            IsEnabled="False"
+                            IsEditable="True"
+                            IsHitTestVisible="False"
                             IsReadOnly="True"
-                            IsTabStop="False"
-                            Text="{Binding CurrencyType}" />
+                            IsTabStop="False" />
 
                         <Label
                             Grid.Column="1"
@@ -119,16 +118,15 @@
                             Content="Jami summa:"
                             FontSize="14" />
                         <TextBox
-                            x:Name="TotalSum" Style="{StaticResource RoundedTextBox}"
+                            x:Name="TotalSum" Style="{StaticResource ReadOnlyValue}"
                             Grid.Column="2"
                             Height="28"
                             Margin="0,2,0,0"
                             VerticalAlignment="Top"
+                            HorizontalContentAlignment="Right"
                             utils:NumericTextBox.IsNumeric="True"
                             utils:TextBoxTabBehavior.EnableTabOnKeys="True"
                             FontSize="14"
-                            IsReadOnly="True"
-                            IsTabStop="False"
                             Text="{Binding TotalSum}" />
                     </Grid>
                     <Grid Grid.Row="3" Grid.Column="1">
@@ -143,22 +141,23 @@
                                 <ColumnDefinition Width="35" />
                             </Grid.ColumnDefinitions>
                             <TextBox
-                                x:Name="txtTotalDiscount" Style="{StaticResource RoundedTextBox}"
+                                x:Name="txtTotalDiscount" Style="{StaticResource ReadOnlyValue}"
+                                Height="28"
                                 Margin="0,2"
                                 HorizontalAlignment="Stretch"
-                                VerticalAlignment="Stretch"
+                                VerticalAlignment="Center"
+                                HorizontalContentAlignment="Right"
                                 utils:NumericTextBox.IsNumeric="True"
                                 utils:TextBoxTabBehavior.EnableTabOnKeys="True"
                                 FontSize="14"
-                                IsReadOnly="True"
-                                IsTabStop="False"
                                 Text="{Binding TotalDiscount}" />
                             <Border
                                 Grid.Column="1"
+                                Height="28"
                                 Margin="2,2,10,2"
                                 HorizontalAlignment="Stretch"
-                                VerticalAlignment="Stretch"
-                                BorderBrush="#888"
+                                VerticalAlignment="Center"
+                                BorderBrush="{DynamicResource BorderStrong}"
                                 BorderThickness="0.5">
                                 <CheckBox
                                     x:Name="checkedDiscount"
@@ -178,17 +177,16 @@
                             Content="To'lashga:"
                             FontSize="14" />
                         <TextBox
-                            x:Name="FinalSumm" Style="{StaticResource RoundedTextBox}"
+                            x:Name="FinalSumm" Style="{StaticResource ReadOnlyValue}"
                             Grid.Column="2"
                             Margin="0,2"
                             Height="28"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
+                            HorizontalContentAlignment="Right"
                             utils:NumericTextBox.IsNumeric="True"
                             utils:TextBoxTabBehavior.EnableTabOnKeys="True"
                             FontSize="14"
-                            IsReadOnly="True"
-                            IsTabStop="False"
                             Text="{Binding FinalSum}" />
 
 
@@ -232,7 +230,7 @@
                             Text="Joriy:"
                             Visibility="{Binding ElementName=beginBalans, Path=Text.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                         <TextBox
-                            x:Name="beginBalans"
+                            x:Name="beginBalans" Foreground="{DynamicResource TextPrimary}"
                             Grid.Row="1"
                             Margin="35,2,2,2"
                             HorizontalAlignment="Stretch"
@@ -250,7 +248,7 @@
                             Text="Natija:"
                             Visibility="{Binding ElementName=lastBalans, Path=Text.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                         <TextBox
-                            x:Name="lastBalans"
+                            x:Name="lastBalans" Foreground="{DynamicResource TextPrimary}"
                             Grid.Row="2"
                             Margin="35,2,2,2"
                             HorizontalAlignment="Stretch"
@@ -268,7 +266,7 @@
                             Text="Telefon:"
                             Visibility="{Binding ElementName=tel, Path=Text.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                         <TextBox
-                            x:Name="tel"
+                            x:Name="tel" Foreground="{DynamicResource TextPrimary}"
                             Grid.Row="3"
                             Margin="42,2,2,2"
                             HorizontalAlignment="Stretch"
@@ -285,7 +283,7 @@
                 </Grid>
             </Grid>
         </Border>
-        <Grid Grid.Row="1" Margin="0 3 0 0">
+        <Grid Grid.Row="1" Margin="0 12 0 0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.5*" MinWidth="120" />
                 <ColumnDefinition Width="1.8*" MinWidth="120" />
@@ -452,9 +450,12 @@
                 x:Name="addButton" Style="{StaticResource RoundedButton}"
                 Grid.Column="10"
                 Margin="4 3 0 3"
+                Background="{DynamicResource Brand}"
+                Foreground="{DynamicResource OnBrand}"
                 Click="AddButton_Click"
-                Content="Qo'shish"
-                FontSize="14" />
+                FontSize="14">
+                <TextBlock Text="Qo'shish" Foreground="White" />
+            </Button>
         </Grid>
         <Grid Grid.Row="2" Margin="0 2 0 0">
             <Grid.RowDefinitions>
@@ -473,12 +474,6 @@
                     HeadersVisibility="Column, Row"
                     utils:DataGridRowNumbering.IsEnabled="True"
                     SelectionUnit="FullRow">
-                    <DataGrid.Resources>
-                        <Style x:Key="RightAlignedText" TargetType="TextBlock">
-                            <Setter Property="HorizontalAlignment" Value="Right" />
-                            <Setter Property="TextAlignment" Value="Right" />
-                        </Style>
-                    </DataGrid.Resources>
                     <DataGrid.Columns>
                         <DataGridTextColumn Width="1.5*" MinWidth="120" Binding="{Binding CategoryName}" Header="Maxsulot turi" />
                         <DataGridTextColumn
@@ -489,47 +484,47 @@
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding PerRollCount, Mode=TwoWay}"
-                            ElementStyle="{StaticResource RightAlignedText}"
+                            ElementStyle="{StaticResource RightCellText}"
                             Header="To'plamda" />
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding RollCount, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
-                            ElementStyle="{StaticResource RightAlignedText}"
+                            ElementStyle="{StaticResource RightCellText}"
                             Header="To'plam soni" />
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding Quantity, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
-                            ElementStyle="{StaticResource RightAlignedText}"
+                            ElementStyle="{StaticResource RightCellText}"
 
                             Header="Jami" />
                         <DataGridTextColumn
                             Width="*"
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding Price, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
-                            ElementStyle="{StaticResource RightAlignedText}"
+                            ElementStyle="{StaticResource RightCellText}"
                             Header="Narxi" />
                         <DataGridTextColumn
                             Width="*"
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding Sum, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
-                            ElementStyle="{StaticResource RightAlignedText}"
+                            ElementStyle="{StaticResource RightCellText}"
                             Header="Jami summa" />
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding PerDiscount, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
-                            ElementStyle="{StaticResource RightAlignedText}"
+                            ElementStyle="{StaticResource RightCellText}"
                             Header="Chegirma%" />
                         <DataGridTextColumn
                             Width="*"
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding Discount, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
-                            ElementStyle="{StaticResource RightAlignedText}"
+                            ElementStyle="{StaticResource RightCellText}"
                             Header="Chegirma summasi" />
                         <DataGridTextColumn
                             Width="*"
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding FinalSumProduct, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
-                            ElementStyle="{StaticResource RightAlignedText}"
+                            ElementStyle="{StaticResource RightCellText}"
                             Header="Umumiy summa" />
                     </DataGrid.Columns>
                 </DataGrid>
@@ -542,22 +537,19 @@
                     Orientation="Horizontal">
                     <Button
                         Margin="0,0,6,0"
-                        Padding="10,0"
-                        Background="#E74C3C"
+                        Padding="14,0"
                         Click="ClearButton_Click"
                         Content="Tozalash"
-                        Style="{StaticResource RoundedButton}"
-                        FontSize="14"
-                        Foreground="White" />
+                        Style="{StaticResource SecondaryButton}"
+                        FontSize="14" />
 
                     <Button
-                        Padding="10,0"
-                        Background="#27AE60"
+                        Padding="18,0"
                         Click="SubmitButton_Click"
-                        Content="Yuborish"
-                        Style="{StaticResource RoundedButton}"
-                        FontSize="14"
-                        Foreground="White" />
+                        Style="{StaticResource PrimaryButton}"
+                        FontSize="14">
+                        <TextBlock Text="Yuborish" Foreground="White" />
+                    </Button>
                 </StackPanel>
             </Grid>
         </Grid>

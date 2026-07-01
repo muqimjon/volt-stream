@@ -1,8 +1,9 @@
-﻿namespace VoltStream.WPF.Turnovers.Models;
+namespace VoltStream.WPF.Turnovers.Models;
 
 using ApiServices.Enums;
 using ApiServices.Extensions;
 using ApiServices.Interfaces;
+using ApiServices.Models;
 using ApiServices.Models.Responses;
 using ClosedXML.Excel;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -10,17 +11,13 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
-using PdfSharp.Drawing;
-using PdfSharp.Pdf;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Markup;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using VoltStream.WPF.Commons;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
@@ -36,7 +33,12 @@ public partial class TurnoversPageViewModel : ViewModelBase
     private readonly IServiceProvider services;
     private readonly INavigationService navigationService;
 
-    private ObservableCollection<CustomerOperationForDisplayViewModel> allOperationsForDisplay = [];
+    private static readonly Brush PdfAccent = new SolidColorBrush(Color.FromRgb(0x4F, 0x46, 0xE5));
+    private static readonly Brush PdfInk = new SolidColorBrush(Color.FromRgb(0x1F, 0x29, 0x37));
+    private static readonly Brush PdfMuted = new SolidColorBrush(Color.FromRgb(0x6B, 0x72, 0x80));
+    private static readonly Brush PdfLine = new SolidColorBrush(Color.FromRgb(0xE5, 0xE7, 0xEB));
+    private static readonly Brush PdfHeaderBg = new SolidColorBrush(Color.FromRgb(0xEE, 0xF0, 0xFD));
+    private static readonly Brush PdfDanger = new SolidColorBrush(Color.FromRgb(0xDC, 0x26, 0x26));
 
     public TurnoversPageViewModel(IServiceProvider services, INavigationService navigationService)
     {
@@ -46,21 +48,22 @@ public partial class TurnoversPageViewModel : ViewModelBase
         customerOperationsApi = services.GetRequiredService<ICustomerOperationsApi>();
         mapper = services.GetRequiredService<IMapper>();
 
+        Pagination = new PaginationViewModel(LoadPageAsync);
+
         WeakReferenceMessenger.Default.Register<EntityUpdatedMessage<string>>(this, (r, m) =>
         {
             if (m.Value == "OperationUpdated")
-            {
-                _ = LoadCustomerOperationsForSelectedCustomerAsync();
-            }
+                _ = ReloadAsync();
         });
 
         _ = LoadInitialDataAsync();
     }
 
+    public PaginationViewModel Pagination { get; }
+
     [ObservableProperty] private CustomerResponse? selectedCustomer;
     [ObservableProperty] private ObservableCollection<CustomerResponse> customers = [];
-    [ObservableProperty] private ObservableCollection<CustomerOperationViewModel> customerOperations = [];
-    [ObservableProperty] private ObservableCollection<CustomerOperationForDisplayViewModel> customerOperationsForDisplay = [];
+    [ObservableProperty] private ObservableCollection<CustomerOperationForDisplayViewModel> pagedCustomerOperationsForDisplay = [];
     [ObservableProperty] private CustomerOperationForDisplayViewModel? selectedItem;
     [ObservableProperty] private DateTime beginDate = DateTime.Today.AddDays(-7);
     [ObservableProperty] private DateTime endDate = DateTime.Today;
@@ -69,77 +72,15 @@ public partial class TurnoversPageViewModel : ViewModelBase
 
     #region Property Changes
 
-    partial void OnSelectedCustomerChanged(CustomerResponse? value)
-    => _ = LoadCustomerOperationsForSelectedCustomerAsync();
+    partial void OnSelectedCustomerChanged(CustomerResponse? value) => _ = ReloadAsync();
 
-    partial void OnBeginDateChanged(DateTime value)
-        => _ = LoadCustomerOperationsForSelectedCustomerAsync();
+    partial void OnBeginDateChanged(DateTime value) => _ = ReloadAsync();
 
-    partial void OnEndDateChanged(DateTime value)
-        => _ = LoadCustomerOperationsForSelectedCustomerAsync();
+    partial void OnEndDateChanged(DateTime value) => _ = ReloadAsync();
 
     #endregion Property Changes
 
     #region Load Data
-
-    private async Task LoadCustomerOperationsForSelectedCustomerAsync()
-    {
-        if (SelectedCustomer is null)
-        {
-            CustomerOperationsForDisplay.Clear();
-            return;
-        }
-
-        var response = await customerOperationsApi.GetByCustomerId(
-            SelectedCustomer.Id,
-            BeginDate,
-            EndDate
-        );
-
-        CustomerOperationsForDisplay.Clear();
-
-        if (!response.IsSuccess)
-            return;
-
-        var displayList = new ObservableCollection<CustomerOperationForDisplayViewModel>();
-
-        foreach (var op in response.Data.Operations)
-        {
-            decimal debit = 0;
-            decimal credit = 0;
-
-            if (op.OperationType == OperationType.Payment)
-            {
-                if (op.Amount < 0)
-                    debit = Math.Abs(op.Amount);
-                else
-                    credit = op.Amount;
-            }
-            else if (op.OperationType == OperationType.Sale)
-            {
-                debit = Math.Abs(op.Amount);
-            }
-            else if (op.OperationType == OperationType.Discount)
-            {
-                credit = op.Amount;
-            }
-            displayList.Add(new CustomerOperationForDisplayViewModel
-            {
-                Id = op.Id,
-                Date = op.Date.LocalDateTime,
-                Customer = SelectedCustomer.Name ?? "Noma'lum",
-                Debit = debit,
-                Credit = credit,
-                Description = op.Description,
-                OperationType = op.OperationType
-            });
-        }
-
-        BeginBalance = response.Data.BeginBalance;
-        LastBalance = response.Data.EndBalance;
-        allOperationsForDisplay = displayList;
-        ApplyFilter();
-    }
 
     private async Task LoadInitialDataAsync()
     {
@@ -152,6 +93,119 @@ public partial class TurnoversPageViewModel : ViewModelBase
         if (response.IsSuccess)
             Customers = mapper.Map<ObservableCollection<CustomerResponse>>(response.Data!);
         else Error = response.Message ?? "Mijozlarni yuklashda xatolik yuz berdi.";
+    }
+
+    private async Task ReloadAsync()
+    {
+        Pagination.Reset();
+        await LoadSummaryAsync();
+        await LoadPageAsync();
+    }
+
+    private async Task LoadSummaryAsync()
+    {
+        if (SelectedCustomer is null)
+        {
+            BeginBalance = null;
+            LastBalance = null;
+            return;
+        }
+
+        var response = await customerOperationsApi.GetByCustomerId(SelectedCustomer.Id, BeginDate, EndDate)
+            .Handle(isLoading => IsLoading = isLoading);
+
+        if (response.IsSuccess && response.Data is not null)
+        {
+            BeginBalance = response.Data.BeginBalance;
+            LastBalance = response.Data.EndBalance;
+        }
+        else
+        {
+            BeginBalance = null;
+            LastBalance = null;
+        }
+    }
+
+    private async Task LoadPageAsync()
+    {
+        if (SelectedCustomer is null)
+        {
+            PagedCustomerOperationsForDisplay = [];
+            Pagination.SetTotal(0);
+            return;
+        }
+
+        var request = BuildFilters();
+        request.Page = Pagination.Page;
+        request.PageSize = Pagination.PageSize;
+
+        Response<List<CustomerOperationResponse>> response;
+        using (PagingScope.Begin())
+        {
+            response = await customerOperationsApi.Filter(request).Handle(l => IsLoading = l);
+            if (response.IsSuccess) Pagination.Apply(PagingScope.Result);
+        }
+
+        if (!response.IsSuccess)
+        {
+            Error = response.Message ?? "Operatsiyalarni yuklashda xatolik yuz berdi.";
+            return;
+        }
+
+        PagedCustomerOperationsForDisplay = new ObservableCollection<CustomerOperationForDisplayViewModel>(response.Data!.Select(Map));
+    }
+
+    private async Task<List<CustomerOperationForDisplayViewModel>> LoadAllOperationsAsync()
+    {
+        if (SelectedCustomer is null) return [];
+        var response = await customerOperationsApi.Filter(BuildFilters()).Handle(l => IsLoading = l);
+        return response.IsSuccess ? response.Data!.Select(Map).ToList() : [];
+    }
+
+    private FilteringRequest BuildFilters()
+    {
+        var filters = new Dictionary<string, List<string>>
+        {
+            ["Date"] = [$">={BeginDate:yyyy-MM-dd}", $"<{EndDate.AddDays(1):yyyy-MM-dd}"]
+        };
+
+        if (SelectedCustomer is not null)
+            filters["CustomerId"] = [$"={SelectedCustomer.Id}"];
+
+        return new FilteringRequest { Filters = filters, SortBy = "Date" };
+    }
+
+    private CustomerOperationForDisplayViewModel Map(CustomerOperationResponse op)
+    {
+        decimal debit = 0;
+        decimal credit = 0;
+
+        if (op.OperationType == OperationType.Payment)
+        {
+            if (op.Amount < 0)
+                debit = Math.Abs(op.Amount);
+            else
+                credit = op.Amount;
+        }
+        else if (op.OperationType == OperationType.Sale)
+        {
+            debit = Math.Abs(op.Amount);
+        }
+        else if (op.OperationType == OperationType.Discount)
+        {
+            credit = op.Amount;
+        }
+
+        return new CustomerOperationForDisplayViewModel
+        {
+            Id = op.Id,
+            Date = op.Date.LocalDateTime,
+            Customer = SelectedCustomer?.Name ?? "Noma'lum",
+            Debit = debit,
+            Credit = credit,
+            Description = op.Description,
+            OperationType = op.OperationType
+        };
     }
 
     #endregion Load Data
@@ -185,8 +239,8 @@ public partial class TurnoversPageViewModel : ViewModelBase
 
         if (response.IsSuccess)
         {
-            CustomerOperationsForDisplay.Remove(operation);
             Success = "Operatsiya muvaffaqiyatli o'chirildi.";
+            await ReloadAsync();
         }
         else Error = response.Message ?? "Operatsiyani o'chirishda xatolik yuz berdi.";
     }
@@ -233,20 +287,20 @@ public partial class TurnoversPageViewModel : ViewModelBase
         SelectedCustomer = null;
         BeginDate = DateTime.Now.AddMonths(-1);
         EndDate = DateTime.Now;
-        CustomerOperationsForDisplay = new ObservableCollection<CustomerOperationForDisplayViewModel>(allOperationsForDisplay);
     }
 
     [RelayCommand]
-    private void ExportToExcel()
+    private async Task ExportToExcel()
     {
+        var operations = await LoadAllOperationsAsync();
+        if (operations.Count == 0)
+        {
+            Info = "Eksport qilish uchun ma'lumot topilmadi.";
+            return;
+        }
+
         try
         {
-            if (CustomerOperationsForDisplay is null || !CustomerOperationsForDisplay.Any())
-            {
-                Info = "Eksport qilish uchun ma'lumot topilmadi.";
-                return;
-            }
-
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
                 Filter = "Excel fayllari (*.xlsx)|*.xlsx",
@@ -297,7 +351,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
                 ws.Cell(row, 5).Style.Alignment.WrapText = true;
                 row++;
 
-                foreach (var item in CustomerOperationsForDisplay)
+                foreach (var item in operations)
                 {
                     ws.Cell(row, 1).Value = item.Date.ToString("dd.MM.yyyy");
                     ws.Cell(row, 2).Value = item.Customer;
@@ -334,9 +388,10 @@ public partial class TurnoversPageViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void Print()
+    private async Task Print()
     {
-        if (CustomerOperationsForDisplay is null || !CustomerOperationsForDisplay.Any())
+        var operations = await LoadAllOperationsAsync();
+        if (operations.Count == 0)
         {
             Info = "Chop etish uchun ma'lumot topilmadi.";
             return;
@@ -344,150 +399,26 @@ public partial class TurnoversPageViewModel : ViewModelBase
 
         var dlg = new PrintDialog();
         if (dlg.ShowDialog() == true)
-            dlg.PrintDocument(CreateFixedDocument().DocumentPaginator, "Operatsiyalar");
+            dlg.PrintDocument(CreateFixedDocument(operations).DocumentPaginator, "Operatsiyalar");
     }
 
     [RelayCommand]
-    private void Preview()
+    private async Task Preview()
     {
-        if (CustomerOperationsForDisplay is null || !CustomerOperationsForDisplay.Any())
+        var operations = await LoadAllOperationsAsync();
+        if (operations.Count == 0)
         {
             Info = "Oldindan ko'rish uchun ma'lumot topilmadi.";
             return;
         }
 
-        var doc = CreateFixedDocument();
-        var viewer = new DocumentViewer { Document = doc };
-
-        var shareButton = new Button
-        {
-            Content = "📤 Telegram'da ulashish",
-            Margin = new Thickness(5),
-            Padding = new Thickness(10, 5, 10, 5),
-            Background = Brushes.LightBlue
-        };
-
-        shareButton.Click += (s, e) =>
-        {
-            try
-            {
-                if (SelectedCustomer is null) { /* ... xato */ return; }
-
-                string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                string voltFolder = Path.Combine(documentsPath, "VoltStream");
-
-                if (!Directory.Exists(voltFolder)) Directory.CreateDirectory(voltFolder);
-
-                string safeName = string.Join("_", SelectedCustomer.Name.Split(Path.GetInvalidFileNameChars()));
-                string begin = BeginDate.ToString("dd.MM.yyyy") ?? "-";
-                string end = EndDate.ToString("dd.MM.yyyy") ?? "-";
-                string fileName = $"{safeName}_{begin}-{end}.pdf";
-                string pdfPath = Path.Combine(voltFolder, fileName);
-
-                ExportToPdf(doc, pdfPath);
-
-                if (File.Exists(pdfPath))
-                {
-                    Process.Start("explorer.exe", $"/select,\"{pdfPath}\"");
-                    Success = $"Hisobot \"{fileName}\" nomli fayl sifatida \"Documents\\VoltStream\" papkasida saqlandi.";
-                }
-            }
-            catch (Exception ex)
-            {
-                Error = $"Ulashish/Saqlashda xatolik yuz berdi: {ex.Message}";
-            }
-        };
-
-        var toolbar = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
-        toolbar.Children.Add(shareButton);
-
-        var layout = new DockPanel();
-        DockPanel.SetDock(toolbar, Dock.Top);
-        layout.Children.Add(toolbar);
-        layout.Children.Add(viewer);
-
-        new Window
-        {
-            Title = "Hisobot ko'rinishi",
-            Width = 950,
-            Height = 850,
-            Content = layout,
-            WindowStartupLocation = WindowStartupLocation.CenterScreen
-        }.ShowDialog();
-    }
-
-    private void ExportToPdf(FixedDocument doc, string path)
-    {
-        PdfDocument pdf = new PdfDocument();
-
-        // Sifatni oshirish uchun 300 DPI yaxshi, 
-        // lekin FixedDocument o'lchamlari 96 DPI (DIPs) da hisoblanadi.
-        const double dpi = 300;
-        const double scale = dpi / 96.0;
-
-        for (int i = 0; i < doc.Pages.Count; i++)
-        {
-            // Sahifani olish
-            PageContent pageContent = doc.Pages[i];
-            FixedPage fixedPage = pageContent.Child;
-
-            // Sahifa o'lchamlarini olish (odatda 793.7 x 1122.5)
-            double width = fixedPage.Width;
-            double height = fixedPage.Height;
-
-            // Sahifa hali yuklanmagan bo'lsa, uni majburan yangilaymiz
-            fixedPage.UpdateLayout();
-
-            // Render o'lchamlarini hisoblash
-            int pixelWidth = (int)(width * scale);
-            int pixelHeight = (int)(height * scale);
-
-            RenderTargetBitmap rtb = new(
-                pixelWidth, pixelHeight, dpi, dpi, PixelFormats.Pbgra32);
-
-            // MUHIM: Sahifani vizual Tree ga qaytadan bog'lamaslik va buzmaslik uchun
-            // faqat vizual render qilish kifoya
-            rtb.Render(fixedPage);
-
-            // Koder orqali MemoryStream ga saqlash
-            PngBitmapEncoder pngEncoder = new PngBitmapEncoder();
-            pngEncoder.Frames.Add(BitmapFrame.Create(rtb));
-
-            using (MemoryStream stream = new MemoryStream())
-            {
-                pngEncoder.Save(stream);
-                stream.Seek(0, SeekOrigin.Begin);
-
-                // PDF sahifasini yaratish
-                PdfPage pdfPage = pdf.AddPage();
-
-                // PDF sahifasi o'lchamini FixedPage bilan bir xil qilish (Point birligida)
-                pdfPage.Width = XUnit.FromPoint(width);
-                pdfPage.Height = XUnit.FromPoint(height);
-
-                XGraphics gfx = XGraphics.FromPdfPage(pdfPage);
-                XImage image = XImage.FromStream(stream);
-
-                // Rasmni PDF ga chizish
-                gfx.DrawImage(image, 0, 0, pdfPage.Width, pdfPage.Height);
-            }
-        }
-
-        pdf.Save(path);
+        var name = SelectedCustomer?.Name ?? "Mijoz";
+        var fileName = $"{name} {BeginDate:dd.MM.yyyy}-{EndDate:dd.MM.yyyy}";
+        ReportService.Preview(CreateFixedDocument(operations), fileName, "Mijoz operatsiyalari hisoboti");
     }
     #endregion Commands
 
     #region Private Helpers
-
-    private void ApplyFilter()
-    {
-        if (allOperationsForDisplay is null || allOperationsForDisplay.Count == 0)
-            return;
-
-        var filtered = allOperationsForDisplay.AsEnumerable();
-
-        CustomerOperationsForDisplay = new ObservableCollection<CustomerOperationForDisplayViewModel>(filtered);
-    }
 
     private async Task OpenSaleEditPage(long operationId)
     {
@@ -521,7 +452,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
 
     #region PDF Export and Share
 
-    private FixedDocument CreateFixedDocument()
+    private FixedDocument CreateFixedDocument(List<CustomerOperationForDisplayViewModel> operations)
     {
         var doc = new FixedDocument();
         const double pageWidth = 793.7;
@@ -529,7 +460,6 @@ public partial class TurnoversPageViewModel : ViewModelBase
         const double margin = 25;
         const double approxSingleRowHeight = 25;
 
-        var operations = CustomerOperationsForDisplay?.ToList() ?? [];
         double currentY = 0;
         int pageNumber = 1;
         int currentIndex = 0;
@@ -544,7 +474,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
             if (isFirstPage)
             {
                 currentY = AddHeaderContent(container, pageNumber, true);
-                var beginBalanceBlock = CreateBalanceInfoBlock("Boshlang'ich qoldiq", BeginBalance?.ToString("N2") ?? "0.00", Brushes.AliceBlue);
+                var beginBalanceBlock = CreateBalanceInfoBlock("Boshlang'ich qoldiq", BeginBalance?.ToString("N2") ?? "0.00", PdfHeaderBg);
                 beginBalanceBlock.Margin = new Thickness(0);
                 container.Children.Add(beginBalanceBlock);
                 currentY += 30;
@@ -554,15 +484,13 @@ public partial class TurnoversPageViewModel : ViewModelBase
                 currentY = AddHeaderContent(container, pageNumber, false);
             }
 
-            // 2. JADVAL - Ustunlar o'zgardi (70, 550, 140)
             var table = new Grid();
-            double[] widths = [70, 555, 120]; // Kredit ustuni olib tashlanib, izohga qo'shildi
+            double[] widths = [80, 547, 116];
             foreach (var w in widths)
                 table.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(w) });
 
-            AddRowHeader(table, "Sana", "Izoh", "Debit/Kredit", approxSingleRowHeight);
+            AddRowHeader(table, "Sana", "Izoh", approxSingleRowHeight);
 
-            // Jami qismi uchun joy (Endi 2 ta qator bo'lgani uchun joyni ko'paytiramiz)
             double footerSpace = approxSingleRowHeight * 4 + 50;
             var opsOnPage = new List<CustomerOperationForDisplayViewModel>();
 
@@ -582,7 +510,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
 
             foreach (var op in opsOnPage)
             {
-                AddOperationRow(table, op, approxSingleRowHeight);
+                AddOperationRow(table, op, widths[1]);
             }
 
             currentIndex += opsOnPage.Count;
@@ -593,12 +521,11 @@ public partial class TurnoversPageViewModel : ViewModelBase
                 decimal totalDebit = operations.Sum(x => x.Debit);
                 decimal totalCredit = operations.Sum(x => x.Credit);
 
-                // JAMI QISMI - Ikkita qator qilib chiqarish
                 AddRowTotalNew(table, totalCredit, totalDebit, approxSingleRowHeight);
 
                 container.Children.Add(table);
 
-                var lastBalanceBlock = CreateBalanceInfoBlock("Oxirgi qoldiq", LastBalance?.ToString("N2") ?? "0.00", Brushes.GhostWhite);
+                var lastBalanceBlock = CreateBalanceInfoBlock("Oxirgi qoldiq", LastBalance?.ToString("N2") ?? "0.00", PdfHeaderBg);
                 lastBalanceBlock.Margin = new Thickness(0);
                 container.Children.Add(lastBalanceBlock);
             }
@@ -613,7 +540,6 @@ public partial class TurnoversPageViewModel : ViewModelBase
             currentY = 0;
         }
 
-        // Sahifalarni yig'ish (avvalgi kod bilan bir xil)
         int totalPages = tempPages.Count;
         int finalPageNumber = 1;
         foreach (var finalPage in tempPages)
@@ -627,151 +553,240 @@ public partial class TurnoversPageViewModel : ViewModelBase
         return doc;
     }
 
-    // 1. Yangi qator qo'shish metodi (Debit/Kredit ranglari bilan)
-    private void AddOperationRow(Grid grid, CustomerOperationForDisplayViewModel op, double approxSingleRowHeight)
+    private void AddOperationRow(Grid grid, CustomerOperationForDisplayViewModel op, double descWidth)
     {
         int row = grid.RowDefinitions.Count;
-        double requiredHeight = CalculateOperationRowHeight(op, 555);
+        double requiredHeight = CalculateOperationRowHeight(op, descWidth);
         grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(requiredHeight) });
 
-        Brush amountBrush = op.Debit > 0 ? Brushes.DarkRed : Brushes.Black;
+        Brush amountBrush = op.Debit > 0 ? PdfDanger : PdfInk;
         string amountText = op.Debit > 0 ? op.Debit.ToString("N2") : op.Credit.ToString("N2");
 
-        AddSimpleCell(grid, row, 0, op.Date.ToString("dd.MM.yyyy"), TextAlignment.Center, FontWeights.Normal, 12, new Thickness(0.5, 0.5, 0, 0.5), Brushes.Black);
+        AddSimpleCell(grid, row, 0, op.Date.ToString("dd.MM.yyyy"), TextAlignment.Center, FontWeights.Normal, 12.5, new Thickness(0.5, 0.5, 0, 0.5), PdfInk);
 
-        var descriptionTb = new TextBlock
+        var borderDesc = new Border
         {
-            FontSize = 12,
-            TextWrapping = TextWrapping.Wrap,
-            Padding = new Thickness(3,5,3,0),
-            VerticalAlignment = VerticalAlignment.Center,
-            FontFamily = new FontFamily("Consolas")
+            BorderBrush = PdfLine,
+            BorderThickness = new Thickness(0.5, 0, 0, 0.5),
+            Padding = new Thickness(6, 4, 6, 4),
+            Child = BuildDescriptionContent(op, descWidth - 12)
         };
-
-        string fullDesc = op.Description ?? op.FormattedDescription ?? "";
-        string[] lines = fullDesc.Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries);
-
-        int maxNameLen = 0;
-        int maxCalcLen = 0;
-        int maxSumLen = 0;
-
-        // 1. USTUNLARNI TEKISLASH UCHUN MAKSIMAL UZUNLIKLARNI HISOBLASH
-        foreach (var line in lines)
-        {
-            int lastDash = line.LastIndexOf('-');
-            int firstEqual = line.IndexOf('=');
-            int firstBracket = line.IndexOf('[');
-
-            if (lastDash != -1 && firstEqual != -1 && firstEqual > lastDash)
-            {
-                string namePart = line[..lastDash].Trim();
-                if (namePart.Length > maxNameLen) maxNameLen = namePart.Length;
-
-                string calcPart = line[(lastDash + 1)..firstEqual].Trim();
-                if (calcPart.Length > maxCalcLen) maxCalcLen = calcPart.Length;
-
-                string sumPart;
-                if (firstBracket != -1 && firstBracket > firstEqual)
-                    sumPart = line[(firstEqual + 1)..firstBracket].Trim();
-                else
-                    sumPart = line[(firstEqual + 1)..].Trim();
-
-                if (sumPart.Length > maxSumLen) maxSumLen = sumPart.Length;
-            }
-        }
-
-        bool insideSavdo = false;
-
-        foreach (var line in lines)
-        {
-            string trimmedLine = line.Trim();
-
-            if (trimmedLine.StartsWith("Savdo:", StringComparison.OrdinalIgnoreCase))
-            {
-                insideSavdo = true;
-                descriptionTb.Inlines.Add(new Run(line) { FontWeight = FontWeights.Bold });
-            }
-            else if (insideSavdo && line.Contains('-') && line.Contains('='))
-            {
-                int lastDash = line.LastIndexOf('-');
-                int firstEqual = line.IndexOf('=');
-                int firstBracket = line.IndexOf('[');
-
-                if (lastDash != -1 && firstEqual != -1 && firstEqual > lastDash)
-                {
-                    // A. Mahsulot nomi (Bold)
-                    string namePart = line[..lastDash].Trim();
-                    descriptionTb.Inlines.Add(new Run(namePart.PadRight(maxNameLen + 1)) { FontWeight = FontWeights.Bold });
-
-                    // B. Hisob-kitob
-                    descriptionTb.Inlines.Add(new Run("- "));
-                    string calcPart = line[(lastDash + 1)..firstEqual].Trim();
-                    descriptionTb.Inlines.Add(new Run(calcPart.PadRight(maxCalcLen + 1)));
-
-                    // C. Summa (Bold)
-                    descriptionTb.Inlines.Add(new Run("= "));
-                    string sumPart;
-                    if (firstBracket != -1 && firstBracket > firstEqual)
-                        sumPart = line[(firstEqual + 1)..firstBracket].Trim();
-                    else
-                        sumPart = line[(firstEqual + 1)..].Trim();
-
-                    // PadRight bu yerda summadan keyin kerakli bo'shliqni o'zi qo'shadi
-                    descriptionTb.Inlines.Add(new Run(sumPart.PadRight(maxSumLen + 1)) { FontWeight = FontWeights.Bold });
-
-                    // D. Chegirma qismi (Normal)
-                    if (firstBracket != -1 && firstBracket > firstEqual)
-                    {
-                        descriptionTb.Inlines.Add(new Run(line[firstBracket..].Trim()));
-                    }
-                }
-                else { descriptionTb.Inlines.Add(new Run(line)); }
-            }
-            else if (line.Contains(':'))
-            {
-                int colonIndex = line.IndexOf(':');
-                descriptionTb.Inlines.Add(new Run(line[..(colonIndex + 1)]) { FontWeight = FontWeights.Bold });
-                descriptionTb.Inlines.Add(new Run(line[(colonIndex + 1)..]));
-
-                if (trimmedLine.StartsWith("Jami:", StringComparison.OrdinalIgnoreCase) ||
-                    trimmedLine.StartsWith("Chegirma:", StringComparison.OrdinalIgnoreCase))
-                    insideSavdo = false;
-            }
-            else { descriptionTb.Inlines.Add(new Run(line)); }
-
-            descriptionTb.Inlines.Add(new LineBreak());
-        }
-
-        var borderDesc = new Border { BorderBrush = Brushes.Black, BorderThickness = new Thickness(0.5, 0.5, 0, 0.5), Child = descriptionTb };
         Grid.SetRow(borderDesc, row); Grid.SetColumn(borderDesc, 1); grid.Children.Add(borderDesc);
 
-        AddSimpleCell(grid, row, 2, amountText, TextAlignment.Right, FontWeights.Bold, 12, new Thickness(0.5, 0.5, 0.5, 0.5), amountBrush);
+        AddSimpleCell(grid, row, 2, amountText, TextAlignment.Right, FontWeights.Bold, 12.5, new Thickness(0.5, 0, 0.5, 0.5), amountBrush);
     }
 
-    private void AddRowHeader(Grid grid, string date, string description, string debitKreditLabel, double height)
+    private FrameworkElement BuildDescriptionContent(CustomerOperationForDisplayViewModel op, double width)
+    {
+        var panel = new StackPanel { Width = width };
+        var lines = (op.Description ?? op.FormattedDescription ?? string.Empty).Split(['\n', '\r'], StringSplitOptions.RemoveEmptyEntries);
+
+        Grid? items = null;
+        foreach (var raw in lines)
+        {
+            var line = raw.Trim();
+            if (line.Length == 0)
+            {
+                items = null;
+                continue;
+            }
+
+            if (line.All(c => c == '-'))
+            {
+                items = null;
+                panel.Children.Add(BuildSeparator());
+                continue;
+            }
+
+            if (TryParseItem(line, out var name, out var length, out var price, out var sum, out var disc))
+            {
+                items ??= AppendItemsGrid(panel);
+                AddItemRow(items, name, length, price, sum, disc);
+            }
+            else
+            {
+                items = null;
+                var t = line.TrimStart();
+                if (t.StartsWith("Jami", StringComparison.OrdinalIgnoreCase) || t.StartsWith("Chegirma", StringComparison.OrdinalIgnoreCase))
+                    panel.Children.Add(BuildTotalLine(line));
+                else
+                    panel.Children.Add(BuildTextLine(line));
+            }
+        }
+        return panel;
+    }
+
+    private static Grid AppendItemsGrid(StackPanel panel)
+    {
+        var g = new Grid { Margin = new Thickness(0, 2, 0, 3) };
+        g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        panel.Children.Add(g);
+        return g;
+    }
+
+    private void AddItemRow(Grid g, string name, string length, string price, string sum, string disc)
+    {
+        int r = g.RowDefinitions.Count;
+        g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        bool hasDisc = disc.Length > 0;
+
+        g.Children.Add(ItemCell(name, 0, r, TextAlignment.Left, PdfInk, FontWeights.SemiBold, new Thickness(0, 1, 10, 1), true));
+        g.Children.Add(ItemCell(length, 1, r, TextAlignment.Right, PdfMuted, FontWeights.Normal, new Thickness(0, 1, 10, 1), false));
+        g.Children.Add(ItemCell("× " + price, 2, r, TextAlignment.Right, PdfMuted, FontWeights.Normal, new Thickness(0, 1, 10, 1), false));
+        g.Children.Add(ItemCell("= " + sum, 3, r, TextAlignment.Right, PdfInk, FontWeights.Bold, new Thickness(0, 1, hasDisc ? 10 : 0, 1), false));
+        if (hasDisc)
+            g.Children.Add(ItemCell("(" + disc + ")", 4, r, TextAlignment.Right, PdfDanger, FontWeights.Normal, new Thickness(0, 1, 0, 1), false));
+    }
+
+    private static TextBlock ItemCell(string text, int col, int row, TextAlignment align, Brush fg, FontWeight weight, Thickness margin, bool wrap)
+    {
+        var tb = new TextBlock
+        {
+            Text = text,
+            TextAlignment = align,
+            Foreground = fg,
+            FontWeight = weight,
+            FontSize = 12.5,
+            Margin = margin,
+            TextWrapping = wrap ? TextWrapping.Wrap : TextWrapping.NoWrap
+        };
+        Grid.SetColumn(tb, col);
+        Grid.SetRow(tb, row);
+        return tb;
+    }
+
+    private TextBlock BuildTextLine(string line)
+    {
+        var tb = new TextBlock { FontSize = 12.5, TextWrapping = TextWrapping.Wrap, Foreground = PdfInk, Margin = new Thickness(0, 1, 0, 1) };
+        int c = line.IndexOf(':');
+        if (c >= 0)
+        {
+            tb.Inlines.Add(new Run(line[..(c + 1)]) { FontWeight = FontWeights.Bold });
+            tb.Inlines.Add(new Run(line[(c + 1)..]));
+        }
+        else
+            tb.Inlines.Add(new Run(line) { FontWeight = FontWeights.Bold });
+        return tb;
+    }
+
+    private static Border BuildSeparator() => new()
+    {
+        Height = 0.7,
+        Background = new SolidColorBrush(Color.FromArgb(0x66, 0x9C, 0xA3, 0xAF)),
+        Margin = new Thickness(40, 5, 40, 5)
+    };
+
+    private FrameworkElement BuildTotalLine(string line)
+    {
+        int c = line.IndexOf(':');
+        if (c < 0) return BuildTextLine(line);
+
+        bool isTotal = line.TrimStart().StartsWith("Jami", StringComparison.OrdinalIgnoreCase);
+        const double size = 13.5;
+        double valueSize = isTotal ? size : 14.5;
+
+        var value = line[(c + 1)..].Trim();
+        int p = value.LastIndexOf('(');
+        if (p > 0 && value.EndsWith(")"))
+            value = $"{value[p..]} {value[..p].Trim()}";
+
+        var g = new Grid { Margin = new Thickness(0, 1, 0, 1) };
+        g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        var lbl = new TextBlock
+        {
+            Text = line[..c].Trim(),
+            FontSize = size,
+            FontWeight = FontWeights.Bold,
+            Foreground = PdfInk,
+            HorizontalAlignment = HorizontalAlignment.Left
+        };
+        var val = new TextBlock
+        {
+            Text = value,
+            FontSize = valueSize,
+            FontWeight = isTotal ? FontWeights.Bold : FontWeights.Normal,
+            Foreground = PdfInk,
+            HorizontalAlignment = HorizontalAlignment.Right
+        };
+        Grid.SetColumn(val, 1);
+        g.Children.Add(lbl);
+        g.Children.Add(val);
+        return g;
+    }
+
+    private static string NormalizeDiscount(string disc)
+    {
+        int pct = disc.IndexOf('%');
+        if (pct > 0 && decimal.TryParse(disc[..pct].Trim(), NumberStyles.Any, CultureInfo.InvariantCulture, out var rate))
+            return $"{rate:0.##}{disc[pct..]}";
+        return disc;
+    }
+
+    private static bool TryParseItem(string line, out string name, out string length, out string price, out string sum, out string disc)
+    {
+        name = length = price = sum = disc = string.Empty;
+        var body = line.TrimEnd(';', ' ');
+
+        int br = body.IndexOf("[ch:", StringComparison.OrdinalIgnoreCase);
+        if (br >= 0)
+        {
+            int end = body.IndexOf(']', br);
+            disc = (end > br ? body[(br + 4)..end] : body[(br + 4)..]).Trim();
+            disc = NormalizeDiscount(disc);
+            body = body[..br].Trim();
+        }
+
+        int eq = body.LastIndexOf('=');
+        if (eq < 0)
+            return false;
+        sum = body[(eq + 1)..].Trim();
+
+        var left = body[..eq].Trim();
+        int x = left.LastIndexOf(" x ", StringComparison.Ordinal);
+        if (x < 0)
+            return false;
+        price = left[(x + 3)..].Trim();
+
+        var nameLen = left[..x].Trim();
+        int dash = nameLen.LastIndexOf(" - ", StringComparison.Ordinal);
+        if (dash < 0)
+            return false;
+        length = nameLen[(dash + 3)..].Trim();
+        name = nameLen[..dash].Trim();
+        return name.Length > 0;
+    }
+
+    private void AddRowHeader(Grid grid, string date, string description, double height)
     {
         int row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(height) });
 
-        AddSimpleCell(grid, row, 0, date, TextAlignment.Center, FontWeights.Bold, 12, new Thickness(0.5, 0.5, 0, 0.5), Brushes.Black);
-        AddSimpleCell(grid, row, 1, description, TextAlignment.Center, FontWeights.Bold, 12, new Thickness(0.5, 0.5, 0, 0.5), Brushes.Black);
+        grid.Children.Add(HeaderCell(date, TextAlignment.Center, new Thickness(0.5, 0.5, 0, 1.2), row, 0));
+        grid.Children.Add(HeaderCell(description, TextAlignment.Center, new Thickness(0.5, 0.5, 0, 1.2), row, 1));
 
         var tb = new TextBlock
         {
-            FontSize = 12, // 14 dan 12 ga tushirildi
+            FontSize = 12.5,
             FontWeight = FontWeights.Bold,
             TextAlignment = TextAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center
         };
 
-        tb.Inlines.Add(new Run("Debit") { Foreground = Brushes.DarkRed });
-        tb.Inlines.Add(new Run(" / ") { Foreground = Brushes.Black });
-        tb.Inlines.Add(new Run("Kredit") { Foreground = Brushes.Black });
+        tb.Inlines.Add(new Run("Debit") { Foreground = PdfDanger });
+        tb.Inlines.Add(new Run(" / ") { Foreground = PdfMuted });
+        tb.Inlines.Add(new Run("Kredit") { Foreground = PdfInk });
 
         var border = new Border
         {
-            BorderBrush = Brushes.Black,
-            BorderThickness = new Thickness(0.5),
+            Background = PdfHeaderBg,
+            BorderBrush = PdfAccent,
+            BorderThickness = new Thickness(0.5, 0.5, 0.5, 1.2),
             Child = tb
         };
 
@@ -780,42 +795,80 @@ public partial class TurnoversPageViewModel : ViewModelBase
         grid.Children.Add(border);
     }
 
+    private Border HeaderCell(string text, TextAlignment align, Thickness borderThickness, int row, int column)
+    {
+        var border = new Border
+        {
+            Background = PdfHeaderBg,
+            BorderBrush = PdfAccent,
+            BorderThickness = borderThickness,
+            Child = new TextBlock
+            {
+                Text = text,
+                FontSize = 12.5,
+                FontWeight = FontWeights.Bold,
+                TextAlignment = align,
+                VerticalAlignment = VerticalAlignment.Center,
+                Foreground = PdfAccent
+            }
+        };
+        Grid.SetRow(border, row);
+        Grid.SetColumn(border, column);
+        return border;
+    }
+
     private void AddRowTotalNew(Grid grid, decimal totalCredit, decimal totalDebit, double height)
     {
         int row1 = grid.RowDefinitions.Count;
-        grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(height) });
-        int row2 = row1 + 1;
-        grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(height) });
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.Children.Add(TotalLine("Debit", totalDebit.ToString("N2"), PdfDanger, row1, new Thickness(0, 1, 0, 0.6)));
 
-        // JAMI birlashgan katak - FontSize 14 (Oldingi kelishuv bo'yicha)
-        var jamiBorder = new Border
-        {
-            BorderBrush = Brushes.Black,
-            BorderThickness = new Thickness(0.5, 0.5, 0, 0.5),
-            Child = new TextBlock
-            {
-                Text = "JAMI",
-                FontSize = 14,
-                FontWeight = FontWeights.Bold,
-                TextAlignment = TextAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                Padding = new Thickness(5)
-            }
-        };
-        Grid.SetRow(jamiBorder, row1);
-        Grid.SetRowSpan(jamiBorder, 2);
-        Grid.SetColumn(jamiBorder, 0);
-        grid.Children.Add(jamiBorder);
-
-        // Debit qatori - FontSize 14 va DarkRed
-        AddSimpleCell(grid, row1, 1, "Debit", TextAlignment.Left, FontWeights.Bold, 14, new Thickness(0.5, 0.5, 0, 0.5), Brushes.DarkRed);
-        AddSimpleCell(grid, row1, 2, totalDebit.ToString("N2"), TextAlignment.Right, FontWeights.Bold, 14, new Thickness(0.5, 0.5, 0.5, 0.5), Brushes.DarkRed);
-
-        // Kredit qatori - FontSize 14 va Black
-        AddSimpleCell(grid, row2, 1, "Kredit", TextAlignment.Left, FontWeights.Bold, 14, new Thickness(0.5, 0, 0, 0.5), Brushes.Black);
-        AddSimpleCell(grid, row2, 2, totalCredit.ToString("N2"), TextAlignment.Right, FontWeights.Bold, 14, new Thickness(0.5, 0, 0.5, 0.5), Brushes.Black);
+        int row2 = grid.RowDefinitions.Count;
+        grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        grid.Children.Add(TotalLine("Kredit", totalCredit.ToString("N2"), PdfInk, row2, new Thickness(0, 0, 0, 1)));
     }
-    // 4. AddSimpleCell metodiga rang (Brush) qo'shish
+
+    private Border TotalLine(string label, string value, Brush valueBrush, int row, Thickness borderThickness)
+    {
+        var inner = new Grid();
+        inner.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        inner.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        var lbl = new TextBlock
+        {
+            Text = label,
+            FontSize = 14,
+            FontWeight = FontWeights.Bold,
+            Foreground = PdfInk,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Center,
+            Padding = new Thickness(2, 6, 10, 6)
+        };
+        var val = new TextBlock
+        {
+            Text = value,
+            FontSize = 14,
+            FontWeight = FontWeights.Bold,
+            Foreground = valueBrush,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Center,
+            Padding = new Thickness(10, 6, 2, 6)
+        };
+        Grid.SetColumn(val, 1);
+        inner.Children.Add(lbl);
+        inner.Children.Add(val);
+
+        var border = new Border
+        {
+            BorderBrush = PdfMuted,
+            BorderThickness = borderThickness,
+            Child = inner
+        };
+        Grid.SetRow(border, row);
+        Grid.SetColumnSpan(border, 3);
+        return border;
+    }
+
     private void AddSimpleCell(Grid grid, int row, int column, string value, TextAlignment align, FontWeight weight, double size, Thickness borderThickness, Brush foreground)
     {
         var tb = new TextBlock
@@ -825,14 +878,14 @@ public partial class TurnoversPageViewModel : ViewModelBase
             FontSize = size,
             FontWeight = weight,
             TextAlignment = align,
-            Foreground = foreground, // Rang shu yerda ishlatiladi
+            Foreground = foreground,
             TextWrapping = TextWrapping.Wrap,
             HorizontalAlignment = HorizontalAlignment.Stretch
         };
 
         var border = new Border
         {
-            BorderBrush = Brushes.Black,
+            BorderBrush = PdfLine,
             BorderThickness = borderThickness,
             Child = tb
         };
@@ -851,19 +904,21 @@ public partial class TurnoversPageViewModel : ViewModelBase
         var lblText = new TextBlock
         {
             Text = label,
-            FontSize = 13,
-            FontWeight = FontWeights.Bold,
-            Padding = new Thickness(5, 2, 5, 2),
-            HorizontalAlignment = HorizontalAlignment.Left
+            FontSize = 13.5,
+            FontWeight = FontWeights.SemiBold,
+            Padding = new Thickness(10, 6, 10, 6),
+            HorizontalAlignment = HorizontalAlignment.Left,
+            Foreground = PdfMuted
         };
 
         var valText = new TextBlock
         {
             Text = value,
-            FontSize = 13,
+            FontSize = 15,
             FontWeight = FontWeights.Bold,
-            Padding = new Thickness(5, 2, 5, 2),
-            HorizontalAlignment = HorizontalAlignment.Right
+            Padding = new Thickness(10, 6, 10, 6),
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Foreground = PdfInk
         };
 
         Grid.SetColumn(lblText, 0);
@@ -874,8 +929,8 @@ public partial class TurnoversPageViewModel : ViewModelBase
         return new Border
         {
             Background = background,
-            BorderBrush = Brushes.Black,
-            BorderThickness = new Thickness(0.5), // Jadval chiziqlari bilan bir xil bo'lishi uchun
+            BorderBrush = PdfAccent,
+            BorderThickness = new Thickness(0, 0, 0, 1.2),
             Child = grid
         };
     }
@@ -883,20 +938,17 @@ public partial class TurnoversPageViewModel : ViewModelBase
     private void AddFooterContent(FixedPage page, int currentPage, int totalPages)
     {
         const double margin = 40;
-        //const double pageWidth = 793.7;
 
-        // Sahifa raqami matnini yaratish
         var pageInfo = new TextBlock
         {
             Text = $"{currentPage}-bet / {totalPages}",
-            FontSize = 12,
-            FontWeight = FontWeights.Bold,
-            HorizontalAlignment = HorizontalAlignment.Right // Kerak emas, chunki FixedPage.SetLeft/Top ishlatiladi
+            FontSize = 10,
+            Foreground = PdfMuted,
+            HorizontalAlignment = HorizontalAlignment.Right
         };
 
-        // Sahifa raqamini joylashtirish
-        FixedPage.SetRight(pageInfo, margin); // O'ng chetidan margin masofada
-        FixedPage.SetBottom(pageInfo, 20);    // Pastki chetidan 20 piksel yuqorida
+        FixedPage.SetRight(pageInfo, margin);
+        FixedPage.SetBottom(pageInfo, 20);
 
         page.Children.Add(pageInfo);
     }
@@ -905,75 +957,49 @@ public partial class TurnoversPageViewModel : ViewModelBase
     {
         if (isFullHeader)
         {
-            container.Children.Add(new TextBlock
-            {
-                Text = "MIJOZ OPERATSIYALARI HISOBOTI",
-                FontSize = 20,
-                FontWeight = FontWeights.ExtraBold,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 15)
-            });
+            var head = new Grid();
+            head.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            container.Children.Add(new TextBlock
+            var left = new StackPanel();
+            left.Children.Add(new TextBlock { Text = ReportService.Brand, FontSize = 12, FontWeight = FontWeights.Bold, Foreground = PdfAccent });
+            left.Children.Add(new TextBlock { Text = "Mijoz operatsiyalari hisoboti", FontSize = 19, FontWeight = FontWeights.Bold, Foreground = PdfInk });
+            left.Children.Add(new TextBlock
             {
-                Text = $"Mijoz: {SelectedCustomer?.Name.ToUpper()}",
-                FontSize = 16,
-                FontWeight = FontWeights.Medium
+                Text = $"{SelectedCustomer?.Name}  |  {BeginDate:dd.MM.yyyy} — {EndDate:dd.MM.yyyy}",
+                FontSize = 11,
+                Foreground = PdfMuted,
+                Margin = new Thickness(0, 3, 0, 0)
             });
+            Grid.SetColumn(left, 0);
+            head.Children.Add(left);
 
-            container.Children.Add(new TextBlock
-            {
-                Text = $"Davr: {BeginDate:dd.MM.yyyy} — {EndDate:dd.MM.yyyy}",
-                FontSize = 14,
-                Margin = new Thickness(0, 5, 0, 10)
-            });
-            return 120; // Taxminiy band qilingan balandlik
+            var date = new TextBlock { Text = $"{DateTime.Now:dd.MM.yyyy  HH:mm}", FontSize = 10, Foreground = PdfMuted, VerticalAlignment = VerticalAlignment.Bottom, TextAlignment = TextAlignment.Right };
+            Grid.SetColumn(date, 1);
+            head.Children.Add(date);
+
+            container.Children.Add(head);
+            container.Children.Add(new Border { Height = 2.5, Background = PdfAccent, Margin = new Thickness(0, 8, 0, 12) });
+            return 120;
         }
         else
         {
             container.Children.Add(new TextBlock
             {
-                Text = $"",
+                Text = string.Empty,
                 FontSize = 12,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 Margin = new Thickness(0, 0, 0, 10)
             });
-            return 30; // Kamroq joy oladi
+            return 30;
         }
     }
 
-    private double CalculateOperationRowHeight(CustomerOperationForDisplayViewModel op, double commentColumnWidth)
+    private double CalculateOperationRowHeight(CustomerOperationForDisplayViewModel op, double descWidth)
     {
-        string description = op.Description ?? op.FormattedDescription ?? "";
-
-        var tempTextBlock = new TextBlock
-        {
-            Text = description,
-            Width = commentColumnWidth - 10,
-            TextWrapping = TextWrapping.Wrap,
-            FontSize = 12 // Qator balandligini 12 shriftga qarab hisoblaydi
-        };
-
-        tempTextBlock.Measure(new Size(commentColumnWidth - 10, double.MaxValue));
-        double actualHeight = tempTextBlock.DesiredSize.Height + 8;
-
-        return Math.Max(25, actualHeight);
-    }
-
-    public class PaginatedOperation
-    {
-        // Asosiy operatsiya ma'lumotlari
-        public DateTime Date { get; set; }
-        public decimal Debit { get; set; }
-        public decimal Credit { get; set; }
-        public string Description { get; set; } = string.Empty;
-
-        // Sahifalash uchun qo'shimcha ma'lumot
-        public int StartLineIndex { get; set; } // Bu qatorda Izoh qayerdan boshlanadi
-        public int EndLineIndex { get; set; } // Bu qator Izohning qayerda tugaydi
-        public int TotalLines { get; set; } // Izohning jami satrlar soni
-        public bool IsFirstSegment { get; set; } // Bu segmentda Sana/Debit/Kredit bo'ladimi
-        public bool IsLastSegment { get; set; } // Bu oxirgi segmentmi
+        var content = BuildDescriptionContent(op, descWidth - 12);
+        content.Measure(new Size(descWidth - 12, double.MaxValue));
+        return Math.Max(28, content.DesiredSize.Height + 12);
     }
 
     #endregion PDF Export and Share

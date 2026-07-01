@@ -1,18 +1,18 @@
-﻿namespace VoltStream.WPF.Commons.Converters;
+namespace VoltStream.WPF.Commons.Converters;
 
-using System.Drawing;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 
 public class BalanceToColorConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is decimal balance)
-        {
-            return balance > 0 ? Brushes.Green : balance < 0 ? Brushes.Red : Brushes.Black;
-        }
-        return Brushes.Black;
+        var key = value is decimal balance
+            ? balance > 0 ? "Success" : balance < 0 ? "Danger" : "TextPrimary"
+            : "TextPrimary";
+        return Application.Current?.TryFindResource(key) as Brush ?? Brushes.Black;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

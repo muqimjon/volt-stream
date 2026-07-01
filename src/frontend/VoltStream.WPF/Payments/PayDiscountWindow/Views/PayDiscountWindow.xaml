@@ -16,12 +16,10 @@
     mc:Ignorable="d">
 
 
-	<Border BorderBrush="LightGray" Margin="25"
-            BorderThickness="1" 
-            Background="White"  CornerRadius="5">
-		<Border.Effect>
-			<DropShadowEffect BlurRadius="20"       ShadowDepth="10"        Direction="270"        Color="Black"          Opacity="0.4"/>
-		</Border.Effect>
+	<Border BorderBrush="{DynamicResource Border}" Margin="25"
+            BorderThickness="1"
+            Background="{DynamicResource Surface}"  CornerRadius="{DynamicResource RadiusLg}"
+            Effect="{DynamicResource CardShadow}">
 		<Grid Margin="10">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto" />
@@ -38,14 +36,31 @@
 			</Grid.ColumnDefinitions>
 
 
-			<TextBlock
-            Grid.ColumnSpan="2"
-            Margin="0,5"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
-            FontSize="14"
-            FontWeight="SemiBold"
-            Text="Chegirmadan foydalanish:" />
+			<Border Grid.Row="0" Grid.ColumnSpan="2"
+                    Background="{DynamicResource SurfaceAlt}"
+                    CornerRadius="{DynamicResource RadiusMd}"
+                    Padding="12,6"
+                    Margin="0,0,0,10">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<TextBlock VerticalAlignment="Center"
+                               Style="{StaticResource SubtitleText}"
+                               Text="Chegirmadan foydalanish" />
+					<Button Grid.Column="1"
+                            Style="{StaticResource IconButton}"
+                            Width="30" Height="30"
+                            IsCancel="True"
+                            ToolTip="Yopish">
+						<Path Width="12" Height="12"
+                              Stroke="{DynamicResource TextSecondary}"
+                              StrokeThickness="1.6"
+                              Data="M0,0 L12,12 M12,0 L0,12" />
+					</Button>
+				</Grid>
+			</Border>
 
 			<TextBlock
             Grid.Row="1"
@@ -58,6 +73,7 @@
             Grid.Row="1"
             Grid.Column="1"
             Margin="0,5"
+            Style="{StaticResource ReadOnlyValue}"
             utils:TextBoxTabBehavior.EnableTabOnKeys="True"
             FontSize="14"
             IsEnabled="False" />
@@ -74,6 +90,7 @@
             Grid.Row="2"
             Grid.Column="1"
             Margin="0,5"
+            Style="{StaticResource ReadOnlyValue}"
             utils:NumericInput.IsNumeric="True"
             utils:TextBoxTabBehavior.EnableTabOnKeys="True"
             FontSize="14"
@@ -95,13 +112,15 @@
                 x:Name="DiscountSum"
                 Grid.Column="0"
                 Margin="0,5"
+                Style="{StaticResource ModernTextBox}"
                 utils:NumericInput.IsNumeric="True"
                 utils:TextBoxTabBehavior.EnableTabOnKeys="True"
                 FontSize="14" />
 				<Button
                 Grid.Column="1"
                 Margin="3,5,0,6"
-                Padding="5,0"
+                Padding="12,0"
+                Style="{StaticResource SecondaryButton}"
                 Click="Button_Click"
                 Content="Σ"
                 IsTabStop="False" />
@@ -125,11 +144,11 @@
                 Margin="0,5,3,5"
                 Content="Naqd pulda"
                 FontSize="14"
-                Foreground="Red" />
+                Foreground="{DynamicResource Danger}" />
 
 
 				<RadioButton
-                x:Name="reСalculation"
+                x:Name="reCalculation"
                 Grid.Column="1"
                 Margin="3,5,0,5"
                 Content="Hisob-Kitob"
@@ -147,6 +166,7 @@
             Grid.Row="5"
             Grid.Column="1"
             Margin="0,5"
+            Style="{StaticResource ModernTextBox}"
             utils:TextBoxTabBehavior.EnableTabOnKeys="True"
             FontSize="14" />
 
@@ -160,11 +180,13 @@
                 x:Name="SaveDiscount"
                 Width="100"
                 Margin="5"
+                Style="{StaticResource PrimaryButton}"
                 Click="SaveDiscount_Click"
                 Content="Saqlash" />
 				<Button
                 Width="100"
                 Margin="5"
+                Style="{StaticResource SecondaryButton}"
                 Content="Bekor qilish"
                 IsCancel="True" />
 			</StackPanel>

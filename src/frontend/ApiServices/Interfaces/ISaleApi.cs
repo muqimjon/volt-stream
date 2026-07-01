@@ -19,6 +19,9 @@ public interface ISaleApi
     [Post("/sales/filter")]
     Task<Response<List<SaleResponse>>> Filtering(FilteringRequest request);
 
+    [Post("/sales/items/filter")]
+    Task<Response<List<SaleItemHistoryResponse>>> FilterItems(SaleItemHistoryRequest request);
+
     [Get("/sales")]
     Task<Response<List<SaleResponse>>> GetAll();
 

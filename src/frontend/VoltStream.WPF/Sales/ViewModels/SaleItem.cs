@@ -50,7 +50,7 @@ public partial class SaleItem : ViewModelBase
             if (PerDiscount.HasValue && PerDiscount.Value > 0 && Sum.HasValue)
                 Discount = Sum.Value * (PerDiscount.Value / 100);
             else if (Discount.HasValue && Sum.HasValue && Sum.Value > 0)
-                PerDiscount = (Discount.Value / Sum.Value) * 100;
+                PerDiscount = Math.Round((Discount.Value / Sum.Value) * 100, 2);
 
             if (Sum.HasValue && Discount.HasValue)
                 FinalSumProduct = Sum.Value - Discount.Value;

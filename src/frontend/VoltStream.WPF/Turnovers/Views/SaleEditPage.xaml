@@ -6,45 +6,48 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
         Title="Savdoni tahrirlash"
+        Background="{DynamicResource Canvas}"
         d:DesignHeight="450"
         d:DesignWidth="800"
         mc:Ignorable="d">
 
-	<Grid Margin="10">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="150" />
-			<RowDefinition Height="30" />
-			<RowDefinition Height="*" />
-			<RowDefinition Height="Auto"/>
-		</Grid.RowDefinitions>
-
-		<Grid>
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="*" MaxWidth="500" />
-				<ColumnDefinition Width="20" />
-				<ColumnDefinition Width="*" />
-			</Grid.ColumnDefinitions>
+	<Grid>
+		<Border Style="{StaticResource CardBorder}" Margin="10">
 			<Grid>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="80" />
-					<ColumnDefinition Width="*" />
-				</Grid.ColumnDefinitions>
 				<Grid.RowDefinitions>
+					<RowDefinition Height="150" />
+					<RowDefinition Height="30" />
 					<RowDefinition Height="*" />
-					<RowDefinition Height="*" />
-					<RowDefinition Height="*" />
-					<RowDefinition Height="*" />
-					<RowDefinition Height="*" />
-					<RowDefinition Height="6" />
+					<RowDefinition Height="Auto"/>
 				</Grid.RowDefinitions>
 
-				<Label Content="Sana:" FontSize="14" VerticalAlignment="Center" />
-				<Label Grid.Row="1" Content="Mijoz:" FontSize="14" VerticalAlignment="Center" />
-				<Label Grid.Row="2" Content="Val. turi:" FontSize="14" VerticalAlignment="Center" />
-				<Label Grid.Row="3" Content="Chegirma:" FontSize="14" VerticalAlignment="Center" />
-				<Label Grid.Row="4" Content="Izox:" FontSize="14" VerticalAlignment="Center" />
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" MaxWidth="500" />
+						<ColumnDefinition Width="20" />
+						<ColumnDefinition Width="*" />
+					</Grid.ColumnDefinitions>
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="80" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="*" />
+							<RowDefinition Height="*" />
+							<RowDefinition Height="*" />
+							<RowDefinition Height="*" />
+							<RowDefinition Height="*" />
+							<RowDefinition Height="6" />
+						</Grid.RowDefinitions>
 
-				<controls:UserCalendar  x:Name="calendar"
+						<Label Content="Sana:" FontSize="14" VerticalAlignment="Center" />
+						<Label Grid.Row="1" Content="Mijoz:" FontSize="14" VerticalAlignment="Center" />
+						<Label Grid.Row="2" Content="Val. turi:" FontSize="14" VerticalAlignment="Center" />
+						<Label Grid.Row="3" Content="Chegirma:" FontSize="14" VerticalAlignment="Center" />
+						<Label Grid.Row="4" Content="Izox:" FontSize="14" VerticalAlignment="Center" />
+
+						<controls:UserCalendar  x:Name="calendar"
                     Grid.Column="1"
                     Width="150"
                     Margin="0,0,10,0"
@@ -53,301 +56,330 @@
                     FontSize="14"
                     SelectedDate="{Binding Sale.Date}" />
 
-				<ComboBox x:Name="cbxCustomer"
+						<ComboBox x:Name="cbxCustomer"
                     Grid.Row="1"
                     Grid.Column="1"
                     Margin="0,2"
                     DisplayMemberPath="Name"
                     FontSize="14"
                     IsEditable="True"
+                    Style="{StaticResource RoundedCombo}"
                     ItemsSource="{Binding Customers}"
                     SelectedItem="{Binding SelectedCustomer}"
                     utils:ComboBoxQuickNavBehavior.EnableQuickNavigation="True" />
 
-				<Grid Grid.Row="2" Grid.Column="1">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*" />
-						<ColumnDefinition Width="90" />
-						<ColumnDefinition Width="*" />
-					</Grid.ColumnDefinitions>
-					<ComboBox x:Name="cbxCurrency"
+						<Grid Grid.Row="2" Grid.Column="1">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="90" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<ComboBox x:Name="cbxCurrency"
                         Margin="0,2,10,2"
                         DisplayMemberPath="Name"
                         FontSize="14"
                         IsEditable="False"
+                        Style="{StaticResource RoundedCombo}"
                         ItemsSource="{Binding Currencies}"
                         SelectedItem="{Binding SelectedCurrency}" />
 
-					<Label Grid.Column="1" Content="Jami summa:" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" />
-					<TextBox x:Name="txtSaleTotalAmount"
+							<Label Grid.Column="1" Content="Jami summa:" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" />
+							<TextBox x:Name="txtSaleTotalAmount"
                         Grid.Column="2"
                         Height="25"
                         Margin="0,2"
                         VerticalAlignment="Top"
                         FontSize="14"
                         IsReadOnly="True"
+                        Style="{StaticResource RoundedTextBox}"
                         utils:NumericInput.IsNumeric="True"
                         utils:NumericInput.Value="{Binding TotalSum}" />
-				</Grid>
+						</Grid>
 
-				<Grid Grid.Row="3" Grid.Column="1">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*" />
-						<ColumnDefinition Width="35" />
-						<ColumnDefinition Width="55" />
-						<ColumnDefinition Width="90" />
-						<ColumnDefinition Width="*" />
-					</Grid.ColumnDefinitions>
-					<TextBox x:Name="txtSaleTotalDiscount"
+						<Grid Grid.Row="3" Grid.Column="1">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*" />
+								<ColumnDefinition Width="35" />
+								<ColumnDefinition Width="55" />
+								<ColumnDefinition Width="90" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<TextBox x:Name="txtSaleTotalDiscount"
                         Margin="0,2,0,2"
                         FontSize="14"
                         IsReadOnly="True"
+                        Style="{StaticResource RoundedTextBox}"
                         utils:NumericInput.IsNumeric="True"
                         utils:NumericInput.Value="{Binding Sale.Discount}"/>
 
-					<Border
+							<Border
                         Grid.Column="1"
                         Margin="2,2,0,2"
-                        BorderBrush="#888"
+                        BorderBrush="{DynamicResource BorderStrong}"
                         BorderThickness="0.5">
-						<CheckBox x:Name="chkIsDiscountApplied"
+								<CheckBox x:Name="chkIsDiscountApplied"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             FontSize="12"
                             IsChecked="{Binding Sale.IsDiscountApplied}" />
-					</Border>
+							</Border>
 
-					<Label Grid.Column="3" Content="To'lashga:" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" />
-					<TextBox x:Name="txtSaleAmount"
+							<Label Grid.Column="3" Content="To'lashga:" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" />
+							<TextBox x:Name="txtSaleAmount"
                         Grid.Column="4"
                         Margin="0,2"
                         FontSize="14"
                         IsReadOnly="True"
+                        Style="{StaticResource RoundedTextBox}"
                         utils:NumericInput.IsNumeric="True"
                         utils:NumericInput.Value="{Binding Sale.Amount}" />
-				</Grid>
+						</Grid>
 
-				<TextBox x:Name="txtSaleDescription"
+						<TextBox x:Name="txtSaleDescription"
                     Grid.Row="4"
                     Grid.Column="1"
                     Margin="0,2"
                     FontSize="14"
+                    Style="{StaticResource RoundedTextBox}"
                     Text="{Binding Sale.Description}" />
-			</Grid>
+					</Grid>
 
-			<Grid Grid.Column="2">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="150" />
-					<ColumnDefinition Width="*" />
-				</Grid.ColumnDefinitions>
-				<Grid>
-					<Grid.RowDefinitions>
-						<RowDefinition Height="*" />
-						<RowDefinition Height="*" />
-						<RowDefinition Height="*" />
-						<RowDefinition Height="*" />
-						<RowDefinition Height="40" />
-					</Grid.RowDefinitions>
-					<TextBlock Text="Hisob:" FontSize="12" FontStyle="Italic" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-					<TextBlock Grid.Row="1" Text="Joriy:" VerticalAlignment="Center" />
-					<TextBox
+					<Grid Grid.Column="2">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="150" />
+							<ColumnDefinition Width="*" />
+						</Grid.ColumnDefinitions>
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="*" />
+								<RowDefinition Height="*" />
+								<RowDefinition Height="*" />
+								<RowDefinition Height="*" />
+								<RowDefinition Height="40" />
+							</Grid.RowDefinitions>
+							<TextBlock Text="Hisob:" FontSize="12" FontStyle="Italic" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+							<TextBlock Grid.Row="1" Text="Joriy:" VerticalAlignment="Center" />
+							<TextBox
                         Grid.Row="1"
                         Margin="35,2,2,2"
                         HorizontalContentAlignment="Right"
                         Background="Transparent"
                         BorderThickness="0"
+                        Foreground="{DynamicResource TextPrimary}"
                         FontSize="12"
                         IsReadOnly="True"
                         utils:NumericInput.IsNumeric="True"
                         VerticalContentAlignment="Center"
                         utils:NumericInput.Value="{Binding BeginBalance}" />
 
-					<TextBlock Grid.Row="2" Text="Natija:" VerticalAlignment="Center" />
-					<TextBox
+							<TextBlock Grid.Row="2" Text="Natija:" VerticalAlignment="Center" />
+							<TextBox
                         Grid.Row="2"
                         Margin="35,2,2,2"
                         HorizontalContentAlignment="Right"
                         Background="Transparent"
                         BorderThickness="0"
+                        Foreground="{DynamicResource TextPrimary}"
                         FontSize="12"
                         IsReadOnly="True"
                         utils:NumericInput.IsNumeric="True"
                         VerticalContentAlignment="Center"
                         utils:NumericInput.Value="{Binding LastBalance}" />
 
-					<TextBlock Grid.Row="3" Text="Telefon:" VerticalAlignment="Center" />
-					<TextBox
+							<TextBlock Grid.Row="3" Text="Telefon:" VerticalAlignment="Center" />
+							<TextBox
                         Grid.Row="3"
                         Margin="42,2,2,2"
                         Background="Transparent"
                         BorderThickness="0"
+                        Foreground="{DynamicResource TextPrimary}"
                         FontSize="12"
                         IsReadOnly="True"
                         HorizontalContentAlignment="Right"
                         VerticalContentAlignment="Center"
                         Text="{Binding SelectedCustomer.Phone}" />
+						</Grid>
+					</Grid>
 				</Grid>
-			</Grid>
-		</Grid>
 
-		<Grid Grid.Row="1">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="1.5*" MinWidth="120" />
-				<ColumnDefinition Width="1.8*" MinWidth="120" />
-				<ColumnDefinition Width="*" MaxWidth="90" />
-				<ColumnDefinition Width="*" MaxWidth="80" />
-				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="*" MaxWidth="100" />
-				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="*" MaxWidth="85" />
-				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="*" />
-				<ColumnDefinition Width="Auto" />
-			</Grid.ColumnDefinitions>
+				<Grid Grid.Row="1">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="1.5*" MinWidth="120" />
+						<ColumnDefinition Width="1.8*" MinWidth="120" />
+						<ColumnDefinition Width="*" MaxWidth="90" />
+						<ColumnDefinition Width="*" MaxWidth="80" />
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="*" MaxWidth="100" />
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="*" MaxWidth="85" />
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
 
-			<TextBlock Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=cbxCategory}" Text="Maxsulot turi" />
-			<ComboBox 
-                x:Name="cbxCategory" 
-                Margin="1,3" 
-                FontSize="14" 
+					<TextBlock Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=cbxCategory}" Text="Maxsulot turi" />
+					<ComboBox
+                x:Name="cbxCategory"
+                Margin="1,3"
+                FontSize="14"
                 IsEditable="True"
                 DisplayMemberPath="Name"
+                Style="{StaticResource RoundedCombo}"
                 ItemsSource="{Binding Categories}"
                 SelectedItem="{Binding SelectedCategory}"
                 Text="{Binding CategorySearchText, UpdateSourceTrigger=LostFocus}"
                 utils:ComboBoxQuickNavBehavior.EnableQuickNavigation="True" />
 
-			<TextBlock Grid.Column="1" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=cbxProduct}" Text="Maxsulot nomi" />
-			<ComboBox 
-                x:Name="cbxProduct" 
-                Grid.Column="1" 
-                Margin="1,3" 
-                FontSize="14" 
+					<TextBlock Grid.Column="1" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=cbxProduct}" Text="Maxsulot nomi" />
+					<ComboBox
+                x:Name="cbxProduct"
+                Grid.Column="1"
+                Margin="1,3"
+                FontSize="14"
                 IsEditable="True"
                 DisplayMemberPath="Name"
+                Style="{StaticResource RoundedCombo}"
                 ItemsSource="{Binding Products}"
                 SelectedItem="{Binding SelectedProduct}"
                 Text="{Binding ProductSearchText, UpdateSourceTrigger=LostFocus}"
                 utils:ComboBoxQuickNavBehavior.EnableQuickNavigation="True" />
 
-			<TextBlock Grid.Column="2" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=cbxLengthPerRoll}" Text="Rulon metr" />
-			<ComboBox 
-                x:Name="cbxLengthPerRoll" 
-                Grid.Column="2" 
-                Margin="2,3" 
+					<TextBlock Grid.Column="2" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=cbxLengthPerRoll}" Text="Rulon metr" />
+					<ComboBox
+                x:Name="cbxLengthPerRoll"
+                Grid.Column="2"
+                Margin="2,3"
                 FontSize="14"
                 IsEditable="True"
                 DisplayMemberPath="LengthPerRoll"
+                Style="{StaticResource RoundedCombo}"
                 ItemsSource="{Binding WarehouseStocks}"
                 SelectedItem="{Binding SelectedWarehouseStock}"
                 Text="{Binding WarehouseStockSearchText, UpdateSourceTrigger=LostFocus}"
                 utils:ComboBoxQuickNavBehavior.EnableQuickNavigation="True" />
 
-			<TextBlock Grid.Column="3" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtRollCount}" Text="Rulon soni" />
-			<TextBox 
-                x:Name="txtRollCount" 
-                Grid.Column="3" 
-                Margin="1,3" 
+					<TextBlock Grid.Column="3" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtRollCount}" Text="Rulon soni" />
+					<TextBox
+                x:Name="txtRollCount"
+                Grid.Column="3"
+                Margin="1,3"
                 FontSize="14"
-                Validation.ErrorTemplate="{x:Null}" 
+                Style="{StaticResource RoundedTextBox}"
+                Validation.ErrorTemplate="{x:Null}"
                 utils:NumericInput.Precision="0"
                 utils:NumericInput.IsNumeric="True"
                 utils:NumericInput.Value="{Binding CurrentItem.RollCount, UpdateSourceTrigger=LostFocus}" />
 
-			<TextBlock Grid.Column="4" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtTotalLength}" Text="Jami metr" />
-			<TextBox 
-                x:Name="txtTotalLength" 
-                Grid.Column="4" 
-                Margin="1,3" 
+					<TextBlock Grid.Column="4" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtTotalLength}" Text="Jami metr" />
+					<TextBox
+                x:Name="txtTotalLength"
+                Grid.Column="4"
+                Margin="1,3"
                 FontSize="14"
-                Validation.ErrorTemplate="{x:Null}" 
+                Style="{StaticResource RoundedTextBox}"
+                Validation.ErrorTemplate="{x:Null}"
                 utils:NumericInput.IsNumeric="True"
                 utils:NumericInput.Precision="2"
                 utils:NumericInput.Value="{Binding CurrentItem.TotalLength, UpdateSourceTrigger=LostFocus}" />
 
-			<TextBlock Grid.Column="5" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtUnitPrice}" Text="Narxi" />
-			<TextBox 
-                x:Name="txtUnitPrice" 
-                Grid.Column="5" 
-                Margin="1,3" 
+					<TextBlock Grid.Column="5" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtUnitPrice}" Text="Narxi" />
+					<TextBox
+                x:Name="txtUnitPrice"
+                Grid.Column="5"
+                Margin="1,3"
                 FontSize="14"
-                Validation.ErrorTemplate="{x:Null}" 
+                Style="{StaticResource RoundedTextBox}"
+                Validation.ErrorTemplate="{x:Null}"
                 utils:NumericInput.IsNumeric="True"
                 utils:NumericInput.Precision="2"
                 utils:NumericInput.Value="{Binding CurrentItem.UnitPrice, UpdateSourceTrigger=PropertyChanged}" />
 
-			<TextBlock Grid.Column="6" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtTotalAmount}" Text="Jami summa" />
-			<TextBox 
-                x:Name="txtTotalAmount" 
-                Grid.Column="6" 
-                Margin="1,3" 
-                Validation.ErrorTemplate="{x:Null}" 
+					<TextBlock Grid.Column="6" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtTotalAmount}" Text="Jami summa" />
+					<TextBox
+                x:Name="txtTotalAmount"
+                Grid.Column="6"
+                Margin="1,3"
+                Style="{StaticResource RoundedTextBox}"
+                Validation.ErrorTemplate="{x:Null}"
                 FontSize="14"
                 utils:NumericInput.IsNumeric="True"
                 utils:NumericInput.Precision="2"
                 utils:NumericInput.Value="{Binding CurrentItem.TotalAmount}" />
 
-			<TextBlock Grid.Column="7" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtDiscountRate}" Text="Chegirma%" />
-			<TextBox 
-                x:Name="txtDiscountRate" 
-                Grid.Column="7" 
-                Margin="1,3" 
+					<TextBlock Grid.Column="7" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtDiscountRate}" Text="Chegirma%" />
+					<TextBox
+                x:Name="txtDiscountRate"
+                Grid.Column="7"
+                Margin="1,3"
                 FontSize="14"
-                Validation.ErrorTemplate="{x:Null}" 
+                Style="{StaticResource RoundedTextBox}"
+                Validation.ErrorTemplate="{x:Null}"
                 utils:NumericInput.IsNumeric="True"
                 utils:NumericInput.Precision="2"
                 utils:NumericInput.Value="{Binding CurrentItem.DiscountRate}" />
 
-			<TextBlock Grid.Column="8" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtDiscountAmount}" Text="Chegirma summasi" />
-			<TextBox 
-                x:Name="txtDiscountAmount" 
-                Grid.Column="8" 
-                Margin="1,3" 
+					<TextBlock Grid.Column="8" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtDiscountAmount}" Text="Chegirma summasi" />
+					<TextBox
+                x:Name="txtDiscountAmount"
+                Grid.Column="8"
+                Margin="1,3"
                 FontSize="14"
+                Style="{StaticResource RoundedTextBox}"
                 Validation.ErrorTemplate="{x:Null}"
                 utils:NumericInput.IsNumeric="True"
                 utils:NumericInput.Precision="2"
                 utils:NumericInput.Value="{Binding CurrentItem.DiscountAmount}" />
 
-			<TextBlock Grid.Column="9" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtFinalAmount}" Text="Umumiy summa" />
-			<TextBox 
-                x:Name="txtFinalAmount" 
-                Grid.Column="9" 
-                Margin="1,3" 
-                Validation.ErrorTemplate="{x:Null}" 
+					<TextBlock Grid.Column="9" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtFinalAmount}" Text="Umumiy summa" />
+					<TextBox
+                x:Name="txtFinalAmount"
+                Grid.Column="9"
+                Margin="1,3"
+                Style="{StaticResource RoundedTextBox}"
+                Validation.ErrorTemplate="{x:Null}"
                 FontSize="14"
                 utils:NumericInput.IsNumeric="True"
                 utils:NumericInput.Precision="2"
                 utils:NumericInput.Value="{Binding CurrentItem.FinalAmount}" />
 
-			<Button  x:Name="btnAdd"
-                Grid.Column="10" 
-                Margin="4,3" 
-                FontSize="14" 
+					<Button  x:Name="btnAdd"
+                Grid.Column="10"
+                Margin="4,3"
+                FontSize="14"
                 Command="{Binding AddCommand}">
-				<Button.Style>
-					<Style TargetType="Button">
-						<Setter Property="Content" Value="Qo'shish" />
-						<Style.Triggers>
-							<DataTrigger Binding="{Binding IsEditing}" Value="True">
-								<Setter Property="Content" Value="Yangilash" />
-							</DataTrigger>
-						</Style.Triggers>
-					</Style>
-				</Button.Style>
-			</Button>
+						<Button.Style>
+							<Style TargetType="Button" BasedOn="{StaticResource RoundedButton}">
+								<Setter Property="Background" Value="{DynamicResource Brand}" />
+								<Setter Property="Foreground" Value="{DynamicResource OnBrand}" />
+								<Setter Property="FontWeight" Value="SemiBold" />
+								<Setter Property="Padding" Value="10,0" />
+								<Setter Property="Content" Value="Qo'shish" />
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding IsEditing}" Value="True">
+										<Setter Property="Content" Value="Yangilash" />
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</Button.Style>
+					</Button>
 
-			<Button x:Name="btnCancel"
-                Grid.Column="11" 
-                Margin="4,3" 
+					<Button x:Name="btnCancel"
+                Grid.Column="11"
+                Margin="4,3"
                 FontSize="14"
                 Content="Bekor qilish"
                 Command="{Binding CancelEditCommand}"
+                Background="{DynamicResource SurfaceAlt}"
+                Foreground="{DynamicResource TextPrimary}"
+                BorderBrush="{DynamicResource BorderStrong}"
+                BorderThickness="1"
+                Padding="10,0"
+                Style="{StaticResource RoundedButton}"
                 Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibilityConverter}}" />
-		</Grid>
+				</Grid>
 
-		<DataGrid Grid.Row="2" Margin="0 5 0 0"
+				<DataGrid Grid.Row="2" Margin="0 5 0 0"
                   x:Name="dataGrid"
                   AutoGenerateColumns="False"
                   CanUserAddRows="False"
@@ -356,44 +388,37 @@
                   IsReadOnly="True"
                   ItemsSource="{Binding Sale.Items}"
                   HeadersVisibility="Column, Row"
+                  RowHeaderWidth="40"
                   utils:DataGridRowNumbering.IsEnabled="True"
                   SelectionMode="Single"
                   MouseDoubleClick="DataGrid_MouseDoubleClick">
-			<DataGrid.Resources>
-				<Style x:Key="RightAlignedText" TargetType="TextBlock">
-					<Setter Property="HorizontalAlignment" Value="Right" />
-					<Setter Property="TextAlignment" Value="Right" />
-				</Style>
-			</DataGrid.Resources>
-			<DataGrid.Columns>
-				<DataGridTextColumn Width="1.5*" MinWidth="120" Binding="{Binding Product.Category.Name}" Header="Maxsulot turi" />
-				<DataGridTextColumn Width="1.8*" MinWidth="120" Binding="{Binding Product.Name}" Header="Maxsulot nomi" />
-				<DataGridTextColumn Width="*" Binding="{Binding LengthPerRoll}" ElementStyle="{StaticResource RightAlignedText}" Header="Rulon metr" />
-				<DataGridTextColumn Width="*" Binding="{Binding RollCount}" ElementStyle="{StaticResource RightAlignedText}" Header="Rulon soni" />
-				<DataGridTextColumn Width="*" Binding="{Binding TotalLength, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightAlignedText}" Header="Jami metr" />
-				<DataGridTextColumn Width="*" Binding="{Binding UnitPrice, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightAlignedText}" Header="Narxi" />
-				<DataGridTextColumn Width="*" Binding="{Binding TotalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightAlignedText}" Header="Jami summa" />
-				<DataGridTextColumn Width="*" Binding="{Binding DiscountRate, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightAlignedText}" Header="Chegirma%" />
-				<DataGridTextColumn Width="*" Binding="{Binding DiscountAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightAlignedText}" Header="Chegirma summasi" />
-				<DataGridTextColumn Width="*" Binding="{Binding FinalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightAlignedText}" Header="Umumiy summa" />
-			</DataGrid.Columns>
-		</DataGrid>
+					<DataGrid.Columns>
+						<DataGridTextColumn Width="1.5*" MinWidth="120" Binding="{Binding Product.Category.Name}" Header="Maxsulot turi" />
+						<DataGridTextColumn Width="1.8*" MinWidth="120" Binding="{Binding Product.Name}" Header="Maxsulot nomi" />
+						<DataGridTextColumn Width="*" Binding="{Binding LengthPerRoll}" ElementStyle="{StaticResource RightCellText}" Header="Rulon metr" />
+						<DataGridTextColumn Width="*" Binding="{Binding RollCount}" ElementStyle="{StaticResource RightCellText}" Header="Rulon soni" />
+						<DataGridTextColumn Width="*" Binding="{Binding TotalLength, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="Jami metr" />
+						<DataGridTextColumn Width="*" Binding="{Binding UnitPrice, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="Narxi" />
+						<DataGridTextColumn Width="*" Binding="{Binding TotalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="Jami summa" />
+						<DataGridTextColumn Width="*" Binding="{Binding DiscountRate, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="Chegirma%" />
+						<DataGridTextColumn Width="*" Binding="{Binding DiscountAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="Chegirma summasi" />
+						<DataGridTextColumn Width="*" Binding="{Binding FinalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="Umumiy summa" />
+					</DataGrid.Columns>
+				</DataGrid>
 
-		<StackPanel Grid.Row="4" Margin="0 10 0 0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal">
-			<Button Margin="0,0,6,0"
-                    Padding="10,0"
-                    Background="#E74C3C"
+				<StackPanel Grid.Row="4" Margin="0 10 0 0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal">
+					<Button Margin="0,0,8,0"
                     Command="{Binding CancelCommand}"
                     Content="Bekor qilish"
-                    FontSize="14"
-                    Foreground="White" />
+                    Style="{StaticResource SecondaryButton}" />
 
-			<Button Padding="10,0"
-                    Background="#27AE60"
-                    Command="{Binding SaveCommand}"
+					<Button Command="{Binding SaveCommand}"
                     Content="Saqlash"
-                    FontSize="14"
-                    Foreground="White" />
-		</StackPanel>
+                    Style="{StaticResource PrimaryButton}" />
+				</StackPanel>
+			</Grid>
+		</Border>
+
+		<controls:BusyOverlay IsBusy="{Binding IsLoading}" Message="Saqlanmoqda..." />
 	</Grid>
 </Page>

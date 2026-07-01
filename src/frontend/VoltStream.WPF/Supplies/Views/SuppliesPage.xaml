@@ -12,12 +12,13 @@
       d:DesignWidth="800"
       Title="SupplyPage">
 
-	<Grid Margin="10" Background="#F4F5FA">
+	<Grid Margin="10" Background="{DynamicResource Canvas}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
 			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
-        <Border Grid.Row="0" Background="White" CornerRadius="10" BorderBrush="#E6E8EF" BorderThickness="1" Padding="12,4" Margin="0,0,0,6">
+        <Border Grid.Row="0" Style="{StaticResource CardBorder}" Padding="12,4" Margin="0,0,0,6">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.5*"
@@ -80,7 +81,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="Turi"
                                VerticalAlignment="Center"
-                               Foreground="#888"
+                               Foreground="{DynamicResource TextTertiary}"
                                Margin="10,0,10,0"
                                IsHitTestVisible="False"
                                Panel.ZIndex="1"
@@ -102,7 +103,7 @@
                     <TextBlock Grid.Column="2"
                                Text="Nomi"
                                VerticalAlignment="Center"
-                               Foreground="#888"
+                               Foreground="{DynamicResource TextTertiary}"
                                Margin="10,0,10,0"
                                IsHitTestVisible="False"
                                Panel.ZIndex="1"
@@ -258,47 +259,40 @@
                     
                     <Button Grid.Column="0"
                             x:Name="addSupplyBtn"
-                            Style="{StaticResource RoundedButton}"
-                            Background="#0A003A"
-                            Foreground="White"
-                            Content="{Binding IsEditing, Converter={StaticResource BoolToTextConverter}, ConverterParameter=' Saqlash  🗹 | Qoshish  🗹 '}"
+                            Style="{StaticResource PrimaryButton}"
                             Command="{Binding SaveCommand}"
                             VerticalAlignment="Center"
-                            FontWeight="DemiBold"
-                            FontSize="14"
-                            Height="27" />
+                            FontSize="14">
+                        <TextBlock Foreground="White"
+                                   Text="{Binding IsEditing, Converter={StaticResource BoolToTextConverter}, ConverterParameter=' Saqlash | Qoshish '}" />
+                    </Button>
 
                     <Button Grid.Column="1"
                             x:Name="cancelBtn"
-                            Style="{StaticResource RoundedButton}"
-                            Background="#EEF0F4"
-                            Foreground="#0A003A"
-                            Content=" Bekor qilish ❌ "
+                            Style="{StaticResource SecondaryButton}"
+                            Content="Bekor qilish"
                             Command="{Binding CancelEditCommand}"
                             Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibilityConverter}}"
                             VerticalAlignment="Center"
-                            FontWeight="DemiBold"
                             Margin="5,4,0,4"
-                            FontSize="14"
-                            Height="27" />
+                            FontSize="14" />
                 </Grid>
             </Grid>
             <Grid Grid.Column="2">
-                <Border BorderBrush="Gray"
-                        BorderThickness="1">
+                <Border Style="{StaticResource CardBorder}">
                     <Label Content="Mahsulot haqida ma'lumotlar.."
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            FontSize="16"
                            FontWeight="Thin"
-                           Foreground="LightGray"/>
+                           Foreground="{DynamicResource TextTertiary}"/>
                 </Border>
             </Grid>
         </Grid>
         </Border>
         <DataGrid Grid.Row="1"
                   x:Name="supplyDataGrid"
-                  ItemsSource="{Binding Supplies}"
+                  ItemsSource="{Binding PagedSupplies}"
                   SelectedItem="{Binding SelectedSupply}"
                   HorizontalAlignment="Center"
                   AutoGenerateColumns="False"
@@ -306,8 +300,7 @@
                   CanUserAddRows="False"
                   HeadersVisibility="Column, Row"
                   utils:DataGridRowNumbering.IsEnabled="True"
-                  Margin="0 10 0 0"
-                  Foreground="Black">
+                  Margin="0 10 0 0">
             <DataGrid.InputBindings>
                 <MouseBinding Gesture="LeftDoubleClick" Command="{Binding EditItemCommand}" CommandParameter="{Binding SelectedSupply}" />
                 <KeyBinding Key="Delete" Command="{Binding DeleteItemCommand}" CommandParameter="{Binding SelectedSupply}" />
@@ -315,121 +308,31 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Sana"
                                     Width="*"
-                                    Binding="{Binding Date, Converter={StaticResource UtcToUzbekistanTimeConverter},StringFormat=dd.MM.yyyy}">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground"
-                                    Value="Black" />
-                            <Setter Property="HorizontalAlignment"
-                                    Value="Center" />
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                    <DataGridTextColumn.HeaderStyle>
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="HorizontalContentAlignment"
-                                    Value="Center" />
-                        </Style>
-                    </DataGridTextColumn.HeaderStyle>
-                </DataGridTextColumn>
+                                    ElementStyle="{StaticResource CenterCellText}"
+                                    Binding="{Binding Date, Converter={StaticResource UtcToUzbekistanTimeConverter},StringFormat=dd.MM.yyyy}" />
                 <DataGridTextColumn Header="Mahsulot turi"
                                     Binding="{Binding CategoryName}"
-                                    Width="1.5*">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground"
-                                    Value="Black" />
-                            <Setter Property="Padding"
-                                    Value="10 0 5 0" />
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                    <DataGridTextColumn.HeaderStyle>
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="HorizontalContentAlignment"
-                                    Value="Center" />
-                        </Style>
-                    </DataGridTextColumn.HeaderStyle>
-                </DataGridTextColumn>
+                                    Width="1.5*" />
                 <DataGridTextColumn Header="Mahsulot"
                                     Binding="{Binding ProductName}"
-                                    Width="2*">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground"
-                                    Value="Black" />
-                            <Setter Property="Padding"
-                                    Value="10 0 5 0" />
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                    <DataGridTextColumn.HeaderStyle>
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="HorizontalContentAlignment"
-                                    Value="Center" />
-                        </Style>
-                    </DataGridTextColumn.HeaderStyle>
-                </DataGridTextColumn>
+                                    Width="2*" />
                 <DataGridTextColumn Header="To'plam soni"
                                     Binding="{Binding RollCount, StringFormat=N2}"
-                                    Width="*">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground"
-                                    Value="Black" />
-                            <Setter Property="HorizontalAlignment"
-                                    Value="Right" />
-                            <Setter Property="Padding"
-                                    Value="10 0" />
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                    <DataGridTextColumn.HeaderStyle>
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="HorizontalContentAlignment"
-                                    Value="Center" />
-                        </Style>
-                    </DataGridTextColumn.HeaderStyle>
-                </DataGridTextColumn>
+                                    ElementStyle="{StaticResource RightCellText}"
+                                    Width="*" />
                 <DataGridTextColumn Header="To'plamda"
                                     Binding="{Binding LengthPerRoll, StringFormat=N2}"
-                                    Width="*">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground"
-                                    Value="Black" />
-                            <Setter Property="HorizontalAlignment"
-                                    Value="Center" />
-                            <Setter Property="HorizontalAlignment"
-                                    Value="Right" />
-                            <Setter Property="Padding"
-                                    Value="10 0" />
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                    <DataGridTextColumn.HeaderStyle>
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="HorizontalContentAlignment"
-                                    Value="Center" />
-                        </Style>
-                    </DataGridTextColumn.HeaderStyle>
-                </DataGridTextColumn>
+                                    ElementStyle="{StaticResource RightCellText}"
+                                    Width="*" />
                 <DataGridTextColumn Header="Jami"
                                     Binding="{Binding TotalLength, StringFormat=N2}"
-                                    Width="*">
-                    <DataGridTextColumn.ElementStyle>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground"
-                                    Value="Black" />
-                            <Setter Property="HorizontalAlignment"
-                                    Value="Right" />
-                            <Setter Property="Padding"
-                                    Value="10 0" />
-                        </Style>
-                    </DataGridTextColumn.ElementStyle>
-                    <DataGridTextColumn.HeaderStyle>
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="HorizontalContentAlignment"
-                                    Value="Center" />
-                        </Style>
-                    </DataGridTextColumn.HeaderStyle>
-                </DataGridTextColumn>
+                                    ElementStyle="{StaticResource RightCellText}"
+                                    Width="*" />
             </DataGrid.Columns>
         </DataGrid>
+        <controls:Pager Grid.Row="2" Margin="0,12,0,0" DataContext="{Binding Pagination}" />
+        <controls:BusyOverlay Grid.Row="0" Grid.RowSpan="3"
+                              IsBusy="{Binding IsLoading}"
+                              Message="Yuklanmoqda..." />
     </Grid>
 </Page>

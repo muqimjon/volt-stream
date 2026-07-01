@@ -23,4 +23,8 @@ public class SalesController
     [HttpPost("filter")]
     public async Task<IActionResult> GetFiltered(SaleFilterQuery query)
         => Ok(new Response { Data = await Mediator.Send(query) });
+
+    [HttpPost("items/filter")]
+    public async Task<IActionResult> GetItemsFiltered(SaleItemHistoryQuery query)
+        => Ok(new Response { Data = await Mediator.Send(query) });
 }

@@ -1,5 +1,6 @@
 ﻿namespace VoltStream.WPF;
 
+using FontAwesome.Sharp;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
 using System.Windows;
@@ -18,11 +19,22 @@ public partial class MainWindow : Window
     public MainWindow(IServiceProvider serviceProvider)
     {
         InitializeComponent();
+        Commons.Utils.MonitorMaximizeHelper.Enable(this);
         vm = serviceProvider.GetRequiredService<MainViewModel>();
         DataContext = vm;
         NotificationService.Init(this);
+        UpdateThemeIcon();
         Loaded += async (_, _) => await vm.LoadNamozTimesAsync();
     }
+
+    private void ThemeToggle_Click(object sender, RoutedEventArgs e)
+    {
+        ThemeManager.Toggle();
+        UpdateThemeIcon();
+    }
+
+    private void UpdateThemeIcon()
+        => ThemeToggleIcon.Icon = ThemeManager.Current == AppTheme.Dark ? IconChar.Sun : IconChar.Moon;
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
@@ -138,17 +150,14 @@ public partial class MainWindow : Window
         if (e.PropertyName == nameof(api.Status))
             Application.Current.Dispatcher.Invoke(() =>
             {
-                ServerStatusIndicator.Fill = api.Status switch
+                var key = api.Status switch
                 {
-                    ConnectionStatus.Disconnected =>
-                        new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF0000")),
-                    ConnectionStatus.Connected =>
-                        new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00FF00")),
-                    ConnectionStatus.Connecting =>
-                        new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFFF00")),
-                    _ =>
-                        new SolidColorBrush((Color)ColorConverter.ConvertFromString("#808080")),
+                    ConnectionStatus.Disconnected => "Danger",
+                    ConnectionStatus.Connected => "Success",
+                    ConnectionStatus.Connecting => "Warning",
+                    _ => "TextTertiary",
                 };
+                ServerStatusIndicator.Fill = TryFindResource(key) as Brush ?? Brushes.Gray;
             });
     }
 }

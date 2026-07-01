@@ -88,6 +88,7 @@ public class ExcelDataSeeder(
         var code = GetValue(row, headers, "Code");
 
         if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(code)) return;
+        if (await context.Currencies.AnyAsync(c => c.Code == code)) return;
 
         try
         {

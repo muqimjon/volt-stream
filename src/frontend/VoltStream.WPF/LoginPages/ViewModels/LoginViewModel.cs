@@ -82,6 +82,35 @@ public partial class LoginViewModel(
         else Error = loginResult.Message ?? "Noto'g'ri foydalanuvchi nomi yoki parol!";
     }
 
+    public async Task<bool> TryAutoLoginAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
+            return false;
+
+        LoginRequest credentials = new()
+        {
+            Username = Username,
+            Password = Password
+        };
+
+        try
+        {
+            var loginApi = services.GetRequiredService<ILoginApi>();
+            var loginResult = await loginApi.LoginAsync(credentials)
+                .Handle(loading => IsLoading = loading);
+
+            if (loginResult.IsSuccess && loginResult.Data != null)
+            {
+                services.GetRequiredService<ISessionService>().CurrentUser = loginResult.Data;
+                LoginSucceeded?.Invoke();
+                return true;
+            }
+        }
+        catch { }
+
+        return false;
+    }
+
     private bool? OpenConnectionSettings()
     {
         try

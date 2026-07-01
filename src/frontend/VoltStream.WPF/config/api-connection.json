@@ -1,0 +1,6 @@
+{
+  "url": "http://localhost:5123/",
+  "autoReconnectEnabled": true,
+  "checkUrlEnabled": false,
+  "showIndicator": false
+}

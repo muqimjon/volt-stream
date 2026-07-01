@@ -41,7 +41,7 @@
 				</Border.BorderBrush>
 
 				<Border.Background>
-					<SolidColorBrush Color="White" Opacity="0.75"/>
+					<SolidColorBrush Color="{DynamicResource SurfaceColor}" Opacity="0.96"/>
 				</Border.Background>
 
 				<Border.Effect>
@@ -50,52 +50,52 @@
 
 				<StackPanel>
 					<Grid Width="70" Height="70" Margin="0,0,0,15">
-						<Ellipse Fill="#E8F2FB"/>
-						<fa:IconImage Icon="ShieldHalved" Foreground="#0A003A" Width="35" Height="35"/>
+						<Ellipse Fill="{DynamicResource BrandSubtle}"/>
+						<fa:IconImage Icon="ShieldHalved" Foreground="{DynamicResource Brand}" Width="35" Height="35"/>
 					</Grid>
 
 					<TextBlock Text="{Binding LockMessage, ElementName=Root}" 
                                TextWrapping="Wrap" 
                                TextAlignment="Center" 
                                FontSize="18" 
-                               FontWeight="SemiBold" 
-                               Foreground="#1A1A1A"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimary}"
                                Margin="0,0,0,15"/>
 
-					<TextBlock Text="Ushbu bo'lim faqat ma'murlar uchun" 
-                               FontSize="13" 
-                               Foreground="#666666" 
+					<TextBlock Text="Ushbu bo'lim faqat ma'murlar uchun"
+                               FontSize="13"
+                               Foreground="{DynamicResource TextSecondary}"
                                TextAlignment="Center" 
                                Margin="0,0,0,10"/>
 
-					<Border Margin="50,0,50,15" BorderThickness="1.5" BorderBrush="#EEEEEE" CornerRadius="10" Background="White">
+					<Border Margin="50,0,50,15" BorderThickness="1.5" BorderBrush="{DynamicResource Border}" CornerRadius="10" Background="{DynamicResource Surface}">
 						<Grid>
-							<TextBlock Text="Loginini kiriting..." 
-                   Margin="15,0" VerticalAlignment="Center" Foreground="#AAA"
+							<TextBlock Text="Loginini kiriting..."
+                   Margin="15,0" VerticalAlignment="Center" Foreground="{DynamicResource TextTertiary}"
                    IsHitTestVisible="False"
                    Visibility="{Binding Text.IsEmpty, ElementName=AdminUsernameBox, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-							<TextBox x:Name="AdminUsernameBox" 
+							<TextBox x:Name="AdminUsernameBox"
                  FontSize="15" Padding="15,12"
-                 Background="Transparent" BorderThickness="0"/>
+                 Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimary}" CaretBrush="{DynamicResource TextPrimary}"/>
 						</Grid>
 					</Border>
 
-					<Border Margin="50,0,50,30" BorderThickness="1.5" BorderBrush="#EEEEEE" CornerRadius="10" Background="White">
+					<Border Margin="50,0,50,30" BorderThickness="1.5" BorderBrush="{DynamicResource Border}" CornerRadius="10" Background="{DynamicResource Surface}">
 						<Grid>
-							<TextBlock x:Name="PassPlaceholder" Text="Parolni kiriting..." 
-                   Margin="15,0" VerticalAlignment="Center" Foreground="#AAA"
+							<TextBlock x:Name="PassPlaceholder" Text="Parolni kiriting..."
+                   Margin="15,0" VerticalAlignment="Center" Foreground="{DynamicResource TextTertiary}"
                    IsHitTestVisible="False"/>
-							<PasswordBox x:Name="AdminPasswordBox" 
+							<PasswordBox x:Name="AdminPasswordBox"
                      FontSize="15" Padding="15,12"
-                     Background="Transparent" BorderThickness="0"
+                     Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextPrimary}" CaretBrush="{DynamicResource TextPrimary}"
                      PasswordChanged="AdminPasswordBox_PasswordChanged"
                      KeyDown="AdminPasswordBox_KeyDown"/>
 						</Grid>
 					</Border>
 
-					<Button Content="Ruxsatni tasdiqlash" 
-                            Background="#0A003A" 
-                            Foreground="White" 
+					<Button Content="Ruxsatni tasdiqlash"
+                            Background="{DynamicResource Brand}"
+                            Foreground="{DynamicResource OnBrand}"
                             FontSize="16" 
 							Width="250"
                             FontWeight="SemiBold" 

@@ -11,19 +11,14 @@
       d:DesignHeight="450"
       d:DesignWidth="950"
       Title="PaymentsPage">
-	<Page.Resources>
-		<Style x:Key="RightAlignedCellStyle" TargetType="TextBlock">
-			<Setter Property="HorizontalAlignment" Value="Right" />
-			<Setter Property="TextAlignment" Value="Right" />
-		</Style>
-	</Page.Resources>
-
-	<Grid Margin="10">
+	<Grid Margin="10" Background="{DynamicResource Canvas}">
 		<Grid.RowDefinitions>
-			<RowDefinition Height="140" />
+			<RowDefinition Height="150" />
 			<RowDefinition Height="5" />
 			<RowDefinition Height="*" />
+			<RowDefinition Height="Auto" />
 		</Grid.RowDefinitions>
+		<Border Grid.Row="0" Style="{StaticResource CardBorder}" Padding="12,6">
 		<Grid>
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="350" />
@@ -131,12 +126,12 @@
 					<Label Content="Summa:"
                            VerticalAlignment="Center"
                            FontSize="12"
-                           Foreground="#888"
+                           Foreground="{DynamicResource TextSecondary}"
                            Margin="5,0,0,0"
                            FontStyle="Italic" />
 					<TextBox Grid.Column="1"
                              Grid.Row="0"
-                             x:Name="Summa"
+                             x:Name="Summa" Foreground="{DynamicResource TextPrimary}"
                              VerticalAlignment="Center"
                              IsReadOnly="True"
                              IsTabStop="False"
@@ -206,12 +201,12 @@
 						<TextBlock Text="Balans:"
                                    VerticalAlignment="Center"
                                    FontSize="12"
-                                   Foreground="#888"
+                                   Foreground="{DynamicResource TextSecondary}"
                                    Margin="5,0,0,0"
                                    FontStyle="Italic"
                                    Visibility="{Binding ElementName=beginBalans, Path=Text.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
 						<TextBox Grid.Column="1"
-                                 x:Name="beginBalans"
+                                 x:Name="beginBalans" Foreground="{DynamicResource TextPrimary}"
                                  VerticalAlignment="Center"
                                  IsReadOnly="True"
                                  IsTabStop="False"
@@ -228,12 +223,12 @@
                                    Text="Natija:"
                                    VerticalAlignment="Center"
                                    FontSize="12"
-                                   Foreground="#888"
+                                   Foreground="{DynamicResource TextSecondary}"
                                    Margin="5,0,0,0"
                                    FontStyle="Italic"
                                    Visibility="{Binding ElementName=lastBalans, Path=Text.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
 						<TextBox Grid.Column="3"
-                                 x:Name="lastBalans"
+                                 x:Name="lastBalans" Foreground="{DynamicResource TextPrimary}"
                                  VerticalAlignment="Center"
                                  IsReadOnly="True" IsTabStop="False"
                                  FontSize="14"
@@ -248,12 +243,12 @@
                                    Text="Chegirma:"
                                    VerticalAlignment="Center"
                                    FontSize="12"
-                                   Foreground="#888"
+                                   Foreground="{DynamicResource TextSecondary}"
                                    Margin="2,0,0,0"
                                    FontStyle="Italic"
                                    Visibility="{Binding ElementName=Discount, Path=Text.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
 						<TextBox Grid.Column="5"
-                                 x:Name="Discount"
+                                 x:Name="Discount" Foreground="{DynamicResource TextPrimary}"
                                  VerticalAlignment="Center"
                                  IsReadOnly="True" IsTabStop="False"
                                  FontSize="14"
@@ -291,12 +286,11 @@
 						<Button Grid.Column="1"
                                 x:Name="btnPaymant"
                                 Margin="5,2,2,2"
-                                Content="Saqlash"
                                 FontSize="14"
                                 Command="{Binding SubmitCommand}"
-                                Style="{StaticResource ToolButton}"
-                                Background="#16A34A"
-                                FontWeight="Bold" />
+                                Style="{StaticResource PrimaryButton}">
+							<TextBlock Text="Saqlash" Foreground="White" />
+						</Button>
 
 						<Button Grid.Column="2"
                                 x:Name="btnDiscount"
@@ -304,42 +298,27 @@
                                 Content=" Chegirma "
                                 FontSize="12"
                                 Command="{Binding OpenDiscountsWindowCommand}"
-                                Style="{StaticResource ToolButton}"
-                                Background="#6C5CE7"
-                                FontWeight="Bold" />
+                                Style="{StaticResource SecondaryButton}" />
 					</Grid>
 				</Grid>
 			</Grid>
 		</Grid>
+		</Border>
 		<DataGrid Grid.Row="2"
-                  ItemsSource="{Binding HistoryPayments}"
+                  ItemsSource="{Binding PagedHistoryPayments}"
                   AutoGenerateColumns="False"
                   CanUserAddRows="False"
                   IsReadOnly="True"
                   SelectionMode="Single"
                     HeadersVisibility="Column, Row"
                     utils:DataGridRowNumbering.IsEnabled="True"
-                  AlternatingRowBackground="#F9F9F9"
-                  GridLinesVisibility="Horizontal"
                   FontSize="14">
-
-			<DataGrid.ColumnHeaderStyle>
-				<Style TargetType="DataGridColumnHeader">
-					<Setter Property="HorizontalContentAlignment" Value="Center"/>
-					<Setter Property="FontWeight" Value="SemiBold"/>
-				</Style>
-			</DataGrid.ColumnHeaderStyle>
 
 			<DataGrid.Columns>
 				<DataGridTextColumn Header="Sana"
                                     Binding="{Binding PaidAt, StringFormat={}{0:dd.MM.yyyy}}"
-                                    Width="120">
-					<DataGridTextColumn.ElementStyle>
-						<Style TargetType="TextBlock">
-							<Setter Property="HorizontalAlignment" Value="Center"/>
-						</Style>
-					</DataGridTextColumn.ElementStyle>
-				</DataGridTextColumn>
+                                    ElementStyle="{StaticResource CenterCellText}"
+                                    Width="120" />
 
 				<DataGridTextColumn Header="Mijoz"
                                     Binding="{Binding Customer.Name}"
@@ -347,58 +326,34 @@
 
 				<DataGridTextColumn Header="Net summa"
                                     Binding="{Binding NetAmount, StringFormat=N2}"
-                                    Width="120">
-					<DataGridTextColumn.ElementStyle>
-						<Style TargetType="TextBlock">
-							<Setter Property="HorizontalAlignment" Value="Right"/>
-							<Setter Property="Padding" Value="0,0,5,0"/>
-						</Style>
-					</DataGridTextColumn.ElementStyle>
-				</DataGridTextColumn>
+                                    ElementStyle="{StaticResource RightCellText}"
+                                    Width="120" />
 
 				<DataGridTextColumn Header="Valyuta turi"
                                     Binding="{Binding Currency.Name}"
-                                    Width="120">
-					<DataGridTextColumn.ElementStyle>
-						<Style TargetType="TextBlock">
-							<Setter Property="HorizontalAlignment" Value="Center"/>
-						</Style>
-					</DataGridTextColumn.ElementStyle>
-				</DataGridTextColumn>
+                                    ElementStyle="{StaticResource CenterCellText}"
+                                    Width="120" />
 
 				<DataGridTextColumn Header="Kurs"
                                     Binding="{Binding ExchangeRate, StringFormat=N2}"
-                                    Width="100">
-					<DataGridTextColumn.ElementStyle>
-						<Style TargetType="TextBlock">
-							<Setter Property="HorizontalAlignment" Value="Right"/>
-							<Setter Property="Padding" Value="0,0,5,0"/>
-						</Style>
-					</DataGridTextColumn.ElementStyle>
-				</DataGridTextColumn>
+                                    ElementStyle="{StaticResource RightCellText}"
+                                    Width="100" />
 
 				<DataGridTextColumn Header="Summa"
                                     Binding="{Binding Amount, StringFormat=N2}"
-                                    Width="120">
-					<DataGridTextColumn.ElementStyle>
-						<Style TargetType="TextBlock">
-							<Setter Property="HorizontalAlignment" Value="Right"/>
-							<Setter Property="Padding" Value="0,0,5,0"/>
-						</Style>
-					</DataGridTextColumn.ElementStyle>
-				</DataGridTextColumn>
+                                    ElementStyle="{StaticResource RightCellText}"
+                                    Width="120" />
 
 				<DataGridTextColumn Header="Izoh"
                                     Binding="{Binding Description}"
-                                    Width="*">
-					<DataGridTextColumn.ElementStyle>
-						<Style TargetType="TextBlock">
-							<Setter Property="Padding" Value="5,0,0,0"/>
-						</Style>
-					</DataGridTextColumn.ElementStyle>
-				</DataGridTextColumn>
+                                    Width="*" />
 			</DataGrid.Columns>
 		</DataGrid>
 
+		<controls:Pager Grid.Row="3" Margin="0,12,0,0" DataContext="{Binding Pagination}" />
+
+		<controls:BusyOverlay Grid.Row="0" Grid.RowSpan="4"
+                              IsBusy="{Binding IsLoading}"
+                              Message="Yuklanmoqda..." />
 	</Grid>
 </Page>

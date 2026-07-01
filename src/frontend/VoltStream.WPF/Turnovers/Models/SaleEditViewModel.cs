@@ -554,7 +554,7 @@ public partial class SaleEditViewModel : ViewModelBase
         }
 
         if (CurrentItem.TotalAmount.Value > 0)
-            CurrentItem.DiscountRate = (CurrentItem.DiscountAmount.Value / CurrentItem.TotalAmount.Value) * 100;
+            CurrentItem.DiscountRate = Math.Round((CurrentItem.DiscountAmount.Value / CurrentItem.TotalAmount.Value) * 100, 2);
 
         CurrentItem.FinalAmount = CurrentItem.TotalAmount.Value - CurrentItem.DiscountAmount.Value;
     }
@@ -575,7 +575,7 @@ public partial class SaleEditViewModel : ViewModelBase
 
         if (CurrentItem.TotalAmount.Value > 0)
         {
-            CurrentItem.DiscountRate = (CurrentItem.DiscountAmount.Value / CurrentItem.TotalAmount.Value) * 100;
+            CurrentItem.DiscountRate = Math.Round((CurrentItem.DiscountAmount.Value / CurrentItem.TotalAmount.Value) * 100, 2);
 
             if (CurrentItem.DiscountRate.Value > 100)
             {

@@ -9,18 +9,11 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Media;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Home.Controls;
 
 public partial class DashboardPageViewModel : ViewModelBase
 {
-    // Chiziqli grafikning mantiqiy o'lchami (Viewbox bilan kartaga moslashadi)
-    private const double ChartWidth = 660.0;
-    private const double ChartHeight = 150.0;
-    private const double PadX = 24.0;   // chetlardan gorizontal bo'shliq (nuqta/yorliq kesilmasligi uchun)
-    private const double PadTop = 10.0; // yuqoridan bo'shliq
-
     private readonly IDashboardApi dashboardApi;
     private readonly IMarketDataApi marketDataApi;
 
@@ -37,13 +30,25 @@ public partial class DashboardPageViewModel : ViewModelBase
     [ObservableProperty] private ObservableCollection<TopCustomerResponse> topCustomers = [];
     [ObservableProperty] private ObservableCollection<TopProductResponse> topSellingProducts = [];
 
-    // Oxirgi 7 kunlik savdo - chiziqli grafik geometriyasi
-    [ObservableProperty] private PointCollection weeklyLinePoints = [];
-    [ObservableProperty] private PointCollection weeklyAreaPoints = [];
-    [ObservableProperty] private ObservableCollection<ChartPoint> weeklyPoints = [];
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TrendTitle))]
+    private DashboardInterval interval = DashboardInterval.Week;
+
+    private DateTime beginDate = DateTime.Today.AddDays(-6);
+    private DateTime endDate = DateTime.Today;
+
+    public string TrendTitle => Interval switch
+    {
+        DashboardInterval.Day => "Bugungi savdo dinamikasi",
+        DashboardInterval.Month => "Oxirgi oylik savdo",
+        _ => "Oxirgi 7 kunlik savdo",
+    };
+
+    [ObservableProperty] private ChartData chart = new();
 
     // Tashqi bozor ma'lumotlari (CBU valyuta kursi + investing.com metall narxlari)
     [ObservableProperty] private bool hasRates;
+    [ObservableProperty] private bool marketLoadFailed;
     [ObservableProperty] private decimal usdRate;
     [ObservableProperty] private decimal usdDiff;
     [ObservableProperty] private bool usdUp;
@@ -61,6 +66,18 @@ public partial class DashboardPageViewModel : ViewModelBase
         _ = LoadMarketAsync();
     }
 
+    partial void OnIntervalChanged(DashboardInterval value)
+    {
+        endDate = DateTime.Today;
+        beginDate = value switch
+        {
+            DashboardInterval.Day => DateTime.Today,
+            DashboardInterval.Month => DateTime.Today.AddDays(-29),
+            _ => DateTime.Today.AddDays(-6),
+        };
+        _ = LoadAsync();
+    }
+
     [RelayCommand]
     private async Task Refresh()
     {
@@ -70,7 +87,7 @@ public partial class DashboardPageViewModel : ViewModelBase
 
     private async Task LoadAsync()
     {
-        var response = await dashboardApi.GetAsync().Handle(loading => IsLoading = loading);
+        var response = await dashboardApi.GetAsync(beginDate, endDate).Handle(loading => IsLoading = loading);
         if (!response.IsSuccess || response.Data is null)
         {
             Error = response.Message ?? "Dashboard ma'lumotlarini yuklashda xatolik!";
@@ -90,50 +107,25 @@ public partial class DashboardPageViewModel : ViewModelBase
         TopCustomers = new ObservableCollection<TopCustomerResponse>(d.TopCustomers);
         TopSellingProducts = new ObservableCollection<TopProductResponse>(d.TopSellingProducts);
 
-        BuildWeeklyChart(d.WeeklySales);
-    }
-
-    private void BuildWeeklyChart(List<DailySalesResponse> week)
-    {
-        var line = new PointCollection();
-        var points = new ObservableCollection<ChartPoint>();
-
-        if (week.Count == 0)
+        Chart = new ChartData
         {
-            WeeklyLinePoints = line;
-            WeeklyAreaPoints = new PointCollection();
-            WeeklyPoints = points;
-            return;
-        }
-
-        var max = week.Max(x => x.Amount);
-        var stepX = week.Count > 1 ? (ChartWidth - 2 * PadX) / (week.Count - 1) : 0;
-
-        for (int i = 0; i < week.Count; i++)
-        {
-            var item = week[i];
-            var x = PadX + i * stepX;
-            var ratio = max > 0 ? (double)(item.Amount / max) : 0;
-            var y = PadTop + (1 - ratio) * (ChartHeight - PadTop);
-
-            line.Add(new Point(x, y));
-            points.Add(new ChartPoint
-            {
-                X = x,
-                Y = y,
-                DayLabel = item.Date.ToString("dd.MM"),
-                AmountText = item.Amount > 0 ? item.Amount.ToString("N0") : "0"
-            });
-        }
-
-        // Chiziq tagidagi gradient maydon uchun pastki ikki burchakni qo'shamiz
-        var area = new PointCollection(line);
-        area.Add(new Point(line[^1].X, ChartHeight));
-        area.Add(new Point(line[0].X, ChartHeight));
-
-        WeeklyLinePoints = line;
-        WeeklyAreaPoints = area;
-        WeeklyPoints = points;
+            Labels = d.WeeklySales.Select(x => x.Label).ToList(),
+            Series =
+            [
+                new ChartSeries
+                {
+                    Name = "Sotilgan summa",
+                    ColorKey = "BrandColor",
+                    Values = d.WeeklySales.Select(x => (double)x.Amount).ToList()
+                },
+                new ChartSeries
+                {
+                    Name = "Kirim (to'lovlar)",
+                    ColorKey = "SuccessColor",
+                    Values = d.WeeklyPayments.Select(x => (double)x.Amount).ToList()
+                }
+            ]
+        };
     }
 
     private async Task LoadMarketAsync()
@@ -141,8 +133,12 @@ public partial class DashboardPageViewModel : ViewModelBase
         // Tashqi saytlardan kelgani uchun alohida yuklaymiz - asosiy dashboardni kutib turmaydi.
         var response = await marketDataApi.GetAsync().Handle();
         if (!response.IsSuccess || response.Data is null)
+        {
+            MarketLoadFailed = true;
             return;
+        }
 
+        MarketLoadFailed = false;
         var m = response.Data;
         RateDate = m.RateDate;
 
@@ -165,10 +161,4 @@ public partial class DashboardPageViewModel : ViewModelBase
     }
 }
 
-public record ChartPoint
-{
-    public double X { get; init; }
-    public double Y { get; init; }
-    public string DayLabel { get; init; } = string.Empty;
-    public string AmountText { get; init; } = string.Empty;
-}
+public enum DashboardInterval { Day, Week, Month }

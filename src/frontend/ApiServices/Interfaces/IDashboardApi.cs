@@ -9,5 +9,7 @@ using System.Threading.Tasks;
 public interface IDashboardApi
 {
     [Get("/dashboard")]
-    Task<Response<DashboardResponse>> GetAsync();
+    Task<Response<DashboardResponse>> GetAsync(
+        [Query(Format = "yyyy-MM-dd")] DateTime? begin = null,
+        [Query(Format = "yyyy-MM-dd")] DateTime? end = null);
 }
