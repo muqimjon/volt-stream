@@ -9,8 +9,12 @@ public partial class LoginWindow : Window
     public LoginWindow(LoginViewModel vm)
     {
         InitializeComponent();
-        txtUser.Focus();
         DataContext = vm;
+
+        if (!string.IsNullOrEmpty(vm.Password))
+            tbxPassword.Password = vm.Password;
+
+        txtUser.Focus();
     }
 
     private void BtnMinimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;

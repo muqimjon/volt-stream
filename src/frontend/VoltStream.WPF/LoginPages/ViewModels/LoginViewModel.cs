@@ -13,14 +13,33 @@ using VoltStream.WPF.Configurations;
 using VoltStream.WPF.Settings.ViewModels;
 using VoltStream.WPF.Settings.Views;
 
-public partial class LoginViewModel(
-    IServiceProvider services) : ViewModelBase
+public partial class LoginViewModel : ViewModelBase
 {
+    private readonly IServiceProvider services;
+    private readonly CredentialStore credentialStore;
+
+    public LoginViewModel(IServiceProvider services)
+    {
+        this.services = services;
+        credentialStore = services.GetRequiredService<CredentialStore>();
+
+        var saved = credentialStore.Load();
+        if (saved is not null)
+        {
+            Username = saved.Value.username;
+            Password = saved.Value.password;
+            RememberMe = true;
+        }
+    }
+
     [ObservableProperty]
     private string username = string.Empty;
 
     [ObservableProperty]
     private string password = string.Empty;
+
+    [ObservableProperty]
+    private bool rememberMe;
 
     public event Action? LoginSucceeded;
 
@@ -75,6 +94,9 @@ public partial class LoginViewModel(
 
         if (loginResult.IsSuccess && loginResult.Data != null)
         {
+            if (RememberMe) credentialStore.Save(Username, Password);
+            else credentialStore.Clear();
+
             var sessionService = services.GetRequiredService<ISessionService>();
             sessionService.CurrentUser = loginResult.Data;
             LoginSucceeded?.Invoke();

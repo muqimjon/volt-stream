@@ -136,6 +136,11 @@
                                           Foreground="{DynamicResource TextTertiary}" Icon="Lock" IsHitTestVisible="False" />
                         </Grid>
 
+                        <CheckBox Margin="0,14,0,0"
+                                  Content="Meni eslab qol"
+                                  IsChecked="{Binding RememberMe}"
+                                  Style="{StaticResource ModernCheck}" />
+
                         <TextBlock Margin="0,12,0,0" Foreground="{DynamicResource Danger}" TextWrapping="Wrap"
                                    Text="{Binding Error}"
                                    Visibility="{Binding Error, Converter={StaticResource StringToVisibilityConverter}}" />
@@ -150,8 +155,9 @@
                                 Margin="0,24,0,0"
                                 Command="{Binding LoginCommand}"
                                 IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolToBoolConverter}}"
-                                Style="{StaticResource PrimaryButton}"
-                                Content="KIRISH" />
+                                Style="{StaticResource PrimaryButton}">
+                            <TextBlock Text="KIRISH" Foreground="White" />
+                        </Button>
                     </StackPanel>
                 </Grid>
             </Border>

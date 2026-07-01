@@ -51,11 +51,13 @@ public partial class App : Application
         try
         {
             var secureCreds = DevKeyService.TryGetSecureCredentials();
-            if (!secureCreds.HasValue)
+            if (secureCreds.HasValue)
+            {
+                vm.Username = secureCreds.Value.login;
+                vm.Password = secureCreds.Value.password;
+            }
+            else if (!vm.RememberMe || string.IsNullOrWhiteSpace(vm.Username) || string.IsNullOrWhiteSpace(vm.Password))
                 return;
-
-            vm.Username = secureCreds.Value.login;
-            vm.Password = secureCreds.Value.password;
 
             var apiConnection = Services!.GetRequiredService<ApiConnectionViewModel>();
 
@@ -138,6 +140,7 @@ public partial class App : Application
     private static void ConfigureCoreServices(IServiceCollection services)
     {
         services.AddSingleton<DiscoveryClient>();
+        services.AddSingleton<CredentialStore>();
         services.AddHostedService<ConnectionMonitor>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<ISessionService, SessionService>();
