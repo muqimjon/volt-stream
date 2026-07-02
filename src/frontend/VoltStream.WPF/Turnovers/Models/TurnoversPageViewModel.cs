@@ -19,6 +19,7 @@ using System.Windows.Documents;
 using System.Windows.Markup;
 using System.Windows.Media;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.ViewModels;
@@ -92,7 +93,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
         var response = await customersApi.GetAllAsync().Handle(isLoading => IsLoading = isLoading);
         if (response.IsSuccess)
             Customers = mapper.Map<ObservableCollection<CustomerResponse>>(response.Data!);
-        else Error = response.Message ?? "Mijozlarni yuklashda xatolik yuz berdi.";
+        else Error = response.Message ?? TranslationSource.T("Turnovers.CustomersLoadError");
     }
 
     private async Task ReloadAsync()
@@ -148,7 +149,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
 
         if (!response.IsSuccess)
         {
-            Error = response.Message ?? "Operatsiyalarni yuklashda xatolik yuz berdi.";
+            Error = response.Message ?? TranslationSource.T("Turnovers.OperationsLoadError");
             return;
         }
 
@@ -200,7 +201,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
         {
             Id = op.Id,
             Date = op.Date.LocalDateTime,
-            Customer = SelectedCustomer?.Name ?? "Noma'lum",
+            Customer = SelectedCustomer?.Name ?? TranslationSource.T("Turnovers.Unknown"),
             Debit = debit,
             Credit = credit,
             Description = op.Description,
@@ -217,17 +218,17 @@ public partial class TurnoversPageViewModel : ViewModelBase
     {
         if (operation is null)
         {
-            Warning = "O'chiriladigan operatsiya tanlanmagan!";
+            Warning = TranslationSource.T("Turnovers.NoOperationToDelete");
             return;
         }
 
         var result = MessageBox.Show(
-            $"Ushbu operatsiyani o'chirishni xohlaysizmi?\n\n" +
-            $"Sana: {operation.Date:dd.MM.yyyy}\n" +
-            $"Debit: {operation.Debit:N2}\n" +
-            $"Kredit: {operation.Credit:N2}\n" +
-            $"Izoh: {operation.Description}",
-            "O'chirishni tasdiqlash",
+            $"{TranslationSource.T("Turnovers.ConfirmDeleteOperation")}\n\n" +
+            $"{TranslationSource.T("Turnovers.DateLabel")} {operation.Date:dd.MM.yyyy}\n" +
+            $"{TranslationSource.T("Turnovers.Debit")}: {operation.Debit:N2}\n" +
+            $"{TranslationSource.T("Turnovers.Credit")}: {operation.Credit:N2}\n" +
+            $"{TranslationSource.T("Common.Description")}: {operation.Description}",
+            TranslationSource.T("Turnovers.ConfirmDeleteTitle"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 
@@ -239,10 +240,10 @@ public partial class TurnoversPageViewModel : ViewModelBase
 
         if (response.IsSuccess)
         {
-            Success = "Operatsiya muvaffaqiyatli o'chirildi.";
+            Success = TranslationSource.T("Turnovers.OperationDeleted");
             await ReloadAsync();
         }
-        else Error = response.Message ?? "Operatsiyani o'chirishda xatolik yuz berdi.";
+        else Error = response.Message ?? TranslationSource.T("Turnovers.OperationDeleteError");
     }
 
     [RelayCommand]
@@ -250,7 +251,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
     {
         if (operation is null)
         {
-            Warning = "Tahrirlanadigan operatsiya tanlanmagan!";
+            Warning = TranslationSource.T("Turnovers.NoOperationToEdit");
             return;
         }
 
@@ -267,17 +268,17 @@ public partial class TurnoversPageViewModel : ViewModelBase
                     break;
 
                 case OperationType.Discount:
-                    Warning = "Chegirmani tahrirlash mumkin emas!";
+                    Warning = TranslationSource.T("Turnovers.DiscountNotEditable");
                     break;
 
                 default:
-                    Warning = "Noma'lum operatsiya turi!";
+                    Warning = TranslationSource.T("Turnovers.UnknownOperationType");
                     break;
             }
         }
         catch (Exception ex)
         {
-            Error = $"Tahrirlash sahifasini ochishda xatolik: {ex.Message}";
+            Error = $"{TranslationSource.T("Turnovers.OpenEditPageError")}: {ex.Message}";
         }
     }
 
@@ -295,7 +296,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
         var operations = await LoadAllOperationsAsync();
         if (operations.Count == 0)
         {
-            Info = "Eksport qilish uchun ma'lumot topilmadi.";
+            Info = TranslationSource.T("Turnovers.NoDataToExport");
             return;
         }
 
@@ -303,40 +304,40 @@ public partial class TurnoversPageViewModel : ViewModelBase
         {
             var dialog = new Microsoft.Win32.SaveFileDialog
             {
-                Filter = "Excel fayllari (*.xlsx)|*.xlsx",
-                FileName = "Mijoz Operatsiyalari.xlsx"
+                Filter = TranslationSource.T("Turnovers.ExcelFileFilter"),
+                FileName = TranslationSource.T("Turnovers.ExcelFileName")
             };
 
             if (dialog.ShowDialog() != true) return;
 
             using (var workbook = new XLWorkbook())
             {
-                var ws = workbook.Worksheets.Add("Operatsiyalar");
+                var ws = workbook.Worksheets.Add(TranslationSource.T("Turnovers.Operations"));
 
                 int row = 1;
 
-                ws.Cell(row, 1).Value = "MIJOZ OPERATSIYALARI HISOBOTI";
+                ws.Cell(row, 1).Value = TranslationSource.T("Turnovers.OperationsReportTitle");
                 ws.Range($"A{row}:E{row}").Merge().Style
                     .Font.SetBold()
                     .Font.SetFontSize(16)
                     .Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
                 row++;
 
-                ws.Cell(row, 1).Value = $"Mijoz: {SelectedCustomer?.Name.ToUpper() ?? "Tanlanmagan"}";
+                ws.Cell(row, 1).Value = $"{TranslationSource.T("Turnovers.CustomerLabel")} {SelectedCustomer?.Name.ToUpper() ?? TranslationSource.T("Turnovers.NotSelected")}";
                 ws.Range($"A{row}:E{row}").Merge().Style
                     .Font.SetBold()
                     .Font.SetFontSize(14)
                     .Alignment.SetHorizontal(XLAlignmentHorizontalValues.Left);
                 row++;
 
-                ws.Cell(row, 1).Value = $"Davr oralig'i: {BeginDate.ToString("dd.MM.yyyy") ?? "-"} dan {EndDate.ToString("dd.MM.yyyy") ?? "-"} gacha";
+                ws.Cell(row, 1).Value = string.Format(TranslationSource.T("Turnovers.PeriodRange"), BeginDate.ToString("dd.MM.yyyy"), EndDate.ToString("dd.MM.yyyy"));
                 ws.Range($"A{row}:E{row}").Merge().Style
                     .Font.SetBold()
                     .Font.SetFontSize(14)
                     .Alignment.SetHorizontal(XLAlignmentHorizontalValues.Left);
                 row += 2;
 
-                string[] headers = { "Sana", "Mijoz", "Debit", "Kredit", "Izoh" };
+                string[] headers = { TranslationSource.T("Common.Date"), TranslationSource.T("Turnovers.Customer"), TranslationSource.T("Turnovers.Debit"), TranslationSource.T("Turnovers.Credit"), TranslationSource.T("Common.Description") };
                 for (int i = 0; i < headers.Length; i++)
                     ws.Cell(row, i + 1).Value = headers[i];
 
@@ -344,7 +345,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
                 row++;
 
                 ws.Range($"A{row}:D{row}").Merge();
-                ws.Cell(row, 1).Value = "Boshlang'ich qoldiq";
+                ws.Cell(row, 1).Value = TranslationSource.T("Turnovers.BeginBalance");
                 ws.Cell(row, 1).Style.Font.Bold = true;
                 ws.Cell(row, 5).Value = BeginBalance?.ToString("N2") ?? "0.00";
                 ws.Cell(row, 5).Style.Font.Bold = true;
@@ -368,7 +369,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
                 }
 
                 ws.Range($"A{row}:D{row}").Merge();
-                ws.Cell(row, 1).Value = "Oxirgi qoldiq";
+                ws.Cell(row, 1).Value = TranslationSource.T("Turnovers.LastBalance");
                 ws.Cell(row, 1).Style.Font.Bold = true;
                 ws.Cell(row, 5).Value = LastBalance?.ToString("N2") ?? "0.00";
                 ws.Cell(row, 5).Style.Font.Bold = true;
@@ -379,11 +380,11 @@ public partial class TurnoversPageViewModel : ViewModelBase
                 workbook.SaveAs(dialog.FileName);
             }
 
-            Success = "Excel fayl muvaffaqiyatli saqlandi.";
+            Success = TranslationSource.T("Turnovers.ExcelSaved");
         }
         catch (Exception ex)
         {
-            Error = $"Xatolik: {ex.Message}";
+            Error = $"{TranslationSource.T("Turnovers.GenericError")}: {ex.Message}";
         }
     }
 
@@ -393,13 +394,13 @@ public partial class TurnoversPageViewModel : ViewModelBase
         var operations = await LoadAllOperationsAsync();
         if (operations.Count == 0)
         {
-            Info = "Chop etish uchun ma'lumot topilmadi.";
+            Info = TranslationSource.T("Turnovers.NoDataToPrint");
             return;
         }
 
         var dlg = new PrintDialog();
         if (dlg.ShowDialog() == true)
-            dlg.PrintDocument(CreateFixedDocument(operations).DocumentPaginator, "Operatsiyalar");
+            dlg.PrintDocument(CreateFixedDocument(operations).DocumentPaginator, TranslationSource.T("Turnovers.Operations"));
     }
 
     [RelayCommand]
@@ -408,13 +409,13 @@ public partial class TurnoversPageViewModel : ViewModelBase
         var operations = await LoadAllOperationsAsync();
         if (operations.Count == 0)
         {
-            Info = "Oldindan ko'rish uchun ma'lumot topilmadi.";
+            Info = TranslationSource.T("Turnovers.NoDataToPreview");
             return;
         }
 
-        var name = SelectedCustomer?.Name ?? "Mijoz";
+        var name = SelectedCustomer?.Name ?? TranslationSource.T("Turnovers.Customer");
         var fileName = $"{name} {BeginDate:dd.MM.yyyy}-{EndDate:dd.MM.yyyy}";
-        ReportService.Preview(CreateFixedDocument(operations), fileName, "Mijoz operatsiyalari hisoboti");
+        ReportService.Preview(CreateFixedDocument(operations), fileName, TranslationSource.T("Turnovers.OperationsReportName"));
     }
     #endregion Commands
 
@@ -427,7 +428,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
 
         if (!saleResponse.IsSuccess)
         {
-            Error = saleResponse.Message ?? "Savdo ma'lumotlari topilmadi!";
+            Error = saleResponse.Message ?? TranslationSource.T("Turnovers.SaleDataNotFound");
             return;
         }
 
@@ -441,7 +442,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
 
         if (!response.IsSuccess)
         {
-            Error = response.Message ?? "Savdo ma'lumotlari topilmadi!";
+            Error = response.Message ?? TranslationSource.T("Turnovers.SaleDataNotFound");
             return;
         }
 
@@ -474,7 +475,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
             if (isFirstPage)
             {
                 currentY = AddHeaderContent(container, pageNumber, true);
-                var beginBalanceBlock = CreateBalanceInfoBlock("Boshlang'ich qoldiq", BeginBalance?.ToString("N2") ?? "0.00", PdfHeaderBg);
+                var beginBalanceBlock = CreateBalanceInfoBlock(TranslationSource.T("Turnovers.BeginBalance"), BeginBalance?.ToString("N2") ?? "0.00", PdfHeaderBg);
                 beginBalanceBlock.Margin = new Thickness(0);
                 container.Children.Add(beginBalanceBlock);
                 currentY += 30;
@@ -489,7 +490,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
             foreach (var w in widths)
                 table.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(w) });
 
-            AddRowHeader(table, "Sana", "Izoh", approxSingleRowHeight);
+            AddRowHeader(table, TranslationSource.T("Common.Date"), TranslationSource.T("Common.Description"), approxSingleRowHeight);
 
             double footerSpace = approxSingleRowHeight * 4 + 50;
             var opsOnPage = new List<CustomerOperationForDisplayViewModel>();
@@ -525,7 +526,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
 
                 container.Children.Add(table);
 
-                var lastBalanceBlock = CreateBalanceInfoBlock("Oxirgi qoldiq", LastBalance?.ToString("N2") ?? "0.00", PdfHeaderBg);
+                var lastBalanceBlock = CreateBalanceInfoBlock(TranslationSource.T("Turnovers.LastBalance"), LastBalance?.ToString("N2") ?? "0.00", PdfHeaderBg);
                 lastBalanceBlock.Margin = new Thickness(0);
                 container.Children.Add(lastBalanceBlock);
             }
@@ -778,9 +779,9 @@ public partial class TurnoversPageViewModel : ViewModelBase
             VerticalAlignment = VerticalAlignment.Center
         };
 
-        tb.Inlines.Add(new Run("Debit") { Foreground = PdfDanger });
+        tb.Inlines.Add(new Run(TranslationSource.T("Turnovers.Debit")) { Foreground = PdfDanger });
         tb.Inlines.Add(new Run(" / ") { Foreground = PdfMuted });
-        tb.Inlines.Add(new Run("Kredit") { Foreground = PdfInk });
+        tb.Inlines.Add(new Run(TranslationSource.T("Turnovers.Credit")) { Foreground = PdfInk });
 
         var border = new Border
         {
@@ -821,11 +822,11 @@ public partial class TurnoversPageViewModel : ViewModelBase
     {
         int row1 = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        grid.Children.Add(TotalLine("Debit", totalDebit.ToString("N2"), PdfDanger, row1, new Thickness(0, 1, 0, 0.6)));
+        grid.Children.Add(TotalLine(TranslationSource.T("Turnovers.Debit"), totalDebit.ToString("N2"), PdfDanger, row1, new Thickness(0, 1, 0, 0.6)));
 
         int row2 = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        grid.Children.Add(TotalLine("Kredit", totalCredit.ToString("N2"), PdfInk, row2, new Thickness(0, 0, 0, 1)));
+        grid.Children.Add(TotalLine(TranslationSource.T("Turnovers.Credit"), totalCredit.ToString("N2"), PdfInk, row2, new Thickness(0, 0, 0, 1)));
     }
 
     private Border TotalLine(string label, string value, Brush valueBrush, int row, Thickness borderThickness)
@@ -941,7 +942,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
 
         var pageInfo = new TextBlock
         {
-            Text = $"{currentPage}-bet / {totalPages}",
+            Text = string.Format(TranslationSource.T("Turnovers.PageOfPages"), currentPage, totalPages),
             FontSize = 10,
             Foreground = PdfMuted,
             HorizontalAlignment = HorizontalAlignment.Right
@@ -963,7 +964,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
 
             var left = new StackPanel();
             left.Children.Add(new TextBlock { Text = ReportService.Brand, FontSize = 12, FontWeight = FontWeights.Bold, Foreground = PdfAccent });
-            left.Children.Add(new TextBlock { Text = "Mijoz operatsiyalari hisoboti", FontSize = 19, FontWeight = FontWeights.Bold, Foreground = PdfInk });
+            left.Children.Add(new TextBlock { Text = TranslationSource.T("Turnovers.OperationsReportName"), FontSize = 19, FontWeight = FontWeights.Bold, Foreground = PdfInk });
             left.Children.Add(new TextBlock
             {
                 Text = $"{SelectedCustomer?.Name}  |  {BeginDate:dd.MM.yyyy} — {EndDate:dd.MM.yyyy}",

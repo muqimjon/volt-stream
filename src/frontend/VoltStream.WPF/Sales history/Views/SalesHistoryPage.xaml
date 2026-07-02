@@ -4,9 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:VoltStream.WPF.Commons.UserControls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
-    Title="Sotuv tarixi"
+    Title="{loc:Loc SalesHistory.Title}"
     d:DesignHeight="450"
     d:DesignWidth="900"
     mc:Ignorable="d">
@@ -28,7 +29,7 @@
             <controls:FilterBar.Filters>
                 <WrapPanel Orientation="Horizontal">
                     <StackPanel Margin="0,0,14,8">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="Boshlanish" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc SalesHistory.BeginDate}" />
                         <controls:UserCalendar
                             x:Name="beginDate"
                             Width="120"
@@ -38,7 +39,7 @@
                     </StackPanel>
 
                     <StackPanel Margin="0,0,14,8">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="Tugash" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc SalesHistory.EndDate}" />
                         <controls:UserCalendar
                             x:Name="endDate"
                             Width="120"
@@ -48,7 +49,7 @@
                     </StackPanel>
 
                     <StackPanel Margin="0,0,14,8">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="Mijozni tanlang" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc SalesHistory.SelectCustomer}" />
                         <ComboBox
                             x:Name="cbxCustomer"
                             Width="200"
@@ -60,7 +61,7 @@
                     </StackPanel>
 
                     <StackPanel Margin="0,0,14,8">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="Mahsulot turi" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc SalesHistory.ProductType}" />
                         <ComboBox
                             x:Name="cbxCategory"
                             Width="170"
@@ -72,7 +73,7 @@
                     </StackPanel>
 
                     <StackPanel Margin="0,0,14,8">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="Nomi" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Common.Name}" />
                         <ComboBox
                             x:Name="cbxProductName"
                             Width="170"
@@ -101,16 +102,16 @@
                     Width="*"
                     Binding="{Binding OperationDate, StringFormat={}{0:dd.MM.yyyy}}"
                     ElementStyle="{StaticResource CenterCellText}"
-                    Header="Sana" />
+                    Header="{loc:Loc Common.Date}" />
                 <DataGridTextColumn
                     Width="1.5*"
                     Binding="{Binding Customer}"
-                    Header="Mijoz" />
+                    Header="{loc:Loc SalesHistory.Customer}" />
 
                 <DataGridTextColumn
                     Width="*"
                     Binding="{Binding Category}"
-                    Header="Mahsulot turi">
+                    Header="{loc:Loc SalesHistory.ProductType}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -122,7 +123,7 @@
                 <DataGridTextColumn
                     Width="1.7*"
                     Binding="{Binding Name}"
-                    Header="Nomi">
+                    Header="{loc:Loc Common.Name}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -135,7 +136,7 @@
                     Width="*"
                     Binding="{Binding RollLength, StringFormat={}{0:N0}}"
                     ElementStyle="{StaticResource RightCellText}"
-                    Header="To'plamda">
+                    Header="{loc:Loc SalesHistory.InRoll}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -148,7 +149,7 @@
                     Width="*"
                     Binding="{Binding Quantity, StringFormat={}{0:N0}}"
                     ElementStyle="{StaticResource RightCellText}"
-                    Header="To'plam soni">
+                    Header="{loc:Loc SalesHistory.RollCount}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -161,7 +162,7 @@
                     Width="*"
                     Binding="{Binding TotalCount, StringFormat={}{0:N0}}"
                     ElementStyle="{StaticResource RightCellText}"
-                    Header="Jami">
+                    Header="{loc:Loc Common.Total}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -174,7 +175,7 @@
                     Width="*"
                     Binding="{Binding Unit}"
                     ElementStyle="{StaticResource CenterCellText}"
-                    Header="O‘lchov birligi">
+                    Header="{loc:Loc SalesHistory.Unit}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -187,7 +188,7 @@
                     Width="*"
                     Binding="{Binding Price, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
-                    Header="Narxi">
+                    Header="{loc:Loc Common.Price}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -200,7 +201,7 @@
                     Width="1.5*"
                     Binding="{Binding TotalAmount, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
-                    Header="Umumiy summa">
+                    Header="{loc:Loc SalesHistory.TotalAmount}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -213,7 +214,7 @@
 
         <controls:EmptyState
             Grid.Row="1"
-            Message="Sotuv tarixi topilmadi"
+            Message="{loc:Loc SalesHistory.NotFound}"
             Visibility="{Binding Pagination.TotalCount, Converter={StaticResource CountToEmptyVisibility}}" />
 
         <controls:Pager
@@ -225,6 +226,6 @@
             Grid.Row="0"
             Grid.RowSpan="3"
             IsBusy="{Binding IsLoading}"
-            Message="Yuklanmoqda..." />
+            Message="{loc:Loc Common.Loading}" />
     </Grid>
 </Page>

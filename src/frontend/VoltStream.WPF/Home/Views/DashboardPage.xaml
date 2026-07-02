@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:VoltStream.WPF.Home.Views"
+      xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
       xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
       xmlns:uc="clr-namespace:VoltStream.WPF.Commons.UserControls"
       xmlns:charts="clr-namespace:VoltStream.WPF.Home.Controls"
@@ -63,8 +64,8 @@
 
                 <Grid Margin="6,4,6,10">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="Boshqaruv paneli" Style="{StaticResource TitleText}" />
-                        <TextBlock Text="Yuklanmoqda..." Margin="14,0,0,0" VerticalAlignment="Center"
+                        <TextBlock Text="{loc:Loc Dashboard.Title}" Style="{StaticResource TitleText}" />
+                        <TextBlock Text="{loc:Loc Common.Loading}" Margin="14,0,0,0" VerticalAlignment="Center"
                                    Foreground="{DynamicResource Brand}" FontWeight="SemiBold"
                                    Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </StackPanel>
@@ -73,11 +74,11 @@
                                 BorderBrush="{DynamicResource Border}" BorderThickness="1"
                                 CornerRadius="{DynamicResource RadiusMd}" Padding="3" Margin="0,0,10,0">
                             <StackPanel Orientation="Horizontal">
-                                <RadioButton Content="Kun" GroupName="Interval" Style="{StaticResource Segment}"
+                                <RadioButton Content="{loc:Loc Dashboard.Day}" GroupName="Interval" Style="{StaticResource Segment}"
                                              IsChecked="{Binding Interval, Converter={StaticResource EnumToBoolean}, ConverterParameter=Day}" />
-                                <RadioButton Content="Xafta" GroupName="Interval" Style="{StaticResource Segment}"
+                                <RadioButton Content="{loc:Loc Dashboard.Week}" GroupName="Interval" Style="{StaticResource Segment}"
                                              IsChecked="{Binding Interval, Converter={StaticResource EnumToBoolean}, ConverterParameter=Week}" />
-                                <RadioButton Content="Oy" GroupName="Interval" Style="{StaticResource Segment}"
+                                <RadioButton Content="{loc:Loc Dashboard.Month}" GroupName="Interval" Style="{StaticResource Segment}"
                                              IsChecked="{Binding Interval, Converter={StaticResource EnumToBoolean}, ConverterParameter=Month}" />
                             </StackPanel>
                         </Border>
@@ -87,7 +88,7 @@
                                 <fa:IconImage Width="14" Height="14" VerticalAlignment="Center"
                                               Foreground="{DynamicResource OnBrand}" Icon="ArrowsRotate" />
                                 <TextBlock Margin="8,0,0,0" VerticalAlignment="Center"
-                                           Foreground="{DynamicResource OnBrand}" Text="Yangilash" />
+                                           Foreground="{DynamicResource OnBrand}" Text="{loc:Loc Common.Refresh}" />
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -96,25 +97,31 @@
                 <WrapPanel>
                     <Border Style="{StaticResource CardBorder}" Margin="6" MinWidth="220">
                         <StackPanel>
-                            <TextBlock Text="Bugungi savdo" Style="{StaticResource CaptionText}" />
+                            <TextBlock Text="{loc:Loc Dashboard.TodaySales}" Style="{StaticResource CaptionText}" />
                             <TextBlock Text="{Binding TodaySalesAmount, StringFormat={}{0:N0}}" Style="{StaticResource Value}" />
-                            <TextBlock Style="{StaticResource CaptionText}" Margin="0,4,0,0"
-                                       Text="{Binding TodaySalesCount, StringFormat=Soni: {0}}" />
+                            <TextBlock Style="{StaticResource CaptionText}" Margin="0,4,0,0">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0}: {1}">
+                                        <Binding Source="{x:Static loc:TranslationSource.Instance}" Path="[Common.Quantity]" />
+                                        <Binding Path="TodaySalesCount" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
                         </StackPanel>
                     </Border>
 
                     <Border Style="{StaticResource CardBorder}" Margin="6" MinWidth="220">
                         <StackPanel>
-                            <TextBlock Text="Bugun sotilgan (uzunlik)" Style="{StaticResource CaptionText}" />
+                            <TextBlock Text="{loc:Loc Dashboard.TodaySoldLength}" Style="{StaticResource CaptionText}" />
                             <TextBlock Style="{StaticResource Value}"
                                        Text="{Binding TodaySalesLength, StringFormat={}{0:N0} m}" />
-                            <TextBlock Text="Bugungi kunda" Style="{StaticResource CaptionText}" Margin="0,4,0,0" />
+                            <TextBlock Text="{loc:Loc Dashboard.Today}" Style="{StaticResource CaptionText}" Margin="0,4,0,0" />
                         </StackPanel>
                     </Border>
 
                     <Border Style="{StaticResource CardBorder}" Margin="6" MinWidth="220">
                         <StackPanel>
-                            <TextBlock Text="Bu oylik savdo" Style="{StaticResource CaptionText}" />
+                            <TextBlock Text="{loc:Loc Dashboard.MonthSales}" Style="{StaticResource CaptionText}" />
                             <TextBlock Text="{Binding MonthSalesAmount, StringFormat={}{0:N0}}" Style="{StaticResource Value}" />
                             <TextBlock Style="{StaticResource CaptionText}" Margin="0,4,0,0"
                                        Text="{Binding MonthSalesLength, StringFormat={}{0:N0} m}" />
@@ -123,10 +130,16 @@
 
                     <Border Style="{StaticResource CardBorder}" Margin="6" MinWidth="220">
                         <StackPanel>
-                            <TextBlock Text="Bugungi to'lovlar" Style="{StaticResource CaptionText}" />
+                            <TextBlock Text="{loc:Loc Dashboard.TodayPayments}" Style="{StaticResource CaptionText}" />
                             <TextBlock Text="{Binding TodayPaymentsAmount, StringFormat={}{0:N0}}" Style="{StaticResource Value}" />
-                            <TextBlock Style="{StaticResource CaptionText}" Margin="0,4,0,0"
-                                       Text="{Binding TodayPaymentsCount, StringFormat=Soni: {0}}" />
+                            <TextBlock Style="{StaticResource CaptionText}" Margin="0,4,0,0">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0}: {1}">
+                                        <Binding Source="{x:Static loc:TranslationSource.Instance}" Path="[Common.Quantity]" />
+                                        <Binding Path="TodayPaymentsCount" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
                         </StackPanel>
                     </Border>
                 </WrapPanel>
@@ -134,9 +147,16 @@
                 <Border Style="{StaticResource CardBorder}" Margin="6">
                     <StackPanel>
                         <Grid Margin="0,0,0,12">
-                            <TextBlock Text="Valyuta va bozor narxlari" Style="{StaticResource SubtitleText}" />
-                            <TextBlock Text="{Binding RateDate, StringFormat=CBU: {0}}" HorizontalAlignment="Right"
-                                       VerticalAlignment="Center" Style="{StaticResource CaptionText}" />
+                            <TextBlock Text="{loc:Loc Dashboard.CurrencyAndMarketPrices}" Style="{StaticResource SubtitleText}" />
+                            <TextBlock HorizontalAlignment="Right"
+                                       VerticalAlignment="Center" Style="{StaticResource CaptionText}">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0} {1}">
+                                        <Binding Source="{x:Static loc:TranslationSource.Instance}" Path="[Dashboard.Cbu]" />
+                                        <Binding Path="RateDate" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
                         </Grid>
                         <Border Margin="0,0,0,12" Padding="12,8"
                                 Background="{DynamicResource WarningSubtle}"
@@ -144,13 +164,13 @@
                                 Visibility="{Binding MarketLoadFailed, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <StackPanel Orientation="Horizontal">
                                 <fa:IconImage Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center" Foreground="{DynamicResource Warning}" Icon="TriangleExclamation" />
-                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource Warning}" Text="Bozor narxlarini yuklab bo'lmadi. Internet aloqasini tekshiring." />
+                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource Warning}" Text="{loc:Loc Dashboard.MarketLoadFailed}" />
                             </StackPanel>
                         </Border>
                         <WrapPanel>
                             <Border Style="{StaticResource MiniStat}">
                                 <StackPanel>
-                                    <TextBlock Text="USD (so'm)" Style="{StaticResource CaptionText}" />
+                                    <TextBlock Text="{loc:Loc Dashboard.UsdSum}" Style="{StaticResource CaptionText}" />
                                     <TextBlock Text="{Binding UsdRate, StringFormat={}{0:N2}}" Style="{StaticResource TitleText}" Margin="0,4,0,0" />
                                     <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                                         <fa:IconImage Width="11" Height="11" VerticalAlignment="Center" Icon="ArrowUp"
@@ -177,7 +197,7 @@
                             </Border>
                             <Border Style="{StaticResource MiniStat}">
                                 <StackPanel>
-                                    <TextBlock Text="EUR (so'm)" Style="{StaticResource CaptionText}" />
+                                    <TextBlock Text="{loc:Loc Dashboard.EurSum}" Style="{StaticResource CaptionText}" />
                                     <TextBlock Text="{Binding EurRate, StringFormat={}{0:N2}}" Style="{StaticResource TitleText}" Margin="0,4,0,0" />
                                     <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
                                         <fa:IconImage Width="11" Height="11" VerticalAlignment="Center" Icon="ArrowUp"
@@ -241,7 +261,7 @@
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </WrapPanel>
-                        <TextBlock Text="Manba: Markaziy bank (kurs) va investing.com (metall narxlari, jahon bozori)"
+                        <TextBlock Text="{loc:Loc Dashboard.DataSource}"
                                    Foreground="{DynamicResource TextTertiary}" FontSize="{DynamicResource FontSizeCaption}" Margin="4,8,0,0" />
                     </StackPanel>
                 </Border>
@@ -261,7 +281,7 @@
 
                     <Border Grid.Column="0" Style="{StaticResource CardBorder}" Margin="0,0,6,0">
                         <StackPanel>
-                            <TextBlock Text="TOP 5 mijoz (savdo bo'yicha)" Style="{StaticResource SubtitleText}" Margin="0,0,0,12" />
+                            <TextBlock Text="{loc:Loc Dashboard.Top5Customers}" Style="{StaticResource SubtitleText}" Margin="0,0,0,12" />
                             <ItemsControl ItemsSource="{Binding TopCustomers}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -279,7 +299,7 @@
 
                     <Border Grid.Column="1" Style="{StaticResource CardBorder}" Margin="6,0,0,0">
                         <StackPanel>
-                            <TextBlock Text="TOP 5 sotilayotgan mahsulot" Style="{StaticResource SubtitleText}" Margin="0,0,0,12" />
+                            <TextBlock Text="{loc:Loc Dashboard.Top5Products}" Style="{StaticResource SubtitleText}" Margin="0,0,0,12" />
                             <ItemsControl ItemsSource="{Binding TopSellingProducts}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -299,6 +319,6 @@
             </StackPanel>
         </ScrollViewer>
 
-        <uc:BusyOverlay IsBusy="{Binding IsLoading}" Message="Yuklanmoqda..." />
+        <uc:BusyOverlay IsBusy="{Binding IsLoading}" Message="{loc:Loc Common.Loading}" />
     </Grid>
 </Page>

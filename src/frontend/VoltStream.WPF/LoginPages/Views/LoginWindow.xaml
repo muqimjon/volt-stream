@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+        xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
         xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
         mc:Ignorable="d"
         Title="VoltStream"
@@ -85,7 +86,7 @@
                                    Foreground="#E6E9F0"
                                    TextAlignment="Center"
                                    TextWrapping="Wrap"
-                                   Text="Kabel zavodi hisob-kitobini oson va tez boshqaring." />
+                                   Text="{loc:Loc Login.Tagline}" />
                     </StackPanel>
                 </Border>
             </Border>
@@ -99,19 +100,19 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" HorizontalAlignment="Right" Orientation="Horizontal">
-                        <Button x:Name="btnMinimize" Click="BtnMinimize_Click" Style="{StaticResource IconButton}" Width="30" Height="28" ToolTip="Kichraytirish">
+                        <Button x:Name="btnMinimize" Click="BtnMinimize_Click" Style="{StaticResource IconButton}" Width="30" Height="28" ToolTip="{loc:Loc Login.Minimize}">
                             <Path Data="M 0,8 H 10" Stroke="{DynamicResource TextSecondary}" StrokeThickness="1.5" />
                         </Button>
-                        <Button x:Name="btnClose" Click="BtnClose_Click" Style="{StaticResource IconButton}" Width="30" Height="28" Margin="6,0,0,0" ToolTip="Yopish">
+                        <Button x:Name="btnClose" Click="BtnClose_Click" Style="{StaticResource IconButton}" Width="30" Height="28" Margin="6,0,0,0" ToolTip="{loc:Loc Common.Close}">
                             <Path Data="M 0,0 L 10,10 M 0,10 L 10,0" Stroke="{DynamicResource TextSecondary}" StrokeThickness="1.5" />
                         </Button>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                        <TextBlock FontSize="{DynamicResource FontSizeDisplay}" FontWeight="Bold" Text="Xush kelibsiz" />
-                        <TextBlock Margin="0,4,0,0" Foreground="{DynamicResource TextSecondary}" Text="Davom etish uchun tizimga kiring" />
+                        <TextBlock FontSize="{DynamicResource FontSizeDisplay}" FontWeight="Bold" Text="{loc:Loc Login.Welcome}" />
+                        <TextBlock Margin="0,4,0,0" Foreground="{DynamicResource TextSecondary}" Text="{loc:Loc Login.Subtitle}" />
 
-                        <TextBlock Margin="0,28,0,6" Style="{StaticResource FieldLabel}" Text="Foydalanuvchi nomi" />
+                        <TextBlock Margin="0,28,0,6" Style="{StaticResource FieldLabel}" Text="{loc:Loc Login.Username}" />
                         <Grid>
                             <TextBox x:Name="txtUser"
                                      Style="{StaticResource ModernTextBox}"
@@ -123,7 +124,7 @@
                                           Foreground="{DynamicResource TextTertiary}" Icon="User" IsHitTestVisible="False" />
                         </Grid>
 
-                        <TextBlock Margin="0,16,0,6" Style="{StaticResource FieldLabel}" Text="Parol" />
+                        <TextBlock Margin="0,16,0,6" Style="{StaticResource FieldLabel}" Text="{loc:Loc Login.Password}" />
                         <Grid>
                             <PasswordBox x:Name="tbxPassword"
                                          Style="{StaticResource LoginPasswordBox}"
@@ -137,7 +138,7 @@
                         </Grid>
 
                         <CheckBox Margin="0,14,0,0"
-                                  Content="Meni eslab qol"
+                                  Content="{loc:Loc Login.RememberMe}"
                                   IsChecked="{Binding RememberMe}"
                                   Style="{StaticResource ModernCheck}" />
 
@@ -156,7 +157,7 @@
                                 Command="{Binding LoginCommand}"
                                 IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolToBoolConverter}}"
                                 Style="{StaticResource PrimaryButton}">
-                            <TextBlock Text="KIRISH" Foreground="White" />
+                            <TextBlock Text="{loc:Loc Login.SignIn}" Foreground="White" />
                         </Button>
                     </StackPanel>
                 </Grid>

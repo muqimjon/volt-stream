@@ -2,6 +2,7 @@ namespace VoltStream.WPF.Commons.UserControls;
 
 using System.Windows;
 using System.Windows.Controls;
+using VoltStream.WPF.Commons.Localization;
 
 public partial class BusyOverlay : UserControl
 {
@@ -11,7 +12,7 @@ public partial class BusyOverlay : UserControl
         DependencyProperty.Register(nameof(IsBusy), typeof(bool), typeof(BusyOverlay), new PropertyMetadata(false));
 
     public static readonly DependencyProperty MessageProperty =
-        DependencyProperty.Register(nameof(Message), typeof(string), typeof(BusyOverlay), new PropertyMetadata("Yuklanmoqda..."));
+        DependencyProperty.Register(nameof(Message), typeof(string), typeof(BusyOverlay), new PropertyMetadata(TranslationSource.T("Common.Loading")));
 
     public bool IsBusy
     {

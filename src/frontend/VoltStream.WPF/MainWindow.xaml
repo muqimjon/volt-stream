@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+    xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:VoltStream.WPF"
     Title="Volt Stream"
@@ -94,7 +95,7 @@
                         Tag="{DynamicResource color1}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
                             <fa:IconImage Icon="Home" Style="{StaticResource menuButtonIcon}" />
-                            <TextBlock Style="{StaticResource menuButtonText}" Text="Bosh sahifa" />
+                            <TextBlock Style="{StaticResource menuButtonText}" Text="{loc:Loc Nav.Dashboard}" />
                         </StackPanel>
                     </RadioButton>
 
@@ -105,7 +106,7 @@
                         Tag="{DynamicResource color2}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
                             <fa:IconImage Icon="ProjectDiagram" Style="{StaticResource menuButtonIcon}" />
-                            <TextBlock Style="{StaticResource menuButtonText}" Text="Ishlab chiqarish" />
+                            <TextBlock Style="{StaticResource menuButtonText}" Text="{loc:Loc Nav.Production}" />
                         </StackPanel>
                     </RadioButton>
 
@@ -116,7 +117,7 @@
                         Tag="{DynamicResource color3}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
                             <fa:IconImage Icon="ShoppingCart" Style="{StaticResource menuButtonIcon}" />
-                            <TextBlock Style="{StaticResource menuButtonText}" Text="Savdo" />
+                            <TextBlock Style="{StaticResource menuButtonText}" Text="{loc:Loc Nav.Sales}" />
                         </StackPanel>
                     </RadioButton>
 
@@ -128,7 +129,7 @@
                         Tag="{DynamicResource color6}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
                             <fa:IconImage Icon="MoneyBillWave" Style="{StaticResource menuButtonIcon}" />
-                            <TextBlock Style="{StaticResource menuButtonText}" Text="To'lov" />
+                            <TextBlock Style="{StaticResource menuButtonText}" Text="{loc:Loc Nav.Payment}" />
                         </StackPanel>
                     </RadioButton>
 
@@ -139,7 +140,7 @@
                         Tag="{DynamicResource color8}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
                             <fa:IconImage Icon="Boxes" Style="{StaticResource menuButtonIcon}" />
-                            <TextBlock Style="{StaticResource menuButtonText}" Text="Mahsulotlar qoldig'i" />
+                            <TextBlock Style="{StaticResource menuButtonText}" Text="{loc:Loc Nav.Products}" />
                         </StackPanel>
                     </RadioButton>
 
@@ -150,7 +151,7 @@
                         Tag="{DynamicResource color7}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
                             <fa:IconImage Icon="FileAlt" Style="{StaticResource menuButtonIcon}" />
-							<TextBlock Style="{StaticResource menuButtonText}" Text="Sotuv tahlili" />
+							<TextBlock Style="{StaticResource menuButtonText}" Text="{loc:Loc Nav.SalesAnalytics}" />
                         </StackPanel>
                     </RadioButton>
 
@@ -161,7 +162,7 @@
                         Tag="{DynamicResource color5}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
                             <fa:IconImage Icon="BalanceScale" Style="{StaticResource menuButtonIcon}" />
-							<TextBlock Style="{StaticResource menuButtonText}" Text="Kontragentlar" />
+							<TextBlock Style="{StaticResource menuButtonText}" Text="{loc:Loc Nav.Counterparties}" />
                         </StackPanel>
                     </RadioButton>
 
@@ -172,7 +173,7 @@
                         Tag="{DynamicResource color10}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
                             <fa:IconImage Icon="ArrowsRotate" Style="{StaticResource menuButtonIcon}" />
-							<TextBlock Style="{StaticResource menuButtonText}" Text="Mijoz hisoboti" />
+							<TextBlock Style="{StaticResource menuButtonText}" Text="{loc:Loc Nav.CustomerReport}" />
                         </StackPanel>
                     </RadioButton>
 
@@ -183,7 +184,7 @@
                         Tag="{DynamicResource color9}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
                             <fa:IconImage Icon="Sliders" Style="{StaticResource menuButtonIcon}" />
-                            <TextBlock Style="{StaticResource menuButtonText}" Text="Sozlamalar" />
+                            <TextBlock Style="{StaticResource menuButtonText}" Text="{loc:Loc Nav.Settings}" />
                         </StackPanel>
                     </RadioButton>
 
@@ -227,7 +228,7 @@
                             <TextBlock
                                 Margin="5,10"
                                 Foreground="{DynamicResource HeaderText}"
-                                Text="Bomdod:" />
+                                Text="{loc:Loc Header.Bomdod}" />
                             <TextBlock
                                 Margin="5,10"
                                 FontWeight="Bold"
@@ -236,7 +237,11 @@
                             <TextBlock
                                 Margin="5,10"
                                 Foreground="{DynamicResource HeaderText}"
-                                Text=" |    Peshin:" />
+                                Text=" | " />
+                            <TextBlock
+                                Margin="5,10"
+                                Foreground="{DynamicResource HeaderText}"
+                                Text="{loc:Loc Header.Peshin}" />
                             <TextBlock
                                 Margin="5,10"
                                 FontWeight="Bold"
@@ -245,7 +250,11 @@
                             <TextBlock
                                 Margin="5,10"
                                 Foreground="{DynamicResource HeaderText}"
-                                Text=" |    Asr:" />
+                                Text=" | " />
+                            <TextBlock
+                                Margin="5,10"
+                                Foreground="{DynamicResource HeaderText}"
+                                Text="{loc:Loc Header.Asr}" />
                             <TextBlock
                                 Margin="5,10"
                                 FontWeight="Bold"
@@ -254,7 +263,11 @@
                             <TextBlock
                                 Margin="5,10"
                                 Foreground="{DynamicResource HeaderText}"
-                                Text=" |    Shom:" />
+                                Text=" | " />
+                            <TextBlock
+                                Margin="5,10"
+                                Foreground="{DynamicResource HeaderText}"
+                                Text="{loc:Loc Header.Shom}" />
                             <TextBlock
                                 Margin="5,10"
                                 FontWeight="Bold"
@@ -263,7 +276,11 @@
                             <TextBlock
                                 Margin="5,10"
                                 Foreground="{DynamicResource HeaderText}"
-                                Text=" |    Xufton:" />
+                                Text=" | " />
+                            <TextBlock
+                                Margin="5,10"
+                                Foreground="{DynamicResource HeaderText}"
+                                Text="{loc:Loc Header.Xufton}" />
                             <TextBlock
                                 Margin="5,10"
                                 FontWeight="Bold"
@@ -298,10 +315,66 @@
                         </StackPanel.Resources>
 
                         <Button
+                            x:Name="LanguageButton"
+                            Click="LanguageButton_Click"
+                            Style="{StaticResource WindowControlButtonStyle}"
+                            ToolTip="{loc:Loc Tooltip.Language}">
+                            <fa:IconImage
+                                Width="14"
+                                Height="14"
+                                Foreground="{DynamicResource HeaderText}"
+                                Icon="Globe" />
+                            <Button.ContextMenu>
+                                <ContextMenu
+                                    Background="{DynamicResource Surface}"
+                                    BorderBrush="{DynamicResource Border}"
+                                    Foreground="{DynamicResource TextPrimary}">
+                                    <ContextMenu.Template>
+                                        <ControlTemplate TargetType="ContextMenu">
+                                            <Border
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Padding="4">
+                                                <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </ContextMenu.Template>
+                                    <ContextMenu.Resources>
+                                        <Style TargetType="MenuItem">
+                                            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+                                            <Setter Property="Padding" Value="16,8" />
+                                            <Setter Property="Cursor" Value="Hand" />
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="MenuItem">
+                                                        <Border x:Name="bd" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter ContentSource="Header" VerticalAlignment="Center" />
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsHighlighted" Value="True">
+                                                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource BrandSubtle}" />
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ContextMenu.Resources>
+                                    <MenuItem Header="O'zbekcha (lotin)" Click="Lang_UzLatn_Click" />
+                                    <MenuItem Header="Ўзбекча (кирилл)" Click="Lang_UzCyrl_Click" />
+                                    <MenuItem Header="Русский" Click="Lang_Ru_Click" />
+                                    <MenuItem Header="English" Click="Lang_En_Click" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+
+                        <Button
                             x:Name="ThemeToggleButton"
                             Click="ThemeToggle_Click"
                             Style="{StaticResource WindowControlButtonStyle}"
-                            ToolTip="Mavzu (Light/Dark)">
+                            ToolTip="{loc:Loc Tooltip.Theme}">
                             <fa:IconImage
                                 x:Name="ThemeToggleIcon"
                                 Width="14"

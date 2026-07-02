@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.ViewModels;
 
 public partial class ConnectionSettingsViewModel : ViewModelBase
@@ -27,8 +28,8 @@ public partial class ConnectionSettingsViewModel : ViewModelBase
         IsLoading = false;
 
         if (ok)
-            Success = "✓ Server bilan aloqa muvaffaqiyatli!";
-        else Error = "✗ Server bilan bog'lanib bo'lmadi";
+            Success = TranslationSource.T("Settings.ConnectionSuccess");
+        else Error = TranslationSource.T("Settings.ConnectionFailed");
     }
 
     [RelayCommand]

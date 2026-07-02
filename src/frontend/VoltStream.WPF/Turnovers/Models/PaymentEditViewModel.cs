@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.ViewModels;
@@ -93,7 +94,7 @@ public partial class PaymentEditViewModel : ViewModelBase
                     Payment.Customer = currentCustomer;
             }
         }
-        else Error = response.Message ?? "Mijozlarni yuklashda xatolik!";
+        else Error = response.Message ?? TranslationSource.T("Turnovers.CustomersLoadFailed");
     }
 
     private async Task LoadCurrenciesAsync()
@@ -117,7 +118,7 @@ public partial class PaymentEditViewModel : ViewModelBase
                     Payment.Currency = currentCurrency;
             }
         }
-        else Error = response.Message ?? "Valyutalarni yuklashda xatolik!";
+        else Error = response.Message ?? TranslationSource.T("Turnovers.CurrenciesLoadFailed");
     }
 
     private async Task LoadCustomerBalance()
@@ -160,19 +161,19 @@ public partial class PaymentEditViewModel : ViewModelBase
     {
         if (Payment.Customer is null)
         {
-            Warning = "Mijoz tanlanmagan!";
+            Warning = TranslationSource.T("Turnovers.CustomerNotSelected");
             return;
         }
 
         if (!Payment.IncomeAmount.HasValue && !Payment.ExpenseAmount.HasValue)
         {
-            Warning = "Kirim yoki chiqim summasi kiritilishi shart!";
+            Warning = TranslationSource.T("Turnovers.IncomeOrExpenseRequired");
             return;
         }
 
         var result = MessageBox.Show(
-            "O'zgarishlarni saqlashni xohlaysizmi?",
-            "Tasdiqlash",
+            TranslationSource.T("Turnovers.ConfirmSaveChanges"),
+            TranslationSource.T("Turnovers.ConfirmTitle"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 
@@ -186,19 +187,19 @@ public partial class PaymentEditViewModel : ViewModelBase
 
         if (response.IsSuccess)
         {
-            Success = "To'lov muvaffaqiyatli yangilandi!";
+            Success = TranslationSource.T("Turnovers.PaymentUpdated");
             WeakReferenceMessenger.Default.Send(new EntityUpdatedMessage<string>("OperationUpdated"));
             navigationService.GoBack();
         }
-        else Error = response.Message ?? "To'lovni yangilashda xatolik!";
+        else Error = response.Message ?? TranslationSource.T("Turnovers.PaymentUpdateFailed");
     }
 
     [RelayCommand]
     private void Cancel()
     {
         var result = MessageBox.Show(
-            "O'zgarishlar saqlanmaydi. Chiqishni xohlaysizmi?",
-            "Tasdiqlash",
+            TranslationSource.T("Turnovers.ConfirmDiscardChanges"),
+            TranslationSource.T("Turnovers.ConfirmTitle"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 

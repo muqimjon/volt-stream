@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using VoltStream.WPF.Commons.Animations;
 using VoltStream.WPF.Commons.Enums;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.ViewModels;
 
@@ -30,6 +31,23 @@ public partial class MainWindow : Window
         ThemeManager.Toggle();
         UpdateThemeIcon();
     }
+
+    private void LanguageButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button { ContextMenu: { } menu } button)
+        {
+            menu.PlacementTarget = button;
+            menu.IsOpen = true;
+        }
+    }
+
+    private void Lang_UzLatn_Click(object sender, RoutedEventArgs e) => LocalizationManager.Apply(AppLanguage.UzLatn);
+
+    private void Lang_UzCyrl_Click(object sender, RoutedEventArgs e) => LocalizationManager.Apply(AppLanguage.UzCyrl);
+
+    private void Lang_Ru_Click(object sender, RoutedEventArgs e) => LocalizationManager.Apply(AppLanguage.Ru);
+
+    private void Lang_En_Click(object sender, RoutedEventArgs e) => LocalizationManager.Apply(AppLanguage.En);
 
     private void UpdateThemeIcon()
         => ThemeToggleIcon.Icon = ThemeManager.Current == AppTheme.Dark ? IconChar.Sun : IconChar.Moon;

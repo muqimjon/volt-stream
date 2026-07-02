@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.ViewModels;
 using VoltStream.WPF.Payments.PayDiscountWindow.Modela;
@@ -53,19 +54,19 @@ partial class PaymentPageViewModel : ViewModelBase
     {
         if (Customer is null)
         {
-            Warning = "To'lov amalga oshirilayotgan shaxs tanlanishi shart";
+            Warning = TranslationSource.T("Payments.WarningSelectPerson");
             WeakReferenceMessenger.Default.Send(new FocusRequestMessage("customer"));
             return;
         }
         if (Payment.PaidAt is null)
         {
-            Warning = "To'lov sanasi kiritilishi shart!";
+            Warning = TranslationSource.T("Payments.WarningDateRequired");
             WeakReferenceMessenger.Default.Send(new FocusRequestMessage("date"));
             return;
         }
         if ((Payment.IncomeAmount ?? 0) + (Payment.ExpenseAmount ?? 0) <= 0)
         {
-            Warning = "To'lov summasini to'g'irlang!";
+            Warning = TranslationSource.T("Payments.WarningFixAmount");
             WeakReferenceMessenger.Default.Send(new FocusRequestMessage(Payment.IsIncomeEnabled ? "income" : "expense"));
             return;
         }
@@ -80,11 +81,11 @@ partial class PaymentPageViewModel : ViewModelBase
 
         if (response.IsSuccess)
         {
-            Success = "To'lov muvaffaqiyatli ro'yxatga qo'shildi!";
+            Success = TranslationSource.T("Payments.SuccessRegistered");
             ResetPaymentForm();
             await LoadDataAsync();
         }
-        else Error = response.Message ?? "Texnik xatolik!";
+        else Error = response.Message ?? TranslationSource.T("Payments.TechnicalError");
     }
 
     [RelayCommand]
@@ -92,14 +93,14 @@ partial class PaymentPageViewModel : ViewModelBase
     {
         if (Customer is null || Payment.Discount is null || Payment.Discount <= 0)
         {
-            Warning = "Mijoz tanlanmagan yoki chegirma mavjud emas!";
+            Warning = TranslationSource.T("Payments.WarningNoDiscount");
             WeakReferenceMessenger.Default.Send(new FocusRequestMessage("customer"));
             return Task.CompletedTask;
         }
 
         if (Payment.PaidAt is null)
         {
-            Warning = "Chegirmani boshqarish uchun sana kiritilishi shart!";
+            Warning = TranslationSource.T("Payments.WarningDiscountDate");
             WeakReferenceMessenger.Default.Send(new FocusRequestMessage("date"));
             return Task.CompletedTask;
         }
@@ -267,10 +268,10 @@ partial class PaymentPageViewModel : ViewModelBase
 
         if (response.IsSuccess)
         {
-            Success = $"Chegirma muvaffaqiyatli qo'llandi!\n\nTuri: {(result.discountCash ? "Naqd" : "Hisob")}\nSumma: {result.discountSum:N2}";
+            Success = $"{TranslationSource.T("Payments.SuccessDiscountApplied")}\n\n{TranslationSource.T("Payments.TypeLabel")} {(result.discountCash ? TranslationSource.T("Payments.Cash") : TranslationSource.T("Payments.Settlement"))}\n{TranslationSource.T("Payments.AmountLabel")} {result.discountSum:N2}";
             await LoadCustomerDetailsAsync();
             Payment.PaidAt = null;
         }
-        else Error = response.Message ?? "Chegirma qo'llashda xatolik!";
+        else Error = response.Message ?? TranslationSource.T("Payments.ErrorApplyDiscount");
     }
 }

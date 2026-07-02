@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.ViewModels;
 using VoltStream.WPF.Configurations;
@@ -26,6 +27,7 @@ public partial class App : Application
     {
         RegisterGlobalExceptionHandlers();
         ThemeManager.Initialize();
+        LocalizationManager.Initialize();
         base.OnStartup(e);
 
         host = Host.CreateDefaultBuilder()
@@ -97,7 +99,7 @@ public partial class App : Application
         if (ex is null)
             return;
 
-        Dispatcher.Invoke(() => MessageBox.Show(ex.Message, "Jiddiy Xato!"));
+        Dispatcher.Invoke(() => MessageBox.Show(ex.Message, TranslationSource.T("Common.CriticalError")));
     }
 
     protected override async void OnExit(ExitEventArgs e)

@@ -10,6 +10,7 @@ using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.ViewModels;
 
@@ -60,16 +61,16 @@ public partial class ProductPageViewModel : ViewModelBase
     private async Task ExportToExcel()
     {
         var items = await LoadAllItemsAsync();
-        if (items.Count == 0) { Error = "Eksport qilish uchun ma'lumot topilmadi."; return; }
-        try { if (ReportService.ExportExcel(BuildReport(items))) Success = "Ma'lumotlar muvaffaqiyatli Excel faylga eksport qilindi ✅"; }
-        catch (Exception ex) { Error = $"Xatolik yuz berdi: {ex.Message}"; }
+        if (items.Count == 0) { Error = TranslationSource.T("Products.NoDataToExport"); return; }
+        try { if (ReportService.ExportExcel(BuildReport(items))) Success = TranslationSource.T("Products.ExportSuccess"); }
+        catch (Exception ex) { Error = $"{TranslationSource.T("Products.ErrorOccurred")}: {ex.Message}"; }
     }
 
     [RelayCommand]
     private async Task Print()
     {
         var items = await LoadAllItemsAsync();
-        if (items.Count == 0) { Info = "Chop etish uchun ma’lumot topilmadi."; return; }
+        if (items.Count == 0) { Info = TranslationSource.T("Products.NoDataToPrint"); return; }
         ReportService.Print(BuildReport(items));
     }
 
@@ -77,30 +78,30 @@ public partial class ProductPageViewModel : ViewModelBase
     private async Task Preview()
     {
         var items = await LoadAllItemsAsync();
-        if (items.Count == 0) { Info = "Ko‘rsatish uchun ma’lumot yo‘q!"; return; }
+        if (items.Count == 0) { Info = TranslationSource.T("Products.NoDataToPreview"); return; }
         ReportService.Preview(BuildReport(items));
     }
 
     private ReportDefinition<ProductItemViewModel> BuildReport(List<ProductItemViewModel> items)
         => new()
         {
-            Title = "Omborxonadagi mahsulotlar qoldiqlari",
-            Subtitle = SelectedCategory is { Id: > 0 } ? $"Mahsulot turi: {SelectedCategory.Name}" : null,
-            SheetName = "Mahsulotlar",
-            FileName = "Mahsulotlar",
+            Title = TranslationSource.T("Products.ReportTitle"),
+            Subtitle = SelectedCategory is { Id: > 0 } ? $"{TranslationSource.T("Products.ProductType")}: {SelectedCategory.Name}" : null,
+            SheetName = TranslationSource.T("Products.ExportName"),
+            FileName = TranslationSource.T("Products.ExportName"),
             Columns =
             [
-                new() { Header = "Mahsulot turi", Width = 90, Value = x => x.Category },
-                new() { Header = "Nomi", Width = 150, Value = x => x.Name },
-                new() { Header = "To'plamda", Width = 80, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.RollLength },
-                new() { Header = "To'plam soni", Width = 80, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.Quantity },
-                new() { Header = "Jami", Width = 70, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.TotalCount },
-                new() { Header = "O'lchov birligi", Width = 60, Align = ReportAlign.Center, Value = x => x.Unit },
-                new() { Header = "Narxi", Width = 90, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.Price },
-                new() { Header = "Umumiy summa", Width = 100, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.TotalAmount },
+                new() { Header = TranslationSource.T("Products.ProductType"), Width = 90, Value = x => x.Category },
+                new() { Header = TranslationSource.T("Common.Name"), Width = 150, Value = x => x.Name },
+                new() { Header = TranslationSource.T("Products.PerRoll"), Width = 80, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.RollLength },
+                new() { Header = TranslationSource.T("Products.RollCount"), Width = 80, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.Quantity },
+                new() { Header = TranslationSource.T("Common.Total"), Width = 70, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.TotalCount },
+                new() { Header = TranslationSource.T("Products.UnitOfMeasure"), Width = 60, Align = ReportAlign.Center, Value = x => x.Unit },
+                new() { Header = TranslationSource.T("Common.Price"), Width = 90, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.Price },
+                new() { Header = TranslationSource.T("Products.TotalAmount"), Width = 100, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.TotalAmount },
             ],
             Rows = items,
-            Totals = new ReportTotals { Label = "JAMI:", LabelSpan = 7, Cells = [new() { Column = 7, Value = items.Sum(x => x.TotalAmount ?? 0), Format = "N2" }] },
+            Totals = new ReportTotals { Label = TranslationSource.T("Products.GrandTotal"), LabelSpan = 7, Cells = [new() { Column = 7, Value = items.Sum(x => x.TotalAmount ?? 0), Format = "N2" }] },
         };
 
     private async Task ReloadAsync()
@@ -125,7 +126,7 @@ public partial class ProductPageViewModel : ViewModelBase
 
         if (!response.IsSuccess)
         {
-            Error = response.Message ?? "Ombor qoldiqlarini yuklashda xatolik yuz berdi.";
+            Error = response.Message ?? TranslationSource.T("Products.LoadStocksError");
             return;
         }
 
@@ -175,7 +176,7 @@ public partial class ProductPageViewModel : ViewModelBase
             ? AllProducts.Where(p => p.CategoryId == category.Id)
             : AllProducts;
         Products = new ObservableCollection<ProductResponse>(source);
-        Products.Insert(0, new ProductResponse { Name = "Barchasi" });
+        Products.Insert(0, new ProductResponse { Name = TranslationSource.T("Common.All") });
         SelectedProduct = Products[0];
     }
 
@@ -187,9 +188,9 @@ public partial class ProductPageViewModel : ViewModelBase
         if (response.IsSuccess)
         {
             Categories = mapper.Map<ObservableCollection<CategoryResponse>>(response.Data!);
-            Categories.Insert(0, new CategoryResponse { Name = "Barchasi" });
+            Categories.Insert(0, new CategoryResponse { Name = TranslationSource.T("Common.All") });
         }
-        else Error = response.Message ?? "Kategoriyalar yuklanmadi.";
+        else Error = response.Message ?? TranslationSource.T("Products.LoadCategoriesError");
     }
 
     public async Task LoadProductsAsync()
@@ -197,6 +198,6 @@ public partial class ProductPageViewModel : ViewModelBase
         var response = await services.GetRequiredService<IProductsApi>().GetAllAsync().Handle(l => IsLoading = l);
         if (response.IsSuccess)
             AllProducts = mapper.Map<ObservableCollection<ProductResponse>>(response.Data!);
-        else Error = response.Message ?? "Mahsulotlar yuklanmadi.";
+        else Error = response.Message ?? TranslationSource.T("Products.LoadProductsError");
     }
 }

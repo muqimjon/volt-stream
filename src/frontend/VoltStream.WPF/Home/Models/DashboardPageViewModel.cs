@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Home.Controls;
 
 public partial class DashboardPageViewModel : ViewModelBase
@@ -39,9 +40,9 @@ public partial class DashboardPageViewModel : ViewModelBase
 
     public string TrendTitle => Interval switch
     {
-        DashboardInterval.Day => "Bugungi savdo dinamikasi",
-        DashboardInterval.Month => "Oxirgi oylik savdo",
-        _ => "Oxirgi 7 kunlik savdo",
+        DashboardInterval.Day => TranslationSource.T("Dashboard.TrendToday"),
+        DashboardInterval.Month => TranslationSource.T("Dashboard.TrendMonth"),
+        _ => TranslationSource.T("Dashboard.TrendWeek"),
     };
 
     [ObservableProperty] private ChartData chart = new();
@@ -90,7 +91,7 @@ public partial class DashboardPageViewModel : ViewModelBase
         var response = await dashboardApi.GetAsync(beginDate, endDate).Handle(loading => IsLoading = loading);
         if (!response.IsSuccess || response.Data is null)
         {
-            Error = response.Message ?? "Dashboard ma'lumotlarini yuklashda xatolik!";
+            Error = response.Message ?? TranslationSource.T("Dashboard.LoadError");
             return;
         }
 
@@ -114,13 +115,13 @@ public partial class DashboardPageViewModel : ViewModelBase
             [
                 new ChartSeries
                 {
-                    Name = "Sotilgan summa",
+                    Name = TranslationSource.T("Dashboard.SeriesSalesAmount"),
                     ColorKey = "BrandColor",
                     Values = d.WeeklySales.Select(x => (double)x.Amount).ToList()
                 },
                 new ChartSeries
                 {
-                    Name = "Kirim (to'lovlar)",
+                    Name = TranslationSource.T("Dashboard.SeriesIncome"),
                     ColorKey = "SuccessColor",
                     Values = d.WeeklyPayments.Select(x => (double)x.Amount).ToList()
                 }

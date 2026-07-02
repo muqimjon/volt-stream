@@ -5,6 +5,7 @@
     xmlns:controls="clr-namespace:VoltStream.WPF.Commons.UserControls"
     xmlns:converter="clr-namespace:VoltStream.WPF.Commons.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
     xmlns:local="clr-namespace:VoltStream.WPF.Sales.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:model="clr-namespace:VoltStream.WPF.Supplies.Models"
@@ -44,31 +45,31 @@
                     <Label
                         Margin="5,0,0,0"
                         VerticalAlignment="Center"
-                        Content="Sana:"
+                        Content="{loc:Loc Sales.DateLabel}"
                         FontSize="14" />
                     <Label
                         Grid.Row="1"
                         Margin="5,0,0,0"
                         VerticalAlignment="Center"
-                        Content="Mijoz:"
+                        Content="{loc:Loc Sales.CustomerLabel}"
                         FontSize="14" />
                     <Label
                         Grid.Row="2"
                         Margin="5,0,0,0"
                         VerticalAlignment="Center"
-                        Content="Val. turi:"
+                        Content="{loc:Loc Sales.CurrencyTypeLabel}"
                         FontSize="14" />
                     <Label
                         Grid.Row="3"
                         Margin="5,0,0,0"
                         VerticalAlignment="Center"
-                        Content="Chegirma:"
+                        Content="{loc:Loc Sales.DiscountLabel}"
                         FontSize="14" />
                     <Label
                         Grid.Row="4"
                         Margin="5,0,0,0"
                         VerticalAlignment="Center"
-                        Content="Izox:"
+                        Content="{loc:Loc Sales.NoteLabel}"
                         FontSize="14" />
                     <Grid Grid.Row="0" Grid.Column="1">
                         <controls:UserCalendar
@@ -115,7 +116,7 @@
                             Grid.Column="1"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            Content="Jami summa:"
+                            Content="{loc:Loc Sales.TotalSumLabel}"
                             FontSize="14" />
                         <TextBox
                             x:Name="TotalSum" Style="{StaticResource ReadOnlyValue}"
@@ -172,7 +173,7 @@
                             Margin="1,0,0,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
-                            Content="To'lashga:"
+                            Content="{loc:Loc Sales.ToPayLabel}"
                             FontSize="14" />
                         <TextBox
                             x:Name="FinalSumm" Style="{StaticResource ReadOnlyValue}"
@@ -220,12 +221,12 @@
                             FontSize="12"
                             FontStyle="Italic"
                             FontWeight="Bold"
-                            Text="Hisob:"
+                            Text="{loc:Loc Sales.AccountLabel}"
                             Visibility="{Binding ElementName=beginBalans, Path=Text.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                         <TextBlock
                             Grid.Row="1"
                             VerticalAlignment="Center"
-                            Text="Joriy:"
+                            Text="{loc:Loc Sales.CurrentLabel}"
                             Visibility="{Binding ElementName=beginBalans, Path=Text.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                         <TextBox
                             x:Name="beginBalans" Foreground="{DynamicResource TextPrimary}"
@@ -243,7 +244,7 @@
                         <TextBlock
                             Grid.Row="2"
                             VerticalAlignment="Center"
-                            Text="Natija:"
+                            Text="{loc:Loc Sales.ResultLabel}"
                             Visibility="{Binding ElementName=lastBalans, Path=Text.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                         <TextBox
                             x:Name="lastBalans" Foreground="{DynamicResource TextPrimary}"
@@ -261,7 +262,7 @@
                         <TextBlock
                             Grid.Row="3"
                             VerticalAlignment="Center"
-                            Text="Telefon:"
+                            Text="{loc:Loc Sales.PhoneLabel}"
                             Visibility="{Binding ElementName=tel, Path=Text.IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
                         <TextBox
                             x:Name="tel" Foreground="{DynamicResource TextPrimary}"
@@ -300,7 +301,7 @@
                 IsHitTestVisible="False"
                 Style="{StaticResource FloatingLabelStyle}"
                 Tag="{Binding ElementName=cbxCategoryName}"
-                Text="Maxsulot turi" />
+                Text="{loc:Loc Sales.ProductType}" />
             <ComboBox
                 x:Name="cbxCategoryName" Style="{StaticResource RoundedCombo}"
                 Margin="1,3"
@@ -314,7 +315,7 @@
                 IsHitTestVisible="False"
                 Style="{StaticResource FloatingLabelStyle}"
                 Tag="{Binding ElementName=cbxProductName}"
-                Text="Maxsulot nomi" />
+                Text="{loc:Loc Sales.ProductName}" />
             <ComboBox
                 x:Name="cbxProductName" Style="{StaticResource RoundedCombo}"
                 Grid.Column="1"
@@ -329,7 +330,7 @@
                 IsHitTestVisible="False"
                 Style="{StaticResource FloatingLabelStyle}"
                 Tag="{Binding ElementName=cbxPerRollCount}"
-                Text="To'plamda" />
+                Text="{loc:Loc Sales.PerRoll}" />
             <ComboBox
                 x:Name="cbxPerRollCount" Style="{StaticResource RoundedCombo}"
                 Grid.Column="2"
@@ -344,7 +345,7 @@
                 IsHitTestVisible="False"
                 Style="{StaticResource FloatingLabelStyle}"
                 Tag="{Binding ElementName=txtRollCount}"
-                Text="To'plam soni" />
+                Text="{loc:Loc Sales.RollCount}" />
             <TextBox
                 x:Name="txtRollCount" Style="{StaticResource RoundedTextBox}"
                 Grid.Column="3"
@@ -360,7 +361,7 @@
                 IsHitTestVisible="False"
                 Style="{StaticResource FloatingLabelStyle}"
                 Tag="{Binding ElementName=txtQuantity}"
-                Text="Jami" />
+                Text="{loc:Loc Common.Total}" />
             <TextBox
                 x:Name="txtQuantity" Style="{StaticResource RoundedTextBox}"
                 Grid.Column="4"
@@ -375,7 +376,7 @@
                 IsHitTestVisible="False"
                 Style="{StaticResource FloatingLabelStyle}"
                 Tag="{Binding ElementName=txtPrice}"
-                Text="Narxi" />
+                Text="{loc:Loc Common.Price}" />
             <TextBox
                 x:Name="txtPrice" Style="{StaticResource RoundedTextBox}"
                 Grid.Column="5"
@@ -390,7 +391,7 @@
                 IsHitTestVisible="False"
                 Style="{StaticResource FloatingLabelStyle}"
                 Tag="{Binding ElementName=txtSum}"
-                Text="Jami summa" />
+                Text="{loc:Loc Sales.TotalSum}" />
             <TextBox
                 x:Name="txtSum" Style="{StaticResource RoundedTextBox}"
                 Grid.Column="6"
@@ -405,7 +406,7 @@
                 IsHitTestVisible="False"
                 Style="{StaticResource FloatingLabelStyle}"
                 Tag="{Binding ElementName=txtPerDiscount}"
-                Text="Chegirma%" />
+                Text="{loc:Loc Sales.DiscountPercent}" />
             <TextBox
                 x:Name="txtPerDiscount" Style="{StaticResource RoundedTextBox}"
                 Grid.Column="7"
@@ -420,7 +421,7 @@
                 IsHitTestVisible="False"
                 Style="{StaticResource FloatingLabelStyle}"
                 Tag="{Binding ElementName=txtDiscount}"
-                Text="Chegirma summasi" />
+                Text="{loc:Loc Sales.DiscountAmount}" />
             <TextBox
                 x:Name="txtDiscount" Style="{StaticResource RoundedTextBox}"
                 Grid.Column="8"
@@ -435,7 +436,7 @@
                 IsHitTestVisible="False"
                 Style="{StaticResource FloatingLabelStyle}"
                 Tag="{Binding ElementName=txtFinalSumProduct}"
-                Text="Umumiy summa" />
+                Text="{loc:Loc Sales.GrandTotal}" />
             <TextBox
                 x:Name="txtFinalSumProduct" Style="{StaticResource RoundedTextBox}"
                 Grid.Column="9"
@@ -452,7 +453,7 @@
                 Foreground="{DynamicResource OnBrand}"
                 Click="AddButton_Click"
                 FontSize="14">
-                <TextBlock Text="Qo'shish" Foreground="White" />
+                <TextBlock Text="{loc:Loc Common.Add}" Foreground="White" />
             </Button>
         </Grid>
         <Grid Grid.Row="2" Margin="0 2 0 0">
@@ -473,57 +474,57 @@
                     utils:DataGridRowNumbering.IsEnabled="True"
                     SelectionUnit="FullRow">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Width="1.5*" MinWidth="120" Binding="{Binding CategoryName}" Header="Maxsulot turi" />
+                        <DataGridTextColumn Width="1.5*" MinWidth="120" Binding="{Binding CategoryName}" Header="{loc:Loc Sales.ProductType}" />
                         <DataGridTextColumn
                             Width="1.8*"
                             MinWidth="120"
                             Binding="{Binding ProductName, Mode=TwoWay}"
-                            Header="Maxsulot nomi" />
+                            Header="{loc:Loc Sales.ProductName}" />
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding PerRollCount, Mode=TwoWay}"
                             ElementStyle="{StaticResource RightCellText}"
-                            Header="To'plamda" />
+                            Header="{loc:Loc Sales.PerRoll}" />
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding RollCount, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
-                            Header="To'plam soni" />
+                            Header="{loc:Loc Sales.RollCount}" />
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding Quantity, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
 
-                            Header="Jami" />
+                            Header="{loc:Loc Common.Total}" />
                         <DataGridTextColumn
                             Width="*"
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding Price, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
-                            Header="Narxi" />
+                            Header="{loc:Loc Common.Price}" />
                         <DataGridTextColumn
                             Width="*"
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding Sum, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
-                            Header="Jami summa" />
+                            Header="{loc:Loc Sales.TotalSum}" />
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding PerDiscount, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
-                            Header="Chegirma%" />
+                            Header="{loc:Loc Sales.DiscountPercent}" />
                         <DataGridTextColumn
                             Width="*"
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding Discount, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
-                            Header="Chegirma summasi" />
+                            Header="{loc:Loc Sales.DiscountAmount}" />
                         <DataGridTextColumn
                             Width="*"
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding FinalSumProduct, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
-                            Header="Umumiy summa" />
+                            Header="{loc:Loc Sales.GrandTotal}" />
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
@@ -537,7 +538,7 @@
                         Margin="0,0,6,0"
                         Padding="14,0"
                         Click="ClearButton_Click"
-                        Content="Tozalash"
+                        Content="{loc:Loc Common.Clear}"
                         Style="{StaticResource SecondaryButton}"
                         FontSize="14" />
 
@@ -546,7 +547,7 @@
                         Click="SubmitButton_Click"
                         Style="{StaticResource PrimaryButton}"
                         FontSize="14">
-                        <TextBlock Text="Yuborish" Foreground="White" />
+                        <TextBlock Text="{loc:Loc Sales.Submit}" Foreground="White" />
                     </Button>
                 </StackPanel>
             </Grid>

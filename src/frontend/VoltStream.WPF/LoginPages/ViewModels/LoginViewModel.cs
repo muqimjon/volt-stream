@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.ViewModels;
 using VoltStream.WPF.Configurations;
@@ -46,13 +47,13 @@ public partial class LoginViewModel : ViewModelBase
     {
         if (string.IsNullOrWhiteSpace(Username))
         {
-            Warning = "Foydalanuvchi nomini kiriting";
+            Warning = TranslationSource.T("Login.EnterUsername");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(Password))
         {
-            Warning = "Parolni kiriting";
+            Warning = TranslationSource.T("Login.EnterPassword");
             return;
         }
 
@@ -64,11 +65,11 @@ public partial class LoginViewModel : ViewModelBase
 
         if (!isConnected)
         {
-            Error = "⚠ Server bilan bog'lanib bo'lmadi";
+            Error = TranslationSource.T("Login.ServerUnreachable");
 
             if (!OpenConnectionSettings())
             {
-                Error = "Aloqa sozlanmadi. Iltimos, qaytadan urinib ko'ring.";
+                Error = TranslationSource.T("Login.ConnectionNotConfigured");
                 return;
             }
 
@@ -78,7 +79,7 @@ public partial class LoginViewModel : ViewModelBase
 
             if (!recheckResult)
             {
-                Error = "Server bilan bog'lanish hali ham mavjud emas.";
+                Error = TranslationSource.T("Login.ServerStillUnreachable");
                 return;
             }
         }
@@ -102,7 +103,7 @@ public partial class LoginViewModel : ViewModelBase
             sessionService.CurrentUser = loginResult.Data;
             LoginSucceeded?.Invoke();
         }
-        else Error = loginResult.Message ?? "Noto'g'ri foydalanuvchi nomi yoki parol!";
+        else Error = loginResult.Message ?? TranslationSource.T("Login.InvalidCredentials");
     }
 
     public async Task<bool> TryAutoLoginAsync()
@@ -142,7 +143,7 @@ public partial class LoginViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            Error = $"Sozlamalar oynasini ochishda xatolik: {ex.Message}";
+            Error = $"{TranslationSource.T("Login.SettingsOpenError")}: {ex.Message}";
             return false;
         }
     }

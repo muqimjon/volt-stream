@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+             xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
              xmlns:uc="clr-namespace:VoltStream.WPF.Commons.UserControls"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
@@ -20,21 +21,21 @@
                   IsReadOnly="True">
 			<DataGrid.Columns>
 				<DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50" ElementStyle="{StaticResource CenterCellText}" />
-				<DataGridTextColumn Header="Nomi" Binding="{Binding Name}" Width="*" />
-				<DataGridTemplateColumn Header="Amallar" Width="100">
+				<DataGridTextColumn Header="{loc:Loc Common.Name}" Binding="{Binding Name}" Width="*" />
+				<DataGridTemplateColumn Header="{loc:Loc Common.Actions}" Width="100">
 					<DataGridTemplateColumn.CellTemplate>
 						<DataTemplate>
 							<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 								<Button Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}"
                                         Style="{StaticResource EditActionButton}"
-                                        ToolTip="Tahrirlash">
+                                        ToolTip="{loc:Loc Common.Edit}">
 									<fa:IconImage Icon="Pen" Foreground="{DynamicResource Warning}" Width="16" Height="16" />
 								</Button>
 								<Button Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}"
                                         Style="{StaticResource DeleteActionButton}"
-                                        ToolTip="O'chirish">
+                                        ToolTip="{loc:Loc Common.Delete}">
 									<fa:IconImage Icon="Trash" Foreground="{DynamicResource Danger}" Width="16" Height="16" />
 								</Button>
 							</StackPanel>
@@ -55,7 +56,7 @@
 							<Setter Property="ContentTemplate">
 								<Setter.Value>
 									<DataTemplate>
-										<TextBlock Text="Yangi qo'shish" Style="{StaticResource SubtitleText}" Margin="0,0,0,15" />
+										<TextBlock Text="{loc:Loc Settings.AddNew}" Style="{StaticResource SubtitleText}" Margin="0,0,0,15" />
 									</DataTemplate>
 								</Setter.Value>
 							</Setter>
@@ -64,7 +65,7 @@
 									<Setter Property="ContentTemplate">
 										<Setter.Value>
 											<DataTemplate>
-												<TextBlock Text="Tahrirlash" Style="{StaticResource SubtitleText}" Margin="0,0,0,15" />
+												<TextBlock Text="{loc:Loc Common.Edit}" Style="{StaticResource SubtitleText}" Margin="0,0,0,15" />
 											</DataTemplate>
 										</Setter.Value>
 									</Setter>
@@ -74,18 +75,18 @@
 					</ContentControl.Style>
 				</ContentControl>
 
-				<TextBlock Text="Nomi" Style="{StaticResource FieldLabel}" />
+				<TextBlock Text="{loc:Loc Common.Name}" Style="{StaticResource FieldLabel}" />
 				<TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource ModernTextBox}" />
 
 				<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-					<Button Content="Bekor qilish"
+					<Button Content="{loc:Loc Common.Cancel}"
                             Style="{StaticResource SecondaryButton}"
                             Command="{Binding CancelCommand}"
                             Margin="0,0,10,0"
                             Width="100" />
 
-					<Button Content="Saqlash"
+					<Button Content="{loc:Loc Common.Save}"
                             Style="{StaticResource PrimaryButton}"
                             Command="{Binding SaveCommand}"
                             Width="100" />
@@ -95,6 +96,6 @@
 
 		<uc:BusyOverlay Grid.ColumnSpan="2"
                         IsBusy="{Binding IsLoading}"
-                        Message="Yuklanmoqda..." />
+                        Message="{loc:Loc Common.Loading}" />
 	</Grid>
 </UserControl>

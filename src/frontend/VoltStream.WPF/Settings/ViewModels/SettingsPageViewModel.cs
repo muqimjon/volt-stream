@@ -9,6 +9,7 @@ using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.ViewModels;
 
 public partial class SettingsPageViewModel : ViewModelBase
@@ -55,7 +56,7 @@ public partial class SettingsPageViewModel : ViewModelBase
     {
         if (Currencies is null || Currencies.Count == 0)
         {
-            Warning = "Saqlash uchun valyuta yo‘q";
+            Warning = TranslationSource.T("Settings.NoCurrencyToSave");
             return;
         }
 
@@ -65,8 +66,8 @@ public partial class SettingsPageViewModel : ViewModelBase
         var response = await client.SaveAllAsync(dtoList)
             .Handle(isLoading => IsSelected = isLoading);
 
-        if (response.IsSuccess && response.Data) Success = "O'zgarishlar muvaffaqiyatli saqlandi";
-        else Error = response.Message ?? "Valyutalarni saqlashda xatolik";
+        if (response.IsSuccess && response.Data) Success = TranslationSource.T("Settings.ChangesSaved");
+        else Error = response.Message ?? TranslationSource.T("Settings.SaveCurrenciesError");
     }
 
     #endregion Commands
@@ -82,7 +83,7 @@ public partial class SettingsPageViewModel : ViewModelBase
 
         if (response.IsSuccess)
             Currencies = mapper.Map<ObservableCollection<CurrencyViewModel>>(response.Data);
-        else Error = response.Message ?? "Valyutalarni yuklashda xatolik";
+        else Error = response.Message ?? TranslationSource.T("Settings.LoadCurrenciesError");
     }
 
     #endregion Load Data

@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.Utils;
@@ -28,7 +29,7 @@ public partial class PaymentsPage : Page
 
     private async void CustomerName_PreviewLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
     {
-        if (!ComboBoxHelper.BeforeUpdate(sender, e, "Xaridor", true))
+        if (!ComboBoxHelper.BeforeUpdate(sender, e, TranslationSource.T("Payments.Buyer"), true))
         {
             if (string.IsNullOrEmpty(CustomerName.Text))
             {
@@ -66,7 +67,7 @@ public partial class PaymentsPage : Page
             else
             {
                 e.Handled = true;
-                MessageBox.Show($"Xatolik: {response.Message}", "Xatolik", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"{TranslationSource.T("Payments.Error")}: {response.Message}", TranslationSource.T("Payments.Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
         else e.Handled = true;

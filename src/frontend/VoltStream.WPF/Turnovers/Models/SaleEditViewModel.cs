@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.ViewModels;
@@ -105,7 +106,7 @@ public partial class SaleEditViewModel : ViewModelBase
             Customers = mapper.Map<ObservableCollection<CustomerViewModel>>(response.Data!);
             RestoreOriginalCustomerBalance();
         }
-        else Error = response.Message ?? "Mijozlarni yuklashda xatolik!";
+        else Error = response.Message ?? TranslationSource.T("Turnovers.CustomersLoadFailed");
     }
 
     private void RestoreOriginalCustomerBalance()
@@ -136,7 +137,7 @@ public partial class SaleEditViewModel : ViewModelBase
 
         if (response.IsSuccess)
             Currencies = mapper.Map<ObservableCollection<CurrencyViewModel>>(response.Data!);
-        else Error = response.Message ?? "Valyutalarni yuklashda xatolik!";
+        else Error = response.Message ?? TranslationSource.T("Turnovers.CurrenciesLoadFailed");
     }
 
     private async Task LoadCategoriesAsync()
@@ -146,7 +147,7 @@ public partial class SaleEditViewModel : ViewModelBase
 
         if (response.IsSuccess)
             Categories = mapper.Map<ObservableCollection<CategoryViewModel>>(response.Data!);
-        else Error = response.Message ?? "Kategoriyalarni yuklashda xatolik!";
+        else Error = response.Message ?? TranslationSource.T("Turnovers.CategoriesLoadFailed");
     }
 
     private async Task LoadProductsAsync()
@@ -164,7 +165,7 @@ public partial class SaleEditViewModel : ViewModelBase
 
         if (response.IsSuccess)
             Products = mapper.Map<ObservableCollection<ProductViewModel>>(response.Data!);
-        else Error = response.Message ?? "Maxsulotlarni yuklashda xatolik!";
+        else Error = response.Message ?? TranslationSource.T("Turnovers.ProductsLoadFailed");
     }
 
     private async Task LoadWarehouseStocksAsync()
@@ -176,7 +177,7 @@ public partial class SaleEditViewModel : ViewModelBase
 
         if (response.IsSuccess)
             WarehouseStocks = mapper.Map<ObservableCollection<WarehouseStockViewModel>>(response.Data!);
-        else Error = response.Message ?? "Ombor ma'lumotlarini yuklashda xatolik!";
+        else Error = response.Message ?? TranslationSource.T("Turnovers.WarehouseLoadFailed");
     }
 
     #endregion
@@ -238,7 +239,7 @@ public partial class SaleEditViewModel : ViewModelBase
     {
         if (item is null) return;
 
-        if (ShowConfirmation("Bu maxsulotni o'chirishni xohlaysizmi?"))
+        if (ShowConfirmation(TranslationSource.T("Turnovers.ConfirmDeleteProduct")))
         {
             Sale.Items.Remove(item);
             RecalculateSaleTotals();
@@ -249,7 +250,7 @@ public partial class SaleEditViewModel : ViewModelBase
     private async Task Save()
     {
         if (!ValidateSale()) return;
-        if (!ShowConfirmation("O'zgarishlarni saqlashni xohlaysizmi?")) return;
+        if (!ShowConfirmation(TranslationSource.T("Turnovers.ConfirmSaveChanges"))) return;
 
         var request = new SaleRequest
         {
@@ -271,17 +272,17 @@ public partial class SaleEditViewModel : ViewModelBase
 
         if (response.IsSuccess)
         {
-            Success = "Savdo muvaffaqiyatli yangilandi!";
+            Success = TranslationSource.T("Turnovers.SaleUpdated");
             WeakReferenceMessenger.Default.Send(new EntityUpdatedMessage<string>("OperationUpdated"));
             navigationService.GoBack();
         }
-        else Error = response.Message ?? "Savdoni yangilashda xatolik!";
+        else Error = response.Message ?? TranslationSource.T("Turnovers.SaleUpdateFailed");
     }
 
     [RelayCommand]
     private void Cancel()
     {
-        if (ShowConfirmation("O'zgarishlar saqlanmaydi. Chiqishni xohlaysizmi?"))
+        if (ShowConfirmation(TranslationSource.T("Turnovers.ConfirmDiscardChanges")))
             navigationService.GoBack();
     }
 
@@ -536,7 +537,7 @@ public partial class SaleEditViewModel : ViewModelBase
         if (CurrentItem.DiscountRate.Value > 100)
         {
             CurrentItem.DiscountRate = 100;
-            Warning = "Chegirma 100% dan oshishi mumkin emas!";
+            Warning = TranslationSource.T("Turnovers.DiscountMax100");
         }
 
         CurrentItem.DiscountAmount = CurrentItem.TotalAmount.Value * (CurrentItem.DiscountRate.Value / 100);
@@ -550,7 +551,7 @@ public partial class SaleEditViewModel : ViewModelBase
         if (CurrentItem.DiscountAmount.Value > CurrentItem.TotalAmount.Value)
         {
             CurrentItem.DiscountAmount = CurrentItem.TotalAmount.Value;
-            Warning = "Chegirma summasi jami summadan oshishi mumkin emas!";
+            Warning = TranslationSource.T("Turnovers.DiscountExceedsTotal");
         }
 
         if (CurrentItem.TotalAmount.Value > 0)
@@ -569,7 +570,7 @@ public partial class SaleEditViewModel : ViewModelBase
         {
             CurrentItem.DiscountAmount = 0;
             CurrentItem.FinalAmount = CurrentItem.TotalAmount.Value;
-            Warning = "Umumiy summa jami summadan katta bo'lishi mumkin emas!";
+            Warning = TranslationSource.T("Turnovers.FinalExceedsTotal");
             return;
         }
 
@@ -582,7 +583,7 @@ public partial class SaleEditViewModel : ViewModelBase
                 CurrentItem.DiscountRate = 100;
                 CurrentItem.DiscountAmount = CurrentItem.TotalAmount.Value;
                 CurrentItem.FinalAmount = 0;
-                Warning = "Chegirma 100% dan oshishi mumkin emas!";
+                Warning = TranslationSource.T("Turnovers.DiscountMax100");
             }
         }
     }
@@ -641,8 +642,9 @@ public partial class SaleEditViewModel : ViewModelBase
         if (requestedRolls > totalRollsInWarehouse)
         {
             var result = MessageBox.Show(
-                $"Omborda {SelectedProduct?.Name}-dan {totalRollsInWarehouse} rulon qolgan.{Environment.NewLine}Davom ettirishga rozimisiz?",
-                "Savdo",
+                string.Format(TranslationSource.T("Turnovers.WarehouseRollsLeft"), SelectedProduct?.Name, totalRollsInWarehouse)
+                    + Environment.NewLine + TranslationSource.T("Turnovers.ContinueConfirm"),
+                TranslationSource.T("Turnovers.Sale"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question,
                 MessageBoxResult.No);
@@ -653,8 +655,9 @@ public partial class SaleEditViewModel : ViewModelBase
         if (requestedLength > selectedStock.TotalLength)
         {
             var result = MessageBox.Show(
-                $"Omborda {SelectedProduct?.Name}-ning {selectedStock.LengthPerRoll}-metrligidan {selectedStock.TotalLength:N2} metr qolgan.{Environment.NewLine}Davom ettirishga rozimisiz?",
-                "Savdo",
+                string.Format(TranslationSource.T("Turnovers.WarehouseMetersLeft"), SelectedProduct?.Name, selectedStock.LengthPerRoll, selectedStock.TotalLength.ToString("N2"))
+                    + Environment.NewLine + TranslationSource.T("Turnovers.ContinueConfirm"),
+                TranslationSource.T("Turnovers.Sale"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question,
                 MessageBoxResult.No);
@@ -672,11 +675,14 @@ public partial class SaleEditViewModel : ViewModelBase
         var newRollLength = CurrentItem.LengthPerRoll.Value - remainder;
 
         var result = MessageBox.Show(
-            $"Siz {SelectedProduct?.Name}-ning {CurrentItem.LengthPerRoll.Value}-metrlik rulonidan " +
-            $"{CurrentItem.TotalLength!.Value:N2} metr tanladingiz, shunda bitta rulondan {remainder:N2} metr " +
-            $"kesilib omborga bitta {newRollLength:N2} metrlik rulon qo'shiladi.{Environment.NewLine}" +
-            "Davom ettirishga rozimisiz?",
-            "Savdo",
+            string.Format(TranslationSource.T("Turnovers.RemainderConfirm"),
+                SelectedProduct?.Name,
+                CurrentItem.LengthPerRoll.Value,
+                CurrentItem.TotalLength!.Value.ToString("N2"),
+                remainder.ToString("N2"),
+                newRollLength.ToString("N2"))
+                + Environment.NewLine + TranslationSource.T("Turnovers.ContinueConfirm"),
+            TranslationSource.T("Turnovers.Sale"),
             MessageBoxButton.YesNo,
             MessageBoxImage.Question,
             MessageBoxResult.No);
@@ -722,13 +728,13 @@ public partial class SaleEditViewModel : ViewModelBase
     {
         if (SelectedProduct is null)
         {
-            Warning = "Maxsulot tanlanmagan!";
+            Warning = TranslationSource.T("Turnovers.ProductNotSelected");
             return false;
         }
 
         if (!CurrentItem.TotalLength.HasValue || CurrentItem.TotalLength.Value <= 0)
         {
-            Warning = "Miqdor kiritilmagan!";
+            Warning = TranslationSource.T("Turnovers.QuantityNotEntered");
             return false;
         }
 
@@ -739,13 +745,13 @@ public partial class SaleEditViewModel : ViewModelBase
     {
         if (Sale.CustomerId <= 0)
         {
-            Warning = "Mijoz tanlanmagan!";
+            Warning = TranslationSource.T("Turnovers.CustomerNotSelected");
             return false;
         }
 
         if (Sale.Items.Count == 0)
         {
-            Warning = "Savdo itemlari mavjud emas!";
+            Warning = TranslationSource.T("Turnovers.NoSaleItems");
             return false;
         }
 
@@ -852,7 +858,7 @@ public partial class SaleEditViewModel : ViewModelBase
     }
 
     private static bool ShowConfirmation(string message) =>
-        MessageBox.Show(message, "Tasdiqlash", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+        MessageBox.Show(message, TranslationSource.T("Turnovers.ConfirmTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
 
     #endregion 
 }

@@ -11,6 +11,7 @@ using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.ViewModels;
 
@@ -60,7 +61,7 @@ public partial class DebitorCreditorPageViewModel : ViewModelBase
         var response = await customersApi.GetAllAsync().Handle(isLoading => IsLoading = isLoading);
         if (!response.IsSuccess)
         {
-            Error = response.Message ?? "Mijozlarni yuklashda xatolik!";
+            Error = response.Message ?? TranslationSource.T("Debitors.LoadCustomersError");
             return;
         }
 
@@ -104,7 +105,7 @@ public partial class DebitorCreditorPageViewModel : ViewModelBase
 
         if (!response.IsSuccess)
         {
-            Error = response.Message ?? "Ma'lumotlarni yuklashda xatolik yuz berdi.";
+            Error = response.Message ?? TranslationSource.T("Debitors.LoadDataError");
             return;
         }
 
@@ -156,16 +157,16 @@ public partial class DebitorCreditorPageViewModel : ViewModelBase
     private async Task ExportToExcel()
     {
         var items = await LoadAllAsync();
-        if (items.Count == 0) { Info = "Eksport uchun ma'lumot yo'q."; return; }
-        try { if (ReportService.ExportExcel(BuildReport(items))) Success = "Ma'lumotlar muvaffaqiyatli eksport qilindi"; }
-        catch (Exception ex) { Error = $"Excel faylga eksport qilishda xatolik yuz berdi: {ex.Message}"; }
+        if (items.Count == 0) { Info = TranslationSource.T("Debitors.NoDataForExport"); return; }
+        try { if (ReportService.ExportExcel(BuildReport(items))) Success = TranslationSource.T("Debitors.ExportSuccess"); }
+        catch (Exception ex) { Error = $"{TranslationSource.T("Debitors.ExcelExportError")}: {ex.Message}"; }
     }
 
     [RelayCommand]
     private async Task Print()
     {
         var items = await LoadAllAsync();
-        if (items.Count == 0) { Info = "Chop etish uchun ma’lumot topilmadi."; return; }
+        if (items.Count == 0) { Info = TranslationSource.T("Debitors.NoDataForPrint"); return; }
         ReportService.Print(BuildReport(items));
     }
 
@@ -173,7 +174,7 @@ public partial class DebitorCreditorPageViewModel : ViewModelBase
     private async Task Preview()
     {
         var items = await LoadAllAsync();
-        if (items.Count == 0) { Info = "Ko‘rsatish uchun ma’lumot yo‘q."; return; }
+        if (items.Count == 0) { Info = TranslationSource.T("Debitors.NoDataForPreview"); return; }
         ReportService.Preview(BuildReport(items));
     }
 
@@ -184,21 +185,21 @@ public partial class DebitorCreditorPageViewModel : ViewModelBase
         var sumCreditor = items.Sum(x => x.Creditor);
         return new ReportDefinition<DebitorCreditorItemViewModel>
         {
-            Title = "Debitor va kreditorlar hisoboti",
-            Subtitle = $"Umumiy balans: {(sumDebitor - sumDiscount - sumCreditor):N2}",
+            Title = TranslationSource.T("Debitors.ReportTitle"),
+            Subtitle = $"{TranslationSource.T("Debitors.OverallBalance")} {(sumDebitor - sumDiscount - sumCreditor):N2}",
             SheetName = "DebitorKreditor",
             FileName = "Debitor va Kreditorlar",
             Columns =
             [
-                new() { Header = "Mijoz", Width = 138, Value = x => x.Customer },
-                new() { Header = "Telefon", Width = 92, Value = x => x.Phone },
-                new() { Header = "Manzil", Width = 108, Value = x => x.Address },
-                new() { Header = "Bonus", Width = 115, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.Discount },
-                new() { Header = "Debitor", Width = 130, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.Debitor },
-                new() { Header = "Kreditor", Width = 130, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.Creditor },
+                new() { Header = TranslationSource.T("Debitors.Customer"), Width = 138, Value = x => x.Customer },
+                new() { Header = TranslationSource.T("Debitors.Phone"), Width = 92, Value = x => x.Phone },
+                new() { Header = TranslationSource.T("Debitors.Address"), Width = 108, Value = x => x.Address },
+                new() { Header = TranslationSource.T("Debitors.Bonus"), Width = 115, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.Discount },
+                new() { Header = TranslationSource.T("Debitors.Debitor"), Width = 130, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.Debitor },
+                new() { Header = TranslationSource.T("Debitors.Kreditor"), Width = 130, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.Creditor },
             ],
             Rows = items,
-            Totals = new ReportTotals { Label = "Jami:", LabelSpan = 3, Cells = [
+            Totals = new ReportTotals { Label = TranslationSource.T("Debitors.TotalLabel"), LabelSpan = 3, Cells = [
                 new() { Column = 3, Value = sumDiscount, Format = "N2" },
                 new() { Column = 4, Value = sumDebitor, Format = "N2" },
                 new() { Column = 5, Value = sumCreditor, Format = "N2" },

@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.Windows;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 
 public partial class ProductSettingsViewModel : ViewModelBase
 {
@@ -52,7 +53,7 @@ public partial class ProductSettingsViewModel : ViewModelBase
         if (response.IsSuccess)
             Products = new ObservableCollection<ProductResponse>(response.Data);
         else
-            Error = response.Message ?? "Mahsulotlarni yuklashda xatolik!";
+            Error = response.Message ?? TranslationSource.T("Settings.LoadProductsError");
     }
 
     private async Task LoadCategories()
@@ -81,13 +82,13 @@ public partial class ProductSettingsViewModel : ViewModelBase
 
             if (response.IsSuccess)
             {
-                Success = "Muvaffaqiyatli saqlandi!";
+                Success = TranslationSource.T("Settings.SavedSuccess");
                 await LoadProducts();
                 Cancel();
             }
             else
             {
-                Error = response.Message ?? "Mahsulotni ma'lumotlarini yangilashda xatolik!";
+                Error = response.Message ?? TranslationSource.T("Settings.ProductUpdateError");
             }
         }
         else
@@ -103,13 +104,13 @@ public partial class ProductSettingsViewModel : ViewModelBase
 
             if (response.IsSuccess)
             {
-                Success = "Muvaffaqiyatli yaratildi";
+                Success = TranslationSource.T("Settings.CreatedSuccess");
                 await LoadProducts();
                 Cancel();
             }
             else
             {
-                Error = response.Message ?? "Mahsulot yaratishda xatolik";
+                Error = response.Message ?? TranslationSource.T("Settings.ProductCreateError");
             }
         }
     }
@@ -127,19 +128,19 @@ public partial class ProductSettingsViewModel : ViewModelBase
     [RelayCommand]
     private async Task Delete(ProductResponse product)
     {
-        if (MessageBox.Show($"{product.Name}  mahsulotni o'chirishni tasdiqlaysizmi?", "O'chirish", MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
+        if (MessageBox.Show($"{product.Name} {TranslationSource.T("Settings.ConfirmDeleteProduct")}", TranslationSource.T("Common.Delete"), MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
 
         var response = await productsApi.DeleteAsync(product.Id).Handle(isLoading => IsLoading = isLoading);
 
         if (response.IsSuccess)
         {
-            Success = "Muvaffaqiyatli o'chirildi!";
+            Success = TranslationSource.T("Settings.DeletedSuccess");
             await LoadProducts();
             if (SelectedProduct == product) Cancel();
         }
         else
         {
-            Error = response.Message ?? "Mahsulotni o'chirishda xatolik!";
+            Error = response.Message ?? TranslationSource.T("Settings.ProductDeleteError");
         }
     }
 

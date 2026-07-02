@@ -9,6 +9,7 @@ using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.ViewModels;
 
 public partial class SalePageViewModel : ViewModelBase
@@ -86,7 +87,7 @@ public partial class SalePageViewModel : ViewModelBase
             if (CurrencyId > 0)
                 Currency = Currencies.FirstOrDefault(c => c.Id == CurrencyId)!;
         }
-        else Error = response.Message ?? "Valyutalarni yuklashda xatolik!";
+        else Error = response.Message ?? TranslationSource.T("Sales.CurrenciesLoadError");
     }
 
     partial void OnCurrencyChanged(CurrencyViewModel value)
@@ -111,7 +112,7 @@ public partial class SalePageViewModel : ViewModelBase
             if (CustomerId > 0)
                 Customer = Customers.FirstOrDefault(c => c.Id == CustomerId)!;
         }
-        else Error = response.Message ?? "Mijozlarni yuklashda xatolik!";
+        else Error = response.Message ?? TranslationSource.T("Sales.CustomersLoadFailed");
     }
 
     #endregion Customer combobox
@@ -137,7 +138,7 @@ public partial class SalePageViewModel : ViewModelBase
         var request = new FilteringRequest { Filters = new() { ["products"] = ["include"] } };
 
         var response = await categoriesApi.Filter(request).Handle(l => IsLoading = l);
-        if (!response.IsSuccess) { Error = response.Message ?? "Kategoriyalarni yuklashda xatolik!"; return; }
+        if (!response.IsSuccess) { Error = response.Message ?? TranslationSource.T("Sales.CategoriesLoadFailed"); return; }
 
         Categories = mapper.Map<ObservableCollection<CategoryViewModel>>(response.Data!);
         if (SelectedCategoryId > 0)
@@ -158,7 +159,7 @@ public partial class SalePageViewModel : ViewModelBase
             if (SelectedCategory is null)
             {
                 Products = mapper.Map<ObservableCollection<ProductViewModel>>(Categories.SelectMany(c => c.Products));
-                Error = "Bunday category mavjud emas yoki o'chirilgan";
+                Error = TranslationSource.T("Sales.CategoryNotExists");
             }
             else Products = SelectedCategory.Products;
         }

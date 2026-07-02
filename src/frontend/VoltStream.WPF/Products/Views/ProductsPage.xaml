@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uc="clr-namespace:VoltStream.WPF.Commons.UserControls"
     xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
@@ -28,7 +29,7 @@
             <uc:FilterBar.Filters>
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Margin="0,0,14,0">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="Mahsulot turi" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Products.ProductType}" />
                         <ComboBox
                             x:Name="cbxCategory"
                             Width="240"
@@ -40,7 +41,7 @@
                     </StackPanel>
 
                     <StackPanel Margin="0,0,14,0">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="Nomi" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Common.Name}" />
                         <ComboBox
                             x:Name="cbxProductName"
                             Width="240"
@@ -56,7 +57,7 @@
                         <Border Height="38">
                             <CheckBox
                                 VerticalAlignment="Center"
-                                Content="Hammasini ko‘rsatish"
+                                Content="{loc:Loc Products.ShowAll}"
                                 IsChecked="{Binding ShowAllBalances, Mode=TwoWay}"
                                 Style="{StaticResource ModernCheck}" />
                         </Border>
@@ -79,18 +80,18 @@
                 <DataGridTextColumn
                     Width="*"
                     Binding="{Binding Category}"
-                    Header="Mahsulot turi" />
+                    Header="{loc:Loc Products.ProductType}" />
 
                 <DataGridTextColumn
                     Width="2*"
                     Binding="{Binding Name}"
-                    Header="Nomi" />
+                    Header="{loc:Loc Common.Name}" />
 
                 <DataGridTextColumn
                     Width="*"
                     Binding="{Binding RollLength, StringFormat={}{0:N0}}"
                     ElementStyle="{StaticResource RightCellText}"
-                    Header="To'plamda">
+                    Header="{loc:Loc Products.PerRoll}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -103,7 +104,7 @@
                     Width="*"
                     Binding="{Binding Quantity, StringFormat={}{0:N0}}"
                     ElementStyle="{StaticResource RightCellText}"
-                    Header="To'plam soni">
+                    Header="{loc:Loc Products.RollCount}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -116,7 +117,7 @@
                     Width="*"
                     Binding="{Binding TotalCount, StringFormat={}{0:N0}}"
                     ElementStyle="{StaticResource RightCellText}"
-                    Header="Jami">
+                    Header="{loc:Loc Common.Total}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -129,13 +130,13 @@
                     Width="*"
                     Binding="{Binding Unit}"
                     ElementStyle="{StaticResource CenterCellText}"
-                    Header="O‘lchov birligi" />
+                    Header="{loc:Loc Products.UnitOfMeasure}" />
 
                 <DataGridTextColumn
                     Width="*"
                     Binding="{Binding Price, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
-                    Header="Narxi">
+                    Header="{loc:Loc Common.Price}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -148,7 +149,7 @@
                     Width="1.5*"
                     Binding="{Binding TotalAmount, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
-                    Header="Umumiy summa">
+                    Header="{loc:Loc Products.TotalAmount}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -161,7 +162,7 @@
 
         <uc:EmptyState
             Grid.Row="1"
-            Message="Mahsulotlar topilmadi"
+            Message="{loc:Loc Products.NotFound}"
             Visibility="{Binding Pagination.TotalCount, Converter={StaticResource CountToEmptyVisibility}}" />
 
         <uc:Pager
@@ -173,6 +174,6 @@
             Grid.Row="0"
             Grid.RowSpan="3"
             IsBusy="{Binding IsLoading}"
-            Message="Yuklanmoqda..." />
+            Message="{loc:Loc Common.Loading}" />
     </Grid>
 </Page>

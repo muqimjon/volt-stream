@@ -5,6 +5,7 @@
     xmlns:controls="clr-namespace:VoltStream.WPF.Commons.UserControls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+    xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
@@ -30,7 +31,7 @@
             <controls:FilterBar.Filters>
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Margin="0,0,14,0">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="Boshlanish" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Turnovers.StartDate}" />
                         <controls:UserCalendar
                             Width="130"
                             utils:EnterKeyTab.IsEnabled="True"
@@ -38,7 +39,7 @@
                     </StackPanel>
 
                     <StackPanel Margin="0,0,14,0">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="Tugash" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Turnovers.EndDate}" />
                         <controls:UserCalendar
                             Width="130"
                             utils:EnterKeyTab.IsEnabled="True"
@@ -46,7 +47,7 @@
                     </StackPanel>
 
                     <StackPanel Margin="0,0,14,0">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="Mijozni tanlang" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Turnovers.SelectCustomer}" />
                         <ComboBox
                             x:Name="cbxCustomer"
                             Width="240"
@@ -77,14 +78,14 @@
                     Width="0.7*"
                     Binding="{Binding Date, StringFormat={}{0:dd.MM.yyyy}}"
                     ElementStyle="{StaticResource CenterCellText}"
-                    Header="Sana" />
+                    Header="{loc:Loc Common.Date}" />
                 <DataGridTemplateColumn Width="3*">
                     <DataGridTemplateColumn.Header>
                         <TextBlock
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             FontWeight="Bold"
-                            Text="Izoh" />
+                            Text="{loc:Loc Common.Description}" />
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
@@ -98,7 +99,7 @@
                             <TextBlock
                                 FontWeight="Bold"
                                 Foreground="{DynamicResource Danger}"
-                                Text="Debit" />
+                                Text="{loc:Loc Turnovers.Debit}" />
                             <TextBlock
                                 FontWeight="Bold"
                                 Foreground="{DynamicResource TextSecondary}"
@@ -106,7 +107,7 @@
                             <TextBlock
                                 FontWeight="Bold"
                                 Foreground="{DynamicResource Success}"
-                                Text="Kredit" />
+                                Text="{loc:Loc Turnovers.Credit}" />
                         </StackPanel>
                     </DataGridTemplateColumn.Header>
                     <DataGridTemplateColumn.CellTemplate>
@@ -152,7 +153,7 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Width="90" Header="Amallar">
+                <DataGridTemplateColumn Width="90" Header="{loc:Loc Common.Actions}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel
@@ -164,7 +165,7 @@
                                     CommandParameter="{Binding}"
                                     IsEnabled="{Binding CanEdit}"
                                     Style="{StaticResource EditActionButton}"
-                                    ToolTip="Tahrirlash">
+                                    ToolTip="{loc:Loc Common.Edit}">
                                     <fa:IconImage
                                         Width="16"
                                         Height="16"
@@ -175,7 +176,7 @@
                                     Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                     CommandParameter="{Binding}"
                                     Style="{StaticResource DeleteActionButton}"
-                                    ToolTip="O‘chirish">
+                                    ToolTip="{loc:Loc Common.Delete}">
                                     <fa:IconImage
                                         Width="16"
                                         Height="16"
@@ -191,7 +192,7 @@
 
         <controls:EmptyState
             Grid.Row="1"
-            Message="Operatsiyalar topilmadi"
+            Message="{loc:Loc Turnovers.NoOperations}"
             Visibility="{Binding Pagination.TotalCount, Converter={StaticResource CountToEmptyVisibility}}" />
 
         <Grid Grid.Row="2" Margin="0,12,0,0">
@@ -218,7 +219,7 @@
                             VerticalAlignment="Center"
                             FontSize="13"
                             Foreground="{DynamicResource TextSecondary}"
-                            Text="Boshlang'ich qoldiq" />
+                            Text="{loc:Loc Turnovers.BeginBalance}" />
                         <TextBlock
                             Margin="16,0,0,0"
                             HorizontalAlignment="Right"
@@ -242,7 +243,7 @@
                             VerticalAlignment="Center"
                             FontSize="13"
                             Foreground="{DynamicResource TextSecondary}"
-                            Text="Oxirgi qoldiq" />
+                            Text="{loc:Loc Turnovers.LastBalance}" />
                         <TextBlock
                             Margin="16,0,0,0"
                             HorizontalAlignment="Right"
@@ -265,6 +266,6 @@
             Grid.Row="0"
             Grid.RowSpan="3"
             IsBusy="{Binding IsLoading}"
-            Message="Yuklanmoqda..." />
+            Message="{loc:Loc Common.Loading}" />
     </Grid>
 </Page>

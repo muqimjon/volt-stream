@@ -50,6 +50,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Commons\Localization\lang\*.json" />
+    <EmbeddedResource Include="Commons\Localization\lang\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Commons\Source\Icons\voltstream.ico" />
     <Resource Include="Commons\Source\Images\dashboard.jpg" />
     <Resource Include="Commons\Source\Images\key-icon.png" />

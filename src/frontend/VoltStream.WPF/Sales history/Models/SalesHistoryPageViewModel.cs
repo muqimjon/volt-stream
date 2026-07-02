@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.ViewModels;
 
@@ -62,9 +63,9 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
         if (response.IsSuccess)
         {
             Categories = mapper.Map<ObservableCollection<CategoryResponse>>(response.Data!);
-            Categories.Insert(0, new CategoryResponse { Name = "Barchasi" });
+            Categories.Insert(0, new CategoryResponse { Name = TranslationSource.T("Common.All") });
         }
-        else Error = response.Message ?? "Kategoriya yuklashda xatolik!";
+        else Error = response.Message ?? TranslationSource.T("SalesHistory.LoadCategoriesError");
     }
 
     public async Task LoadProductsAsync()
@@ -74,7 +75,7 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
         var response = await services.GetRequiredService<IProductsApi>().Filter(request).Handle(isLoading => IsLoading = isLoading);
         if (response.IsSuccess)
             AllProducts = mapper.Map<ObservableCollection<ProductResponse>>(response.Data!);
-        else Error = response.Message ?? "Mahsulotlar yuklashda xatolik!";
+        else Error = response.Message ?? TranslationSource.T("SalesHistory.LoadProductsError");
     }
 
     public async Task LoadCustomersAsync()
@@ -83,9 +84,9 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
         if (response.IsSuccess)
         {
             Customers = mapper.Map<ObservableCollection<CustomerResponse>>(response.Data!);
-            Customers.Insert(0, new CustomerResponse { Name = "Barchasi" });
+            Customers.Insert(0, new CustomerResponse { Name = TranslationSource.T("Common.All") });
         }
-        else Error = response.Message ?? "Mijozlarni yuklashda xatolik!";
+        else Error = response.Message ?? TranslationSource.T("SalesHistory.LoadCustomersError");
     }
 
     public async Task ReloadAsync()
@@ -110,7 +111,7 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
 
         if (!response.IsSuccess)
         {
-            Error = response.Message ?? "Sotuv tarixini yuklashda xatolik!";
+            Error = response.Message ?? TranslationSource.T("SalesHistory.LoadError");
             return;
         }
 
@@ -162,16 +163,16 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
     private async Task ExportToExcel()
     {
         var items = await LoadAllItemsAsync();
-        if (items.Count == 0) { Info = "Eksport qilish uchun ma'lumot topilmadi."; return; }
-        try { if (ReportService.ExportExcel(BuildReport(items))) Success = "Ma'lumotlar muvaffaqiyatli Excel faylga eksport qilindi ✅"; }
-        catch { Error = "Ma'lumotlarni Excel faylga eksport qilishda xatolik yuz berdi!"; }
+        if (items.Count == 0) { Info = TranslationSource.T("SalesHistory.ExportNoData"); return; }
+        try { if (ReportService.ExportExcel(BuildReport(items))) Success = TranslationSource.T("SalesHistory.ExportSuccess"); }
+        catch { Error = TranslationSource.T("SalesHistory.ExportError"); }
     }
 
     [RelayCommand]
     private async Task Print()
     {
         var items = await LoadAllItemsAsync();
-        if (items.Count == 0) { Info = "Chop etish uchun ma’lumot topilmadi."; return; }
+        if (items.Count == 0) { Info = TranslationSource.T("SalesHistory.PrintNoData"); return; }
         ReportService.Print(BuildReport(items));
     }
 
@@ -179,7 +180,7 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
     private async Task Preview()
     {
         var items = await LoadAllItemsAsync();
-        if (items.Count == 0) { Info = "Ko‘rsatish uchun ma’lumot yo‘q."; return; }
+        if (items.Count == 0) { Info = TranslationSource.T("SalesHistory.PreviewNoData"); return; }
         ReportService.Preview(BuildReport(items));
     }
 
@@ -187,28 +188,28 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
     {
         FinalAmount = items.Sum(x => x.TotalAmount ?? 0);
         var subtitle = $"{BeginDate:dd.MM.yyyy} — {EndDate:dd.MM.yyyy}";
-        if (SelectedCustomer is { Id: > 0 }) subtitle += $"  |  Mijoz: {SelectedCustomer.Name}";
+        if (SelectedCustomer is { Id: > 0 }) subtitle += $"  |  {TranslationSource.T("SalesHistory.CustomerLabel")} {SelectedCustomer.Name}";
         return new ReportDefinition<ProductItemViewModel>
         {
-            Title = "Sotilgan mahsulotlar ro'yxati",
+            Title = TranslationSource.T("SalesHistory.ReportTitle"),
             Subtitle = subtitle,
-            SheetName = "Savdo tarixi",
-            FileName = "Savdo tarixi",
+            SheetName = TranslationSource.T("SalesHistory.ReportName"),
+            FileName = TranslationSource.T("SalesHistory.ReportName"),
             Columns =
             [
-                new() { Header = "Sana", Width = 60, Align = ReportAlign.Center, Value = x => x.OperationDate?.ToString("dd.MM.yyyy") },
-                new() { Header = "Mijoz", Width = 82, Value = x => x.Customer },
-                new() { Header = "Mahsulot turi", Width = 80, Value = x => x.Category },
-                new() { Header = "Nomi", Width = 82, Value = x => x.Name },
-                new() { Header = "To'plamda", Width = 68, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.RollLength },
-                new() { Header = "To'plam soni", Width = 60, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.Quantity },
-                new() { Header = "Jami", Width = 50, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.TotalCount },
-                new() { Header = "O'lchov", Width = 70, Align = ReportAlign.Center, Value = x => x.Unit },
-                new() { Header = "Narxi", Width = 80, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.Price },
-                new() { Header = "Umumiy summa", Width = 100, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.TotalAmount },
+                new() { Header = TranslationSource.T("Common.Date"), Width = 60, Align = ReportAlign.Center, Value = x => x.OperationDate?.ToString("dd.MM.yyyy") },
+                new() { Header = TranslationSource.T("SalesHistory.Customer"), Width = 82, Value = x => x.Customer },
+                new() { Header = TranslationSource.T("SalesHistory.ProductType"), Width = 80, Value = x => x.Category },
+                new() { Header = TranslationSource.T("Common.Name"), Width = 82, Value = x => x.Name },
+                new() { Header = TranslationSource.T("SalesHistory.InRoll"), Width = 68, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.RollLength },
+                new() { Header = TranslationSource.T("SalesHistory.RollCount"), Width = 60, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.Quantity },
+                new() { Header = TranslationSource.T("Common.Total"), Width = 50, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.TotalCount },
+                new() { Header = TranslationSource.T("SalesHistory.MeasureShort"), Width = 70, Align = ReportAlign.Center, Value = x => x.Unit },
+                new() { Header = TranslationSource.T("Common.Price"), Width = 80, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.Price },
+                new() { Header = TranslationSource.T("SalesHistory.TotalAmount"), Width = 100, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.TotalAmount },
             ],
             Rows = items,
-            Totals = new ReportTotals { Label = "JAMI:", LabelSpan = 9, Cells = [new() { Column = 9, Value = FinalAmount ?? 0, Format = "N2" }] },
+            Totals = new ReportTotals { Label = TranslationSource.T("SalesHistory.GrandTotal"), LabelSpan = 9, Cells = [new() { Column = 9, Value = FinalAmount ?? 0, Format = "N2" }] },
         };
     }
 
@@ -222,7 +223,7 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
             ? AllProducts.Where(p => p.CategoryId == category.Id)
             : AllProducts;
         Products = new ObservableCollection<ProductResponse>(source);
-        Products.Insert(0, new ProductResponse { Name = "Barchasi" });
+        Products.Insert(0, new ProductResponse { Name = TranslationSource.T("Common.All") });
         SelectedProduct = Products[0];
     }
 

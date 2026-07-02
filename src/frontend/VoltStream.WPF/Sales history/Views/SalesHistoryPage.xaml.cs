@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Sales_history.Models;
 
@@ -51,7 +52,7 @@ public partial class SalesHistoryPage : Page
         }
         else
         {
-            MessageBox.Show("Kiritilgan sana noto‘g‘ri formatda!", "Xatolik", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(TranslationSource.T("SalesHistory.InvalidDateFormat"), TranslationSource.T("SalesHistory.Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             beginDate.Focus();
             return;
         }
@@ -78,7 +79,7 @@ public partial class SalesHistoryPage : Page
         }
         else
         {
-            MessageBox.Show("Kiritilgan sana noto‘g‘ri formatda!", "Xatolik", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(TranslationSource.T("SalesHistory.InvalidDateFormat"), TranslationSource.T("SalesHistory.Error"), MessageBoxButton.OK, MessageBoxImage.Error);
             endDate.Focus();
             return;
         }

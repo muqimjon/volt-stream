@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
       xmlns:local="clr-namespace:VoltStream.WPF.Payments.Views"
       xmlns:controls="clr-namespace:VoltStream.WPF.Commons.UserControls"
       xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
@@ -34,7 +35,7 @@
 					<ColumnDefinition Width="Auto" />
 					<ColumnDefinition Width="*" />
 				</Grid.ColumnDefinitions>
-				<Label Content="Sana:"
+				<Label Content="{loc:Loc Payments.DateLabel}"
                        VerticalAlignment="Center"
                        FontSize="14"/>
 				<controls:UserCalendar x:Name="PaymentDate"
@@ -47,7 +48,7 @@
                                 SelectedDate="{Binding Payment.PaidAt, Mode=TwoWay}" />
 
 				<Label Grid.Row="1"
-                       Content="Mijoz:"
+                       Content="{loc:Loc Payments.CustomerLabel}"
                        VerticalAlignment="Center"
                        FontSize="14"/>
 				<ComboBox x:Name="CustomerName"
@@ -66,7 +67,7 @@
                         utils:ComboBoxQuickNavBehavior.EnableQuickNavigation="True"/>
 
 				<Label Grid.Row="2"
-                       Content="Val. turi:"
+                       Content="{loc:Loc Payments.CurrencyTypeLabel}"
                        VerticalAlignment="Center"
                        FontSize="14"/>
 				<Grid Grid.Row="2"
@@ -88,7 +89,7 @@
                               Margin="0 2"
                               utils:ComboBoxQuickNavBehavior.EnableQuickNavigation="True"/>
 					<TextBlock Grid.Column="1"
-                               Text="kurs /(%)"
+                               Text="{loc:Loc Payments.RateOrPercent}"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Right"
                                FontSize="14"
@@ -123,7 +124,7 @@
 						<ColumnDefinition Width="*" />
 					</Grid.ColumnDefinitions>
 
-					<Label Content="Summa:"
+					<Label Content="{loc:Loc Payments.AmountLabel}"
                            VerticalAlignment="Center"
                            FontSize="12"
                            Foreground="{DynamicResource TextSecondary}"
@@ -145,7 +146,7 @@
                              utils:NumericInput.IsNumeric="True" />
 
 					<Label Grid.Row="1"
-                           Content="Kirim:"
+                           Content="{loc:Loc Payments.IncomeLabel}"
                            VerticalAlignment="Center"
                            FontSize="14"
                            Margin="5,0,0,0" />
@@ -164,7 +165,7 @@
                              Style="{StaticResource ModernTextBox}"/>
 
 					<Label Grid.Row="2"
-                           Content="Chiqim:"
+                           Content="{loc:Loc Payments.ExpenseLabel}"
                            VerticalAlignment="Center"
                            FontSize="14"
                            Margin="5 0 0 0" />
@@ -198,7 +199,7 @@
 							<ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
 
-						<TextBlock Text="Balans:"
+						<TextBlock Text="{loc:Loc Payments.BalanceLabel}"
                                    VerticalAlignment="Center"
                                    FontSize="12"
                                    Foreground="{DynamicResource TextSecondary}"
@@ -220,7 +221,7 @@
                                  utils:NumericInput.Value="{Binding Customer.Balance}" />
 
 						<TextBlock Grid.Column="2"
-                                   Text="Natija:"
+                                   Text="{loc:Loc Payments.ResultLabel}"
                                    VerticalAlignment="Center"
                                    FontSize="12"
                                    Foreground="{DynamicResource TextSecondary}"
@@ -240,7 +241,7 @@
                                  utils:NumericInput.IsNumeric="True" />
 
 						<TextBlock Grid.Column="4"
-                                   Text="Chegirma:"
+                                   Text="{loc:Loc Payments.DiscountLabel}"
                                    VerticalAlignment="Center"
                                    FontSize="12"
                                    Foreground="{DynamicResource TextSecondary}"
@@ -264,7 +265,7 @@
 							<ColumnDefinition Width="60" />
 							<ColumnDefinition Width="*" />
 						</Grid.ColumnDefinitions>
-						<Label Content="Izox:"
+						<Label Content="{loc:Loc Payments.NoteLabel}"
                                VerticalAlignment="Center"
                                FontSize="14"
                                Margin="5,0,11,0" />
@@ -289,13 +290,13 @@
                                 FontSize="14"
                                 Command="{Binding SubmitCommand}"
                                 Style="{StaticResource PrimaryButton}">
-							<TextBlock Text="Saqlash" Foreground="White" />
+							<TextBlock Text="{loc:Loc Common.Save}" Foreground="White" />
 						</Button>
 
 						<Button Grid.Column="2"
                                 x:Name="btnDiscount"
                                 Margin="50,2,5,2"
-                                Content=" Chegirma "
+                                Content="{loc:Loc Payments.Discount}"
                                 FontSize="12"
                                 Command="{Binding OpenDiscountsWindowCommand}"
                                 Style="{StaticResource SecondaryButton}" />
@@ -315,36 +316,36 @@
                   FontSize="14">
 
 			<DataGrid.Columns>
-				<DataGridTextColumn Header="Sana"
+				<DataGridTextColumn Header="{loc:Loc Common.Date}"
                                     Binding="{Binding PaidAt, StringFormat={}{0:dd.MM.yyyy}}"
                                     ElementStyle="{StaticResource CenterCellText}"
                                     Width="120" />
 
-				<DataGridTextColumn Header="Mijoz"
+				<DataGridTextColumn Header="{loc:Loc Payments.Customer}"
                                     Binding="{Binding Customer.Name}"
                                     Width="200" />
 
-				<DataGridTextColumn Header="Net summa"
+				<DataGridTextColumn Header="{loc:Loc Payments.NetAmount}"
                                     Binding="{Binding NetAmount, StringFormat=N2}"
                                     ElementStyle="{StaticResource RightCellText}"
                                     Width="120" />
 
-				<DataGridTextColumn Header="Valyuta turi"
+				<DataGridTextColumn Header="{loc:Loc Payments.CurrencyType}"
                                     Binding="{Binding Currency.Name}"
                                     ElementStyle="{StaticResource CenterCellText}"
                                     Width="120" />
 
-				<DataGridTextColumn Header="Kurs"
+				<DataGridTextColumn Header="{loc:Loc Payments.Rate}"
                                     Binding="{Binding ExchangeRate, StringFormat=N2}"
                                     ElementStyle="{StaticResource RightCellText}"
                                     Width="100" />
 
-				<DataGridTextColumn Header="Summa"
+				<DataGridTextColumn Header="{loc:Loc Common.Amount}"
                                     Binding="{Binding Amount, StringFormat=N2}"
                                     ElementStyle="{StaticResource RightCellText}"
                                     Width="120" />
 
-				<DataGridTextColumn Header="Izoh"
+				<DataGridTextColumn Header="{loc:Loc Common.Description}"
                                     Binding="{Binding Description}"
                                     Width="*" />
 			</DataGrid.Columns>
@@ -354,6 +355,6 @@
 
 		<controls:BusyOverlay Grid.Row="0" Grid.RowSpan="4"
                               IsBusy="{Binding IsLoading}"
-                              Message="Yuklanmoqda..." />
+                              Message="{loc:Loc Common.Loading}" />
 	</Grid>
 </Page>

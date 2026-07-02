@@ -3,10 +3,11 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uc="clr-namespace:VoltStream.WPF.Commons.UserControls"
     xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
-    Title="Haqdorlik va qarzdorlik oynasi"
+    Title="{loc:Loc Debitors.Title}"
     d:DesignHeight="450"
     d:DesignWidth="800"
     mc:Ignorable="d">
@@ -29,7 +30,7 @@
             <uc:FilterBar.Filters>
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Margin="0,0,14,0">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="Turi" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Debitors.Type}" />
                         <ComboBox
                             x:Name="cbxType"
                             Width="150"
@@ -39,7 +40,7 @@
                     </StackPanel>
 
                     <StackPanel Margin="0,0,14,0">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="Mijozni tanlang" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Debitors.SelectCustomer}" />
                         <ComboBox
                             x:Name="cbxCustomer"
                             Width="240"
@@ -51,7 +52,7 @@
                     </StackPanel>
 
                     <StackPanel Margin="0,0,14,0">
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="Belgi" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Debitors.Sign}" />
                         <ComboBox
                             x:Name="cbxSign"
                             Width="90"
@@ -61,7 +62,7 @@
                     </StackPanel>
 
                     <StackPanel>
-                        <TextBlock Style="{StaticResource FieldLabel}" Text="Summa" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Common.Amount}" />
                         <TextBox
                             Width="150"
                             Style="{StaticResource ModernTextBox}"
@@ -85,23 +86,23 @@
                 <DataGridTextColumn
                     Width="2*"
                     Binding="{Binding Customer}"
-                    Header="Mijoz" />
+                    Header="{loc:Loc Debitors.Customer}" />
 
                 <DataGridTextColumn
                     Width="*"
                     Binding="{Binding Phone}"
-                    Header="Telefon" />
+                    Header="{loc:Loc Debitors.Phone}" />
 
                 <DataGridTextColumn
                     Width="2*"
                     Binding="{Binding Address}"
-                    Header="Manzil" />
+                    Header="{loc:Loc Debitors.Address}" />
 
                 <DataGridTextColumn
                     Width="*"
                     Binding="{Binding Discount, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
-                    Header="Bonus">
+                    Header="{loc:Loc Debitors.Bonus}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -114,7 +115,7 @@
                     Width="*"
                     Binding="{Binding Debitor, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
-                    Header="Debitor">
+                    Header="{loc:Loc Debitors.Debitor}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -127,7 +128,7 @@
                     Width="*"
                     Binding="{Binding Creditor, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
-                    Header="Kreditor">
+                    Header="{loc:Loc Debitors.Kreditor}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
                             <Setter Property="TextAlignment" Value="Right" />
@@ -140,7 +141,7 @@
 
         <uc:EmptyState
             Grid.Row="1"
-            Message="Ma'lumot topilmadi"
+            Message="{loc:Loc Debitors.NoDataFound}"
             Visibility="{Binding Pagination.TotalCount, Converter={StaticResource CountToEmptyVisibility}}" />
 
         <uc:Pager
@@ -162,7 +163,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                    <TextBlock Margin="0,0,10,0" FontWeight="Bold" Text="Jami bonus:" />
+                    <TextBlock Margin="0,0,10,0" FontWeight="Bold" Text="{loc:Loc Debitors.TotalBonus}" />
                     <TextBlock
                         FontWeight="Bold"
                         Foreground="{DynamicResource Warning}"
@@ -170,7 +171,7 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" HorizontalAlignment="Right" Orientation="Horizontal">
-                    <TextBlock Margin="0,0,10,0" FontWeight="Bold" Text="Jami debitor:" />
+                    <TextBlock Margin="0,0,10,0" FontWeight="Bold" Text="{loc:Loc Debitors.TotalDebitor}" />
                     <TextBlock
                         FontWeight="Bold"
                         Foreground="{DynamicResource Success}"
@@ -178,7 +179,7 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal">
-                    <TextBlock Margin="0,0,10,0" FontWeight="Bold" Text="Jami kreditor:" />
+                    <TextBlock Margin="0,0,10,0" FontWeight="Bold" Text="{loc:Loc Debitors.TotalKreditor}" />
                     <TextBlock
                         FontWeight="Bold"
                         Foreground="{DynamicResource Danger}"
@@ -190,7 +191,7 @@
                         Margin="0,0,10,0"
                         FontWeight="Bold"
                         Foreground="{DynamicResource Info}"
-                        Text="Umumiy:" />
+                        Text="{loc:Loc Debitors.Overall}" />
                     <TextBlock
                         FontWeight="Bold"
                         Foreground="{Binding FinalAmount, Converter={StaticResource BalanceToColorConverter}}"
@@ -203,6 +204,6 @@
             Grid.Row="0"
             Grid.RowSpan="4"
             IsBusy="{Binding IsLoading}"
-            Message="Yuklanmoqda..." />
+            Message="{loc:Loc Common.Loading}" />
     </Grid>
 </Page>

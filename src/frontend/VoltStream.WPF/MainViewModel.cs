@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.ViewModels;
 using VoltStream.WPF.Debitors.Views;
@@ -25,8 +26,10 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty] private ApiConnectionViewModel apiConnection;
     [ObservableProperty] private object? currentChildView;
-    [ObservableProperty] private string currentPageTitle = "Bosh sahifa";
+    [ObservableProperty] private string currentPageTitle = string.Empty;
     [ObservableProperty] private bool isSidebarCollapsed = false;
+
+    private string currentTitleKey = "Nav.Dashboard";
 
     [ObservableProperty] private string bomdod = string.Empty;
     [ObservableProperty] private string quyosh = string.Empty;
@@ -49,6 +52,9 @@ public partial class MainViewModel : ViewModelBase
         {
             navImpl.PropertyChanged += NavigationService_PropertyChanged;
         }
+
+        LocalizationManager.LanguageChanged += _ => CurrentPageTitle = TranslationSource.T(currentTitleKey);
+        CurrentPageTitle = TranslationSource.T(currentTitleKey);
 
         this.navigationService.Navigate(this.services.GetRequiredService<DashboardPage>());
     }
@@ -79,19 +85,20 @@ public partial class MainViewModel : ViewModelBase
             CurrentChildView = navigationService.CurrentView;
     }
 
-    [RelayCommand] private void ShowDashboardView() => NavigateTo<DashboardPage>("Bosh sahifa");
-    [RelayCommand] private void ShowSalesView() => NavigateTo<SalesPage>("Savdo");
-    [RelayCommand] private void ShowSuppliesView() => NavigateTo<SuppliesPage>("Ishlab chiqarish");
-    [RelayCommand] private void ShowPaymentView() => NavigateTo<PaymentsPage>("To'lov");
-    [RelayCommand] private void ShowProductView() => NavigateTo<ProductsPage>("Mahsulotlar qoldig'i");
-    [RelayCommand] private void ShowSalesHistoryView() => NavigateTo<SalesHistoryPage>("Sotuv tahlili");
-    [RelayCommand] private void ShowDebitorCreditor() => NavigateTo<DebitorCreditorPage>("Kontragentlar");
-    [RelayCommand] private void ShowTurnoversPage() => NavigateTo<TurnoversPage>("Mijoz hisoboti");
-    [RelayCommand] private void ShowSettings() => NavigateTo<SettingsPage>("Sozlamalar");
+    [RelayCommand] private void ShowDashboardView() => NavigateTo<DashboardPage>("Nav.Dashboard");
+    [RelayCommand] private void ShowSalesView() => NavigateTo<SalesPage>("Nav.Sales");
+    [RelayCommand] private void ShowSuppliesView() => NavigateTo<SuppliesPage>("Nav.Production");
+    [RelayCommand] private void ShowPaymentView() => NavigateTo<PaymentsPage>("Nav.Payment");
+    [RelayCommand] private void ShowProductView() => NavigateTo<ProductsPage>("Nav.Products");
+    [RelayCommand] private void ShowSalesHistoryView() => NavigateTo<SalesHistoryPage>("Nav.SalesAnalytics");
+    [RelayCommand] private void ShowDebitorCreditor() => NavigateTo<DebitorCreditorPage>("Nav.Counterparties");
+    [RelayCommand] private void ShowTurnoversPage() => NavigateTo<TurnoversPage>("Nav.CustomerReport");
+    [RelayCommand] private void ShowSettings() => NavigateTo<SettingsPage>("Nav.Settings");
 
-    private void NavigateTo<T>(string title) where T : notnull
+    private void NavigateTo<T>(string titleKey) where T : notnull
     {
         navigationService.Navigate(services.GetRequiredService<T>());
-        CurrentPageTitle = title;
+        currentTitleKey = titleKey;
+        CurrentPageTitle = TranslationSource.T(titleKey);
     }
 }

@@ -3,9 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:VoltStream.WPF.Commons.UserControls"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
-        Title="Savdoni tahrirlash"
+        Title="{loc:Loc Turnovers.SaleEditTitle}"
         Background="{DynamicResource Canvas}"
         d:DesignHeight="450"
         d:DesignWidth="800"
@@ -41,11 +42,11 @@
 							<RowDefinition Height="6" />
 						</Grid.RowDefinitions>
 
-						<Label Content="Sana:" FontSize="14" VerticalAlignment="Center" />
-						<Label Grid.Row="1" Content="Mijoz:" FontSize="14" VerticalAlignment="Center" />
-						<Label Grid.Row="2" Content="Val. turi:" FontSize="14" VerticalAlignment="Center" />
-						<Label Grid.Row="3" Content="Chegirma:" FontSize="14" VerticalAlignment="Center" />
-						<Label Grid.Row="4" Content="Izox:" FontSize="14" VerticalAlignment="Center" />
+						<Label Content="{loc:Loc Turnovers.DateLabel}" FontSize="14" VerticalAlignment="Center" />
+						<Label Grid.Row="1" Content="{loc:Loc Turnovers.CustomerLabel}" FontSize="14" VerticalAlignment="Center" />
+						<Label Grid.Row="2" Content="{loc:Loc Turnovers.CurrencyTypeLabel}" FontSize="14" VerticalAlignment="Center" />
+						<Label Grid.Row="3" Content="{loc:Loc Turnovers.DiscountLabel}" FontSize="14" VerticalAlignment="Center" />
+						<Label Grid.Row="4" Content="{loc:Loc Turnovers.NoteLabel}" FontSize="14" VerticalAlignment="Center" />
 
 						<controls:UserCalendar  x:Name="calendar"
                     Grid.Column="1"
@@ -83,7 +84,7 @@
                         ItemsSource="{Binding Currencies}"
                         SelectedItem="{Binding SelectedCurrency}" />
 
-							<Label Grid.Column="1" Content="Jami summa:" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" />
+							<Label Grid.Column="1" Content="{loc:Loc Turnovers.TotalAmountLabel}" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" />
 							<TextBox x:Name="txtSaleTotalAmount"
                         Grid.Column="2"
                         Height="25"
@@ -124,7 +125,7 @@
                             IsChecked="{Binding Sale.IsDiscountApplied}" />
 							</Border>
 
-							<Label Grid.Column="3" Content="To'lashga:" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" />
+							<Label Grid.Column="3" Content="{loc:Loc Turnovers.ToPayLabel}" FontSize="14" HorizontalAlignment="Right" VerticalAlignment="Center" />
 							<TextBox x:Name="txtSaleAmount"
                         Grid.Column="4"
                         Margin="0,2"
@@ -157,8 +158,8 @@
 								<RowDefinition Height="*" />
 								<RowDefinition Height="40" />
 							</Grid.RowDefinitions>
-							<TextBlock Text="Hisob:" FontSize="12" FontStyle="Italic" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-							<TextBlock Grid.Row="1" Text="Joriy:" VerticalAlignment="Center" />
+							<TextBlock Text="{loc:Loc Turnovers.AccountLabel}" FontSize="12" FontStyle="Italic" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+							<TextBlock Grid.Row="1" Text="{loc:Loc Turnovers.CurrentLabel}" VerticalAlignment="Center" />
 							<TextBox
                         Grid.Row="1"
                         Margin="35,2,2,2"
@@ -172,7 +173,7 @@
                         VerticalContentAlignment="Center"
                         utils:NumericInput.Value="{Binding BeginBalance}" />
 
-							<TextBlock Grid.Row="2" Text="Natija:" VerticalAlignment="Center" />
+							<TextBlock Grid.Row="2" Text="{loc:Loc Turnovers.ResultLabel}" VerticalAlignment="Center" />
 							<TextBox
                         Grid.Row="2"
                         Margin="35,2,2,2"
@@ -186,7 +187,7 @@
                         VerticalContentAlignment="Center"
                         utils:NumericInput.Value="{Binding LastBalance}" />
 
-							<TextBlock Grid.Row="3" Text="Telefon:" VerticalAlignment="Center" />
+							<TextBlock Grid.Row="3" Text="{loc:Loc Turnovers.PhoneLabel}" VerticalAlignment="Center" />
 							<TextBox
                         Grid.Row="3"
                         Margin="42,2,2,2"
@@ -218,7 +219,7 @@
 						<ColumnDefinition Width="Auto" />
 					</Grid.ColumnDefinitions>
 
-					<TextBlock Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=cbxCategory}" Text="Maxsulot turi" />
+					<TextBlock Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=cbxCategory}" Text="{loc:Loc Turnovers.ProductType}" />
 					<ComboBox
                 x:Name="cbxCategory"
                 Margin="1,3"
@@ -231,7 +232,7 @@
                 Text="{Binding CategorySearchText, UpdateSourceTrigger=LostFocus}"
                 utils:ComboBoxQuickNavBehavior.EnableQuickNavigation="True" />
 
-					<TextBlock Grid.Column="1" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=cbxProduct}" Text="Maxsulot nomi" />
+					<TextBlock Grid.Column="1" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=cbxProduct}" Text="{loc:Loc Turnovers.ProductName}" />
 					<ComboBox
                 x:Name="cbxProduct"
                 Grid.Column="1"
@@ -245,7 +246,7 @@
                 Text="{Binding ProductSearchText, UpdateSourceTrigger=LostFocus}"
                 utils:ComboBoxQuickNavBehavior.EnableQuickNavigation="True" />
 
-					<TextBlock Grid.Column="2" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=cbxLengthPerRoll}" Text="Rulon metr" />
+					<TextBlock Grid.Column="2" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=cbxLengthPerRoll}" Text="{loc:Loc Turnovers.RollLength}" />
 					<ComboBox
                 x:Name="cbxLengthPerRoll"
                 Grid.Column="2"
@@ -259,7 +260,7 @@
                 Text="{Binding WarehouseStockSearchText, UpdateSourceTrigger=LostFocus}"
                 utils:ComboBoxQuickNavBehavior.EnableQuickNavigation="True" />
 
-					<TextBlock Grid.Column="3" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtRollCount}" Text="Rulon soni" />
+					<TextBlock Grid.Column="3" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtRollCount}" Text="{loc:Loc Turnovers.RollCount}" />
 					<TextBox
                 x:Name="txtRollCount"
                 Grid.Column="3"
@@ -271,7 +272,7 @@
                 utils:NumericInput.IsNumeric="True"
                 utils:NumericInput.Value="{Binding CurrentItem.RollCount, UpdateSourceTrigger=LostFocus}" />
 
-					<TextBlock Grid.Column="4" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtTotalLength}" Text="Jami metr" />
+					<TextBlock Grid.Column="4" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtTotalLength}" Text="{loc:Loc Turnovers.TotalLength}" />
 					<TextBox
                 x:Name="txtTotalLength"
                 Grid.Column="4"
@@ -283,7 +284,7 @@
                 utils:NumericInput.Precision="2"
                 utils:NumericInput.Value="{Binding CurrentItem.TotalLength, UpdateSourceTrigger=LostFocus}" />
 
-					<TextBlock Grid.Column="5" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtUnitPrice}" Text="Narxi" />
+					<TextBlock Grid.Column="5" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtUnitPrice}" Text="{loc:Loc Common.Price}" />
 					<TextBox
                 x:Name="txtUnitPrice"
                 Grid.Column="5"
@@ -295,7 +296,7 @@
                 utils:NumericInput.Precision="2"
                 utils:NumericInput.Value="{Binding CurrentItem.UnitPrice, UpdateSourceTrigger=PropertyChanged}" />
 
-					<TextBlock Grid.Column="6" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtTotalAmount}" Text="Jami summa" />
+					<TextBlock Grid.Column="6" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtTotalAmount}" Text="{loc:Loc Turnovers.TotalAmount}" />
 					<TextBox
                 x:Name="txtTotalAmount"
                 Grid.Column="6"
@@ -307,7 +308,7 @@
                 utils:NumericInput.Precision="2"
                 utils:NumericInput.Value="{Binding CurrentItem.TotalAmount}" />
 
-					<TextBlock Grid.Column="7" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtDiscountRate}" Text="Chegirma%" />
+					<TextBlock Grid.Column="7" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtDiscountRate}" Text="{loc:Loc Turnovers.DiscountRate}" />
 					<TextBox
                 x:Name="txtDiscountRate"
                 Grid.Column="7"
@@ -319,7 +320,7 @@
                 utils:NumericInput.Precision="2"
                 utils:NumericInput.Value="{Binding CurrentItem.DiscountRate}" />
 
-					<TextBlock Grid.Column="8" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtDiscountAmount}" Text="Chegirma summasi" />
+					<TextBlock Grid.Column="8" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtDiscountAmount}" Text="{loc:Loc Turnovers.DiscountAmount}" />
 					<TextBox
                 x:Name="txtDiscountAmount"
                 Grid.Column="8"
@@ -331,7 +332,7 @@
                 utils:NumericInput.Precision="2"
                 utils:NumericInput.Value="{Binding CurrentItem.DiscountAmount}" />
 
-					<TextBlock Grid.Column="9" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtFinalAmount}" Text="Umumiy summa" />
+					<TextBlock Grid.Column="9" Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=txtFinalAmount}" Text="{loc:Loc Turnovers.FinalAmount}" />
 					<TextBox
                 x:Name="txtFinalAmount"
                 Grid.Column="9"
@@ -354,10 +355,10 @@
 								<Setter Property="Foreground" Value="{DynamicResource OnBrand}" />
 								<Setter Property="FontWeight" Value="SemiBold" />
 								<Setter Property="Padding" Value="10,0" />
-								<Setter Property="Content" Value="Qo'shish" />
+								<Setter Property="Content" Value="{loc:Loc Common.Add}" />
 								<Style.Triggers>
 									<DataTrigger Binding="{Binding IsEditing}" Value="True">
-										<Setter Property="Content" Value="Yangilash" />
+										<Setter Property="Content" Value="{loc:Loc Turnovers.Update}" />
 									</DataTrigger>
 								</Style.Triggers>
 							</Style>
@@ -368,7 +369,7 @@
                 Grid.Column="11"
                 Margin="4,3"
                 FontSize="14"
-                Content="Bekor qilish"
+                Content="{loc:Loc Common.Cancel}"
                 Command="{Binding CancelEditCommand}"
                 Background="{DynamicResource SurfaceAlt}"
                 Foreground="{DynamicResource TextPrimary}"
@@ -393,32 +394,32 @@
                   SelectionMode="Single"
                   MouseDoubleClick="DataGrid_MouseDoubleClick">
 					<DataGrid.Columns>
-						<DataGridTextColumn Width="1.5*" MinWidth="120" Binding="{Binding Product.Category.Name}" Header="Maxsulot turi" />
-						<DataGridTextColumn Width="1.8*" MinWidth="120" Binding="{Binding Product.Name}" Header="Maxsulot nomi" />
-						<DataGridTextColumn Width="*" Binding="{Binding LengthPerRoll}" ElementStyle="{StaticResource RightCellText}" Header="Rulon metr" />
-						<DataGridTextColumn Width="*" Binding="{Binding RollCount}" ElementStyle="{StaticResource RightCellText}" Header="Rulon soni" />
-						<DataGridTextColumn Width="*" Binding="{Binding TotalLength, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="Jami metr" />
-						<DataGridTextColumn Width="*" Binding="{Binding UnitPrice, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="Narxi" />
-						<DataGridTextColumn Width="*" Binding="{Binding TotalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="Jami summa" />
-						<DataGridTextColumn Width="*" Binding="{Binding DiscountRate, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="Chegirma%" />
-						<DataGridTextColumn Width="*" Binding="{Binding DiscountAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="Chegirma summasi" />
-						<DataGridTextColumn Width="*" Binding="{Binding FinalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="Umumiy summa" />
+						<DataGridTextColumn Width="1.5*" MinWidth="120" Binding="{Binding Product.Category.Name}" Header="{loc:Loc Turnovers.ProductType}" />
+						<DataGridTextColumn Width="1.8*" MinWidth="120" Binding="{Binding Product.Name}" Header="{loc:Loc Turnovers.ProductName}" />
+						<DataGridTextColumn Width="*" Binding="{Binding LengthPerRoll}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Turnovers.RollLength}" />
+						<DataGridTextColumn Width="*" Binding="{Binding RollCount}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Turnovers.RollCount}" />
+						<DataGridTextColumn Width="*" Binding="{Binding TotalLength, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Turnovers.TotalLength}" />
+						<DataGridTextColumn Width="*" Binding="{Binding UnitPrice, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Common.Price}" />
+						<DataGridTextColumn Width="*" Binding="{Binding TotalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Turnovers.TotalAmount}" />
+						<DataGridTextColumn Width="*" Binding="{Binding DiscountRate, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Turnovers.DiscountRate}" />
+						<DataGridTextColumn Width="*" Binding="{Binding DiscountAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Turnovers.DiscountAmount}" />
+						<DataGridTextColumn Width="*" Binding="{Binding FinalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Turnovers.FinalAmount}" />
 					</DataGrid.Columns>
 				</DataGrid>
 
 				<StackPanel Grid.Row="4" Margin="0 10 0 0" HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Horizontal">
 					<Button Margin="0,0,8,0"
                     Command="{Binding CancelCommand}"
-                    Content="Bekor qilish"
+                    Content="{loc:Loc Common.Cancel}"
                     Style="{StaticResource SecondaryButton}" />
 
 					<Button Command="{Binding SaveCommand}"
-                    Content="Saqlash"
+                    Content="{loc:Loc Common.Save}"
                     Style="{StaticResource PrimaryButton}" />
 				</StackPanel>
 			</Grid>
 		</Border>
 
-		<controls:BusyOverlay IsBusy="{Binding IsLoading}" Message="Saqlanmoqda..." />
+		<controls:BusyOverlay IsBusy="{Binding IsLoading}" Message="{loc:Loc Turnovers.Saving}" />
 	</Grid>
 </Page>

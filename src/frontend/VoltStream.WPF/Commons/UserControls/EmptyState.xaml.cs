@@ -3,13 +3,14 @@ namespace VoltStream.WPF.Commons.UserControls;
 using System.Windows;
 using System.Windows.Controls;
 using FontAwesome.Sharp;
+using VoltStream.WPF.Commons.Localization;
 
 public partial class EmptyState : UserControl
 {
     public EmptyState() => InitializeComponent();
 
     public static readonly DependencyProperty MessageProperty =
-        DependencyProperty.Register(nameof(Message), typeof(string), typeof(EmptyState), new PropertyMetadata("Ma'lumot topilmadi"));
+        DependencyProperty.Register(nameof(Message), typeof(string), typeof(EmptyState), new PropertyMetadata(TranslationSource.T("Controls.NoDataFound")));
 
     public static readonly DependencyProperty IconProperty =
         DependencyProperty.Register(nameof(Icon), typeof(IconChar), typeof(EmptyState), new PropertyMetadata(IconChar.FolderOpen));

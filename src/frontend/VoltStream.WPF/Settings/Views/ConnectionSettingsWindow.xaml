@@ -1,7 +1,8 @@
 <Window x:Class="VoltStream.WPF.Settings.Views.ConnectionSettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Aloqa Sozlamalari"
+        xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
+        Title="{loc:Loc Settings.ConnectionWindowTitle}"
         Height="580"
         Width="450"
         WindowStyle="None"
@@ -30,7 +31,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="ALOQA SOZLAMALARI"
+                <TextBlock Text="{loc:Loc Settings.ConnectionHeader}"
                            Grid.Column="0"
                            Style="{StaticResource CaptionText}"
                            FontWeight="SemiBold"
@@ -73,7 +74,7 @@
                         BorderBrush="{DynamicResource Border}">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                            <TextBlock Text="Holat: "
+                            <TextBlock Text="{loc:Loc Settings.StatusLabel}"
                                        Foreground="{DynamicResource TextSecondary}"/>
                             <TextBlock Text="{Binding ApiConnection.StatusText}"
                                        Foreground="{DynamicResource TextPrimary}"
@@ -91,20 +92,20 @@
                 <!-- URL Configuration -->
                 <Border Style="{StaticResource CardBorder}" Margin="0,0,0,15">
                     <StackPanel>
-                        <TextBlock Text="Server manzili" Style="{StaticResource SubtitleText}" Margin="0,0,0,12"/>
+                        <TextBlock Text="{loc:Loc Settings.ServerAddress}" Style="{StaticResource SubtitleText}" Margin="0,0,0,12"/>
 
-                        <CheckBox Content="HTTPS ishlatilsin"
+                        <CheckBox Content="{loc:Loc Settings.UseHttps}"
                                   Style="{StaticResource ModernCheck}"
                                   IsChecked="{Binding ApiConnection.IsHttps, UpdateSourceTrigger=PropertyChanged}"
                                   Margin="0,0,0,12"/>
 
-                        <TextBlock Text="Host" Style="{StaticResource FieldLabel}"/>
+                        <TextBlock Text="{loc:Loc Settings.Host}" Style="{StaticResource FieldLabel}"/>
                         <TextBox x:Name="HostTextBox"
                                  Style="{StaticResource ModernTextBox}"
                                  Text="{Binding ApiConnection.Host, UpdateSourceTrigger=PropertyChanged}"
                                  Margin="0,0,0,12"/>
 
-                        <TextBlock Text="Port" Style="{StaticResource FieldLabel}"/>
+                        <TextBlock Text="{loc:Loc Settings.Port}" Style="{StaticResource FieldLabel}"/>
                         <TextBox x:Name="PortTextBox"
                                  Style="{StaticResource ModernTextBox}"
                                  Text="{Binding ApiConnection.Port, UpdateSourceTrigger=PropertyChanged}"/>
@@ -140,14 +141,14 @@
                         HorizontalAlignment="Center"
                         Margin="0,16,0,20">
 
-                <Button Content="TEKSHIRISH"
+                <Button Content="{loc:Loc Settings.TestUpper}"
                         Style="{StaticResource SecondaryButton}"
                         Command="{Binding TestConnectionCommand}"
                         Width="140"
                         IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBoolToBoolConverter}}"
                         Margin="5,0"/>
 
-                <Button Content="SAQLASH"
+                <Button Content="{loc:Loc Settings.SaveUpper}"
                         Style="{StaticResource PrimaryButton}"
                         Command="{Binding SaveAndCloseCommand}"
                         Width="140"

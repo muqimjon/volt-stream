@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.Windows;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 
 public partial class CustomerSettingsViewModel : ViewModelBase
 {
@@ -35,7 +36,7 @@ public partial class CustomerSettingsViewModel : ViewModelBase
         if (response.IsSuccess)
             Customers = new ObservableCollection<CustomerResponse>(response.Data);
         else
-            Error = response.Message ?? "Mijozlarni yuklashda xatolik!";
+            Error = response.Message ?? TranslationSource.T("Settings.LoadCustomersError");
     }
 
     [RelayCommand]
@@ -58,13 +59,13 @@ public partial class CustomerSettingsViewModel : ViewModelBase
 
             if (response.IsSuccess)
             {
-                Success = "Muvaffaqiyatli saqlandi!";
+                Success = TranslationSource.T("Settings.SavedSuccess");
                 await LoadCustomers();
                 Cancel();
             }
             else
             {
-                Error = response.Message ?? "Mijoz ma'lumotlarini yangilashda xatolik!";
+                Error = response.Message ?? TranslationSource.T("Settings.CustomerUpdateError");
             }
         }
         else
@@ -81,13 +82,13 @@ public partial class CustomerSettingsViewModel : ViewModelBase
 
             if (response.IsSuccess)
             {
-                Success = "Yangi mijoz muvaffaqiyatli qo'shildi";
+                Success = TranslationSource.T("Settings.CustomerCreated");
                 await LoadCustomers();
                 Cancel();
             }
             else
             {
-                Error = response.Message ?? "Mijoz yaratishda xatolik!";
+                Error = response.Message ?? TranslationSource.T("Settings.CustomerCreateError");
             }
         }
     }
@@ -106,19 +107,19 @@ public partial class CustomerSettingsViewModel : ViewModelBase
     [RelayCommand]
     private async Task Delete(CustomerResponse customer)
     {
-        if (MessageBox.Show($"{customer.Name} mijozni o'chirishni tasdiqlaysizmi?", "O'chirish", MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
+        if (MessageBox.Show($"{customer.Name} {TranslationSource.T("Settings.ConfirmDeleteCustomer")}", TranslationSource.T("Common.Delete"), MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
 
         var response = await customersApi.DeleteAsync(customer.Id).Handle(isLoading => IsLoading = isLoading);
 
         if (response.IsSuccess)
         {
-            Success = "Muvaffaqiyatli o'chirildi!";
+            Success = TranslationSource.T("Settings.DeletedSuccess");
             await LoadCustomers();
             if (SelectedCustomer == customer) Cancel();
         }
         else
         {
-            Error = response.Message ?? "Mijozni o'chirishda xatolik!";
+            Error = response.Message ?? TranslationSource.T("Settings.CustomerDeleteError");
         }
     }
 

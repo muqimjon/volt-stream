@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.Utils;
 using VoltStream.WPF.Customer;
@@ -83,9 +84,8 @@ public partial class SalesPage : Page
         {
             if ((decimal.TryParse(txtRollCount.Text, out decimal value) ? value : 0) > sale.WarehouseCountRoll)
             {
-                if (MessageBox.Show($"Omborda {cbxProductName.Text} -dan {sale.WarehouseCountRoll} " +
-                    $"rulon qolgan." + Environment.NewLine + "Davom ettirishga rozimisiz?",
-                    "Savdo", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.No)
+                if (MessageBox.Show(string.Format(TranslationSource.T("Sales.RollStockWarning"), cbxProductName.Text, sale.WarehouseCountRoll),
+                    TranslationSource.T("Sales.SaleCaption"), MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.No)
                 {
                     e.Handled = true;
                     txtRollCount.Text = null;
@@ -97,7 +97,7 @@ public partial class SalesPage : Page
     private async void CustomerName_PreviewLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
     {
 
-        bool accept = ComboBoxHelper.BeforeUpdate(sender, e, "Xaridor", true);
+        bool accept = ComboBoxHelper.BeforeUpdate(sender, e, TranslationSource.T("Sales.Buyer"), true);
         if (!accept) return;
 
         var win = new CustomerWindow(CustomerName.Text)
@@ -129,7 +129,7 @@ public partial class SalesPage : Page
                 sale.CustomerId = response.Data;
                 await LoadCurrencyAsync();
             }
-            else sale.Error = response.Message ?? "Xaridorni yaratishda xatolik yuz berdi!";
+            else sale.Error = response.Message ?? TranslationSource.T("Sales.CustomerCreateError");
         }
         else { e.Handled = true; }
     }
@@ -174,7 +174,7 @@ public partial class SalesPage : Page
             tel.Text = customer.Phone;
             CalcSaleSum();
         }
-        else sale.Error = response.Message ?? "Xaridor ma'lumotlarini yuklashda xatolik yuz berdi!";
+        else sale.Error = response.Message ?? TranslationSource.T("Sales.CustomerInfoLoadError");
 
     }
 
@@ -216,7 +216,7 @@ public partial class SalesPage : Page
             if (selectedValue is not null)
                 CustomerName.SelectedValue = selectedValue;
         }
-        else sale.Error = response.Message ?? "Xaridorlarni yuklashda xatolik yuz berdi!";
+        else sale.Error = response.Message ?? TranslationSource.T("Sales.CustomersLoadError");
     }
 
     private void TxtFinalSumProduct_PreviewLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
@@ -226,7 +226,7 @@ public partial class SalesPage : Page
         {
             if (finalSum > sum)
             {
-                sale.Error = "Chegirmadan keyingi summa umumiy summadan katta bo'lishi mumkin emas.";
+                sale.Error = TranslationSource.T("Sales.DiscountedSumExceedsTotal");
                 txtPerDiscount.Text = null;
                 txtDiscount.Text = null;
                 txtFinalSumProduct.Text = null;
@@ -253,7 +253,7 @@ public partial class SalesPage : Page
         {
             if (discount > sum)
             {
-                sale.Error = "Chegirma umumiy summadan katta bo'lishi mumkin emas.";
+                sale.Error = TranslationSource.T("Sales.DiscountExceedsTotal");
                 txtPerDiscount.Text = null;
                 txtDiscount.Text = null;
                 txtFinalSumProduct.Text = null;
@@ -280,7 +280,7 @@ public partial class SalesPage : Page
         {
             if (perDiscount >= 100)
             {
-                sale.Error = "Chegirma 100% dan katta bo'lishi mumkin emas.";
+                sale.Error = TranslationSource.T("Sales.DiscountOver100");
                 txtPerDiscount.Text = null;
                 txtDiscount.Text = null;
                 txtFinalSumProduct.Text = null;
@@ -321,9 +321,8 @@ public partial class SalesPage : Page
         {
             if ((decimal.TryParse(txtQuantity.Text, out decimal value) ? value : 0) > sale.WarehouseQuantity)
             {
-                if (MessageBox.Show($"Omborda {cbxProductName.Text}-ning {cbxPerRollCount.Text}-metrligidan {sale.WarehouseQuantity} " +
-                    $"metr qolgan." + Environment.NewLine + "Davom ettirishga rozimisiz?",
-                    "Savdo", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.No)
+                if (MessageBox.Show(string.Format(TranslationSource.T("Sales.MeterStockWarning"), cbxProductName.Text, cbxPerRollCount.Text, sale.WarehouseQuantity),
+                    TranslationSource.T("Sales.SaleCaption"), MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.No)
                 {
                     e.Handled = true;
                     txtQuantity.Text = null;
@@ -337,10 +336,8 @@ public partial class SalesPage : Page
                 decimal _quantity = quantity - _q;
                 decimal q_quantity = perRollCount - _quantity;
                 sale.NewQuantity = q_quantity;
-                if (MessageBox.Show($"Siz {cbxProductName.Text}-ning {cbxPerRollCount.Text}-metrlik rulonidan " +
-                    $"{quantity} metr tanladingiz, shunda bitta rulondan {_quantity} metr " +
-                    $"kesilib omborga bitta {q_quantity} metrlik rulon qo'shiladi." + Environment.NewLine +
-                    "Davom ettirishga rozimisiz?", "Savdo", MessageBoxButton.YesNo, MessageBoxImage.Question,
+                if (MessageBox.Show(string.Format(TranslationSource.T("Sales.RollCutWarning"), cbxProductName.Text, cbxPerRollCount.Text, quantity, _quantity, q_quantity),
+                    TranslationSource.T("Sales.SaleCaption"), MessageBoxButton.YesNo, MessageBoxImage.Question,
                     MessageBoxResult.No) == MessageBoxResult.No)
                 {
                     e.Handled = true;
@@ -417,7 +414,7 @@ public partial class SalesPage : Page
     }
     private void CbxCategoryName_PreviewLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
     {
-        _ = ComboBoxHelper.BeforeUpdate(sender, e, "Maxsulot turi");
+        _ = ComboBoxHelper.BeforeUpdate(sender, e, TranslationSource.T("Sales.ProductType"));
     }
 
     private async void CbxProductName_GotFocus(object sender, RoutedEventArgs e)
@@ -442,7 +439,7 @@ public partial class SalesPage : Page
 
     private void CbxProductName_PreviewLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
     {
-        ComboBoxHelper.BeforeUpdate(sender, e, "Maxsulot");
+        ComboBoxHelper.BeforeUpdate(sender, e, TranslationSource.T("Sales.Product"));
     }
 
     private async void CbxProductName_LostFocus(object sender, RoutedEventArgs e)
@@ -456,7 +453,7 @@ public partial class SalesPage : Page
 
     private void CbxPerRollCount_PreviewLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
     {
-        ComboBoxHelper.BeforeUpdate(sender, e, "Rulon uzunlugi");
+        ComboBoxHelper.BeforeUpdate(sender, e, TranslationSource.T("Sales.RollLength"));
     }
 
     private async Task LoadCategoryAsync()
@@ -474,7 +471,7 @@ public partial class SalesPage : Page
             if (selectedValue is not null)
                 cbxCategoryName.SelectedValue = selectedValue;
         }
-        else sale.Error = response.Message ?? "Kategoriyalarni yuklashda xatolik yuz berdi!";
+        else sale.Error = response.Message ?? TranslationSource.T("Sales.CategoriesLoadError");
     }
 
     private async Task LoadProductAsync(long? categoryId)
@@ -499,7 +496,7 @@ public partial class SalesPage : Page
                 cbxProductName.SelectedValue = selectedValue;
         }
         else
-            sale.Error = response.Message ?? "Mahsulotlarni yuklashda xatolik yuz berdi!";
+            sale.Error = response.Message ?? TranslationSource.T("Sales.ProductsLoadError");
     }
 
     private async Task LoadWarehouseItemsAsync(long? productId)
@@ -522,7 +519,7 @@ public partial class SalesPage : Page
             if (selectedValue is not null)
                 cbxPerRollCount.SelectedValue = selectedValue;
         }
-        else sale.Error = response.Message ?? "Ombor ma'lumotlarini yuklashda xatolik yuz berdi!";
+        else sale.Error = response.Message ?? TranslationSource.T("Sales.WarehouseLoadError");
     }
 
     private void AddButton_Click(object sender, RoutedEventArgs e)
@@ -575,7 +572,7 @@ public partial class SalesPage : Page
 
         if (cbxCategoryName.SelectedValue == null)
         {
-            MessageBox.Show("Kategoriya tanlanmagan.", "Xatolik", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(TranslationSource.T("Sales.CategoryNotSelected"), TranslationSource.T("Sales.ErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
             cbxCategoryName.Focus();
             isSuccess = false;
         }
@@ -583,68 +580,68 @@ public partial class SalesPage : Page
         else if (cbxProductName.SelectedValue == null)
         {
             cbxProductName.Focus();
-            sale.Warning = "Mahsulot tanlanmagan.";
+            sale.Warning = TranslationSource.T("Sales.ProductNotSelected");
             isSuccess = false;
         }
 
         else if (cbxPerRollCount.SelectedValue == null)
         {
             cbxPerRollCount.Focus();
-            sale.Warning = "Har bir rulondagi miqdor tanlanmagan.";
+            sale.Warning = TranslationSource.T("Sales.PerRollNotSelected");
             isSuccess = false;
         }
 
         else if (!int.TryParse(txtRollCount.Text, out int rollCount) || rollCount <= 0)
         {
             txtRollCount.Focus();
-            sale.Warning = "Rulon soni kiritilishi shart va 0 dan katta bo'lishi kerak.";
+            sale.Warning = TranslationSource.T("Sales.RollCountRequired");
             isSuccess = false;
         }
 
         else if (!decimal.TryParse(txtQuantity.Text, out decimal quantity) || quantity <= 0)
         {
             txtQuantity.Focus();
-            sale.Warning = "Jami miqdor (metr) kiritilishi shart va 0 dan katta bo'lishi kerak.";
+            sale.Warning = TranslationSource.T("Sales.TotalQuantityRequired");
             isSuccess = false;
         }
 
         else if (!decimal.TryParse(txtPrice.Text, out decimal price) || price <= 0)
         {
             txtPrice.Focus();
-            sale.Warning = "Narx kiritilishi shart va 0 dan katta bo'lishi kerak.";
+            sale.Warning = TranslationSource.T("Sales.PriceRequired");
             isSuccess = false;
         }
 
         else if (!decimal.TryParse(txtSum.Text, out decimal sum) || sum <= 0)
         {
-            sale.Warning = "Jami summa kiritilishi shart va 0 dan katta bo'lishi kerak.";
+            sale.Warning = TranslationSource.T("Sales.TotalSumRequired");
             txtSum.Focus();
             isSuccess = false;
         }
 
         else if (!decimal.TryParse(txtFinalSumProduct.Text, out decimal finalSumProduct) || finalSumProduct <= 0)
         {
-            sale.Warning = "Umumiy summa kiritilishi shart va 0 dan katta bo'lishi kerak.";
+            sale.Warning = TranslationSource.T("Sales.GrandTotalRequired");
             txtFinalSumProduct.Focus();
             isSuccess = false;
         }
         else if (!string.IsNullOrWhiteSpace(txtPerDiscount.Text) && !decimal.TryParse(txtPerDiscount.Text, out perDiscount))
         {
-            sale.Warning = "Foiz chegirma noto'g'ri formatda.";
+            sale.Warning = TranslationSource.T("Sales.DiscountPercentInvalid");
             txtPerDiscount.Focus();
             isSuccess = false;
         }
 
         else if (!string.IsNullOrWhiteSpace(txtDiscount.Text) && !decimal.TryParse(txtDiscount.Text, out decimal discount))
         {
-            sale.Warning = "Chegirma miqdori noto'g'ri formatda.";
+            sale.Warning = TranslationSource.T("Sales.DiscountAmountInvalid");
             txtDiscount.Focus();
             isSuccess = false;
         }
 
         else if (perDiscount < 0 || perDiscount > 100)
         {
-            sale.Warning = "Foiz chegirma 0% dan 100% gacha bo'lishi kerak.";
+            sale.Warning = TranslationSource.T("Sales.DiscountPercentRange");
             txtPerDiscount.Focus();
             isSuccess = false;
         }
@@ -694,7 +691,7 @@ public partial class SalesPage : Page
     {
         if (saleDate.SelectedDate is null)
         {
-            sale.Warning = "Sana tanlanmagan!";
+            sale.Warning = TranslationSource.T("Sales.DateNotSelected");
             saleDate.Focus();
             return;
         }
@@ -706,11 +703,11 @@ public partial class SalesPage : Page
 
         if (sale.SaleItems.Count == 0)
         {
-            sale.Warning = "Hech qanday mahsulot kiritilmagan!";
+            sale.Warning = TranslationSource.T("Sales.NoProductsAdded");
             return;
         }
 
-        if (!Confirm($"{sale.OperationDate:yyy-MM-dd} sana uchun\n{sale.SaleItems.Select(si => si.ProductId).Distinct().Count()} turdagi mahsulot bilan savdo amalga oshirilmoqda.\n Savdoni tasdiqlaysizmi?"))
+        if (!Confirm(string.Format(TranslationSource.T("Sales.SubmitConfirm"), sale.OperationDate, sale.SaleItems.Select(si => si.ProductId).Distinct().Count())))
             return;
 
         var saleRequest = new SaleRequest
@@ -745,7 +742,7 @@ public partial class SalesPage : Page
 
         if (response.IsSuccess)
         {
-            sale.Success = "Sotuv muvaffaqiyatli saqlandi!";
+            sale.Success = TranslationSource.T("Sales.SaveSuccess");
             saleSession.Reset();
             sale = saleSession.Current;
             await ClearUI();
@@ -753,7 +750,7 @@ public partial class SalesPage : Page
         }
         else
         {
-            sale.Error = $"Server xatosi: {response.StatusCode}";
+            sale.Error = $"{TranslationSource.T("Sales.ServerError")}: {response.StatusCode}";
         }
     }
 
@@ -855,7 +852,7 @@ public partial class SalesPage : Page
         }
         else
         {
-            sale.Error = "Kiritilgan sana noto‘g‘ri formatda!";
+            sale.Error = TranslationSource.T("Sales.InvalidDateFormat");
             saleDate.TextBox.Focus();
             return;
         }
@@ -863,7 +860,7 @@ public partial class SalesPage : Page
 
     private static bool Confirm(string message, MessageBoxImage image = MessageBoxImage.Question)
     {
-        var result = MessageBox.Show(message, "Tasdiqlash", MessageBoxButton.YesNo, image);
+        var result = MessageBox.Show(message, TranslationSource.T("Sales.ConfirmTitle"), MessageBoxButton.YesNo, image);
         return result == MessageBoxResult.Yes;
     }
 }

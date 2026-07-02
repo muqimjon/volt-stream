@@ -3,6 +3,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using VoltStream.WPF.Commons.Enums;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Configurations;
 
 public partial class ApiConnectionViewModel : ViewModelBase
@@ -43,7 +44,7 @@ public partial class ApiConnectionViewModel : ViewModelBase
         var scheme = IsHttps ? "https" : "http";
         if (!Uri.TryCreate($"{scheme}://{Host}:{Port}/", UriKind.Absolute, out var uri))
         {
-            Error = "Kiritilgan manzil yaroqsiz";
+            Error = TranslationSource.T("Settings.AddressInvalid");
             return false;
         }
 
@@ -66,9 +67,9 @@ public partial class ApiConnectionViewModel : ViewModelBase
     partial void OnIsConnectedChanged(bool value)
     {
         if (value)
-            Success = "Aloqa tiklandi";
+            Success = TranslationSource.T("Settings.ConnectionRestored");
         else
-            Warning = "Aloqa tiklanmadi";
+            Warning = TranslationSource.T("Settings.ConnectionLost");
 
         UpdateStatus();
     }

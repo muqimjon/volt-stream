@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.Windows;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.ViewModels;
 using VoltStream.WPF.Sales.ViewModels;
@@ -88,7 +89,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
         var existing = Categories.FirstOrDefault(c => string.Equals(c.Name, newValue, StringComparison.OrdinalIgnoreCase));
 
         if (existing != null) SelectedCategory = existing;
-        else if (Confirm($"'{newValue}' yangi kategoriya sifatida qo'shilsinmi?"))
+        else if (Confirm($"'{newValue}' {TranslationSource.T("Supplies.AddAsNewCategory")}"))
         {
             Categories.Add(new() { Name = newValue });
             SelectedCategory = null;
@@ -112,7 +113,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
         var existing = Products.FirstOrDefault(p => string.Equals(p.Name, newValue, StringComparison.OrdinalIgnoreCase));
 
         if (existing != null) SelectedProduct = existing;
-        else if (Confirm($"'{newValue}' yangi mahsulot sifatida qo'shilsinmi?"))
+        else if (Confirm($"'{newValue}' {TranslationSource.T("Supplies.AddAsNewProduct")}"))
         {
             Products.Add(new() { Name = newValue });
             SelectedProduct = null;
@@ -137,7 +138,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
         var existing = WarehouseStocks.FirstOrDefault(w => w.LengthPerRoll == newValue);
 
         if (existing != null) SelectedWarehouseStock = existing;
-        else if (Confirm($"'{newValue}' yangi to'plam o'lchami sifatida qo'shilsinmi?"))
+        else if (Confirm($"'{newValue}' {TranslationSource.T("Supplies.AddAsNewBundleSize")}"))
         {
             WarehouseStocks.Add(new() { LengthPerRoll = newValue.Value });
             SelectedWarehouseStock = null;
@@ -153,7 +154,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
     {
         if (value > 100)
         {
-            Warning = "Chegirma 100% dan yuqori bo'lishi mumkin emas!";
+            Warning = TranslationSource.T("Supplies.DiscountMaxWarning");
             DiscountRate = 100;
         }
     }
@@ -176,7 +177,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
     {
         var result = await categoriesApi.GetAllAsync().Handle(isLoading => IsLoading = isLoading);
         if (result.IsSuccess) Categories = mapper.Map<ObservableCollection<CategoryViewModel>>(result.Data);
-        else Error = result.Message ?? "Kategoriyalarni yuklashda xatolik";
+        else Error = result.Message ?? TranslationSource.T("Supplies.LoadCategoriesError");
     }
 
     private async Task LoadProductsAsync(long? categoryId)
@@ -185,13 +186,13 @@ public partial class SuppliesPageViewModel : ViewModelBase
         {
             var result = await productsApi.GetAllAsync().Handle(isLoading => IsLoading = isLoading);
             if (result.IsSuccess) Products = mapper.Map<ObservableCollection<ProductViewModel>>(result.Data);
-            else Error = result.Message ?? "Mahsulotlarni yuklashda xatolik";
+            else Error = result.Message ?? TranslationSource.T("Supplies.LoadProductsError");
         }
         else
         {
             var result = await productsApi.GetAllByCategoryIdAsync(categoryId.Value).Handle(isLoading => IsLoading = isLoading);
             if (result.IsSuccess) Products = mapper.Map<ObservableCollection<ProductViewModel>>(result.Data);
-            else Error = result.Message ?? "Mahsulotlarni yuklashda xatolik";
+            else Error = result.Message ?? TranslationSource.T("Supplies.LoadProductsError");
         }
     }
 
@@ -219,7 +220,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
 
         using var scope = PagingScope.Begin();
         var response = await suppliesApi.Filter(request).Handle(isLoading => IsLoading = isLoading);
-        if (!response.IsSuccess) { Error = response.Message ?? "Ta'minotlarni yuklashda xatolik"; return; }
+        if (!response.IsSuccess) { Error = response.Message ?? TranslationSource.T("Supplies.LoadSuppliesError"); return; }
 
         Pagination.Apply(PagingScope.Result);
         PagedSupplies = new ObservableCollection<SupplyViewModel>(response.Data!.Select(MapToViewModel));
@@ -230,7 +231,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
         FilteringRequest request = new() { Filters = new() { ["productId"] = [productId.ToString()] } };
         var response = await warehouseItemsApi.Filter(request).Handle(isLoading => IsLoading = isLoading);
         if (response.IsSuccess) WarehouseStocks = mapper.Map<ObservableCollection<WarehouseStockViewModel>>(response.Data);
-        else Error = response.Message ?? "Ombor mahsulotlarini yuklashda xatolik yuz berdi.";
+        else Error = response.Message ?? TranslationSource.T("Supplies.LoadWarehouseStocksError");
     }
 
     #endregion Load Data
@@ -242,7 +243,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
     {
         if (string.IsNullOrWhiteSpace(CategoryText) || string.IsNullOrWhiteSpace(ProductText))
         {
-            Error = "Kategoriya va Mahsulot nomi kiritilishi shart!";
+            Error = TranslationSource.T("Supplies.CategoryProductRequired");
             return;
         }
 
@@ -269,13 +270,13 @@ public partial class SuppliesPageViewModel : ViewModelBase
         {
             var result = await suppliesApi.UpdateSupplyAsync(request).Handle(isLoading => IsLoading = isLoading);
             if (result.IsSuccess) isSuccess = true;
-            else errorMsg = result.Message ?? "Mahsulotni yangilashda xatolik yuz berdi.";
+            else errorMsg = result.Message ?? TranslationSource.T("Supplies.UpdateError");
         }
         else
         {
             var result = await suppliesApi.CreateSupplyAsync(request).Handle(isLoading => IsLoading = isLoading);
             if (result.IsSuccess) isSuccess = true;
-            else errorMsg = result.Message ?? "Mahsulot qo'shishda xatolik yuz berdi.";
+            else errorMsg = result.Message ?? TranslationSource.T("Supplies.CreateError");
         }
 
         if (isSuccess)
@@ -292,7 +293,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
     {
         if (item is null) return;
 
-        if (IsFormDirty() && !Confirm("Formada saqlanmagan ma'lumotlar mavjud. Agar davom ettirsangiz, ular o'chib ketadi. Davom ettirishni istaysizmi?"))
+        if (IsFormDirty() && !Confirm(TranslationSource.T("Supplies.UnsavedChangesConfirm")))
             return;
 
         IsEditing = true;
@@ -317,11 +318,11 @@ public partial class SuppliesPageViewModel : ViewModelBase
     {
         if (item is null) return;
 
-        if (!Confirm("Haqiqatan ham o'chirmoqchimisiz?")) return;
+        if (!Confirm(TranslationSource.T("Supplies.DeleteConfirm"))) return;
 
         var response = await suppliesApi.DeleteSupplyAsync(item.Id).Handle(isLoading => IsLoading = isLoading);
         if (response.IsSuccess && response.Data) await LoadPageAsync();
-        else Error = response.Message ?? "O'chirishda xatolik yuz berdi.";
+        else Error = response.Message ?? TranslationSource.T("Supplies.DeleteError");
     }
 
     #endregion Commands
@@ -399,7 +400,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
     }
 
     private static bool Confirm(string message) =>
-        MessageBox.Show(message, "Tasdiqlash", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+        MessageBox.Show(message, TranslationSource.T("Supplies.ConfirmTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
 
     #endregion Helper Methods
 }

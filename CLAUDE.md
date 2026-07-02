@@ -39,6 +39,14 @@ WebApi seeding'dan OLDIN tinglay boshlaydi (migratsiya/seeding `DatabaseInitiali
 - `/api/health` `[AllowAnonymous]` — ulanish tekshiruvi shu endpointga tayanadi.
 - Avto-login: removable USB diskdagi `voltstream.key` (`DevKeyService`). Kalit bo'lmasa — qo'lda login.
 
+## Til / Lokalizatsiya
+
+- 4 til: `uz-Latn` (asos/fallback), `uz-Cyrl`, `ru`, `en`. Tanlov ish vaqtida (restartsiz) almashadi — header'dagi globus tugmasi menyusidan.
+- Matnlar `Commons/Localization/lang/<code>.json` (embedded resource) da; kalit format `Area.Name` (masalan `Common.Save`, `Sales.CustomerLabel`).
+- XAML: `{loc:Loc <Key>}` (root'da `xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"`). C#: `TranslationSource.T("<Key>")`.
+- `TranslationSource` (INotifyPropertyChanged singleton) indeksator orqali jonli yangilanadi; `LocalizationManager` JSON'ni yuklaydi, tanlovni `config/language.json` ga saqlaydi, `LanguageChanged` event beradi (`App.OnStartup` da `Initialize`).
+- Yangi matn qo'shsang: 4 JSON'ga bir xil kalit qo'sh (izchillik uchun `Common.*` va glossariyni qayta ishlat), keyin `{loc:Loc}`/`T(...)` bilan bog'la. Brend "Volt Stream" va til menyusi autonimlari tarjima qilinmaydi.
+
 ## Kod uslubi
 
 Izohsiz, sodda, kam kod; mavjud arxitektura va fayl uslubiga sodiq; tayyor ishonchli kutubxonalardan foydalanish.

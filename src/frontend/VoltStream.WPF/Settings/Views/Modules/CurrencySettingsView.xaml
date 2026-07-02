@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+             xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
              xmlns:uc="clr-namespace:VoltStream.WPF.Commons.UserControls"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
@@ -36,62 +37,62 @@
                     <ColumnDefinition Width="90" />
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Odatiy"
+                <TextBlock Text="{loc:Loc Settings.Default}"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondary}"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center" />
 
-                <TextBlock Text="Faol"
+                <TextBlock Text="{loc:Loc Settings.Active}"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondary}"
                            Grid.Column="1"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center" />
 
-                <TextBlock Text="Naqd"
+                <TextBlock Text="{loc:Loc Settings.Cash}"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondary}"
                            Grid.Column="2"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center" />
 
-                <TextBlock Text="O'zgaruvchan"
+                <TextBlock Text="{loc:Loc Settings.Editable}"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondary}"
                            Grid.Column="3"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center" />
 
-                <TextBlock Text="Nomi"
+                <TextBlock Text="{loc:Loc Common.Name}"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondary}"
                            Grid.Column="4"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center" />
 
-                <TextBlock Text="Kodi"
+                <TextBlock Text="{loc:Loc Settings.Code}"
                            Grid.Column="5"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondary}"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center" />
 
-                <TextBlock Text="Belgisi"
+                <TextBlock Text="{loc:Loc Settings.Symbol}"
                            Grid.Column="6"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondary}"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center" />
 
-                <TextBlock Text="Kurs"
+                <TextBlock Text="{loc:Loc Settings.Rate}"
                            Grid.Column="7"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondary}"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center" />
 
-                <TextBlock Text="Amallar"
+                <TextBlock Text="{loc:Loc Common.Actions}"
                            Grid.Column="8"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondary}"
@@ -140,12 +141,12 @@
                                               MouseDown="DragHandle_MouseDown"
                                               MouseMove="DragHandle_MouseMove"
                                               MouseUp="DragHandle_MouseUp"
-                                              ToolTip="Joyini o‘zgartirish" />
+                                              ToolTip="{loc:Loc Settings.Reorder}" />
 
                                 <RadioButton GroupName="DefaultCurrency"
                                              IsChecked="{Binding IsDefault}"
                                              IsEnabled="{Binding IsActive}"
-                                             ToolTip="Default valyuta"
+                                             ToolTip="{loc:Loc Settings.DefaultCurrencyTooltip}"
                                              HorizontalAlignment="Center"
                                              VerticalAlignment="Center">
                                     <RadioButton.Resources>
@@ -204,7 +205,7 @@
                                         Style="{StaticResource DeleteActionButton}"
                                         Command="{Binding DataContext.RemoveCurrencyCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}"
-                                        ToolTip="Valyutani o‘chirish">
+                                        ToolTip="{loc:Loc Settings.DeleteCurrencyTooltip}">
                                     <fa:IconImage Icon="Trash" Foreground="{DynamicResource Danger}" Width="16" Height="16" />
                                 </Button>
                             </Grid>
@@ -219,12 +220,12 @@
                     Orientation="Horizontal"
                     HorizontalAlignment="Center"
                     Margin="0,10,0,0">
-            <Button Content="Valyuta qo‘shish"
+            <Button Content="{loc:Loc Settings.AddCurrency}"
                     Style="{StaticResource PrimaryButton}"
                     Command="{Binding AddCurrencyCommand}"
                     Width="140" />
 
-            <Button Content="Saqlash"
+            <Button Content="{loc:Loc Common.Save}"
                     Style="{StaticResource SuccessButton}"
                     Command="{Binding SaveCurrenciesCommand}"
                     Width="140"
@@ -233,6 +234,6 @@
 
         <uc:BusyOverlay Grid.RowSpan="3"
                         IsBusy="{Binding IsLoading}"
-                        Message="Yuklanmoqda..." />
+                        Message="{loc:Loc Common.Loading}" />
     </Grid>
 </UserControl>

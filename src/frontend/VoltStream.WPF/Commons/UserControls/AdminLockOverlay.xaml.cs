@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Services;
 
 public partial class AdminLockOverlay : UserControl
@@ -16,7 +17,7 @@ public partial class AdminLockOverlay : UserControl
 
     public static readonly DependencyProperty LockMessageProperty =
         DependencyProperty.Register(nameof(LockMessage), typeof(string), typeof(AdminLockOverlay),
-            new PropertyMetadata("Admin ruxsati talab qilinadi"));
+            new PropertyMetadata(TranslationSource.T("Controls.AdminAccessRequired")));
 
     public static readonly DependencyProperty InnerContentProperty =
         DependencyProperty.Register(nameof(InnerContent), typeof(object), typeof(AdminLockOverlay),
@@ -113,7 +114,7 @@ public partial class AdminLockOverlay : UserControl
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            SetViewModelError("Login va parolni to'ldiring!");
+            SetViewModelError(TranslationSource.T("Controls.FillLoginPassword"));
             return;
         }
 
@@ -130,16 +131,16 @@ public partial class AdminLockOverlay : UserControl
                 AdminUsernameBox.Text = string.Empty;
                 AdminPasswordBox.Password = string.Empty;
                 if (this.DataContext is ViewModelBase vm)
-                    vm.Success = "Ruxsat muvaffaqiyatli o'rnatildi!.";
+                    vm.Success = TranslationSource.T("Controls.AccessGranted");
             }
             else
             {
-                SetViewModelError("Login yoki parol noto'g'ri!");
+                SetViewModelError(TranslationSource.T("Controls.WrongLoginPassword"));
             }
         }
         catch (Exception)
         {
-            SetViewModelError("Tizimda ulanish xatoligi!");
+            SetViewModelError(TranslationSource.T("Controls.ConnectionError"));
         }
     }
 

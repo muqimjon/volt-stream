@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
       xmlns:local="clr-namespace:VoltStream.WPF.Supplies.Views"
       xmlns:controls="clr-namespace:VoltStream.WPF.Commons.UserControls"
       xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
@@ -42,7 +43,7 @@
                 <Grid  Grid.Row="0"
                        Grid.Column="0">
                     <StackPanel Orientation="Horizontal">
-                        <Label Content="Sana:"
+                        <Label Content="{loc:Loc Supplies.DateLabel}"
                                VerticalAlignment="Center"
                                FontSize="14" />
                     </StackPanel>
@@ -67,7 +68,7 @@
 				<Grid Grid.Row="1"
                       Grid.Column="0">
                     <StackPanel Orientation="Horizontal">
-                        <Label Content="Maxsulot:"
+                        <Label Content="{loc:Loc Supplies.ProductLabel}"
                                VerticalAlignment="Center"
                                FontSize="14" />
                     </StackPanel>
@@ -79,7 +80,7 @@
                         <ColumnDefinition Width="109*" />
                         <ColumnDefinition Width="184*" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Turi"
+                    <TextBlock Text="{loc:Loc Supplies.TypeWatermark}"
                                VerticalAlignment="Center"
                                Foreground="{DynamicResource TextTertiary}"
                                Margin="10,0,10,0"
@@ -101,7 +102,7 @@
                               Grid.ColumnSpan="2" />
 
                     <TextBlock Grid.Column="2"
-                               Text="Nomi"
+                               Text="{loc:Loc Common.Name}"
                                VerticalAlignment="Center"
                                Foreground="{DynamicResource TextTertiary}"
                                Margin="10,0,10,0"
@@ -121,7 +122,7 @@
                 </Grid>
                 <Grid Grid.Row="2"
                       Grid.Column="0">
-                    <Label Content="To'plamda:"
+                    <Label Content="{loc:Loc Supplies.PerBundleLabel}"
                            VerticalAlignment="Center"
                            FontSize="14" />
                 </Grid>
@@ -148,7 +149,7 @@
                               FontSize="14"/>
 
                     <TextBlock Grid.Column="1"
-                               Text="To'plam soni:"
+                               Text="{loc:Loc Supplies.BundleCountLabel}"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Right"
                                FontSize="14"
@@ -167,7 +168,7 @@
                 </Grid>
                 <Grid Grid.Row="3"
                       Grid.Column="0">
-                    <Label Content="Jami:"
+                    <Label Content="{loc:Loc Supplies.TotalLabel}"
                            VerticalAlignment="Center"
                            FontSize="14" />
                 </Grid>
@@ -192,7 +193,7 @@
                              IsTabStop="False"
                              IsReadOnly="True" />
                     <Label Grid.Column="1"
-                           Content="O'lcho'vi:"
+                           Content="{loc:Loc Supplies.UnitLabel}"
                            VerticalAlignment="Center"
                            Margin="10,0"
                            FontSize="14" />
@@ -210,7 +211,7 @@
                 </Grid>
                 <Grid Grid.Row="4"
                       Grid.Column="0">
-                    <Label Content="Narxi:"
+                    <Label Content="{loc:Loc Supplies.PriceLabel}"
                            VerticalAlignment="Center"
                            FontSize="14" />
                 </Grid>
@@ -235,7 +236,7 @@
                              Margin="0,4,10,4"       
                               />
                     <Label Grid.Column="1"
-                           Content="Chegirma: %"
+                           Content="{loc:Loc Supplies.DiscountLabel}"
                            VerticalAlignment="Center"
                            FontSize="14"
                            Margin="-10,0,0,0" />
@@ -270,7 +271,7 @@
                     <Button Grid.Column="1"
                             x:Name="cancelBtn"
                             Style="{StaticResource SecondaryButton}"
-                            Content="Bekor qilish"
+                            Content="{loc:Loc Common.Cancel}"
                             Command="{Binding CancelEditCommand}"
                             Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibilityConverter}}"
                             VerticalAlignment="Center"
@@ -280,7 +281,7 @@
             </Grid>
             <Grid Grid.Column="2">
                 <Border Style="{StaticResource CardBorder}">
-                    <Label Content="Mahsulot haqida ma'lumotlar.."
+                    <Label Content="{loc:Loc Supplies.ProductInfoPlaceholder}"
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"
                            FontSize="16"
@@ -306,25 +307,25 @@
                 <KeyBinding Key="Delete" Command="{Binding DeleteItemCommand}" CommandParameter="{Binding SelectedSupply}" />
             </DataGrid.InputBindings>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Sana"
+                <DataGridTextColumn Header="{loc:Loc Common.Date}"
                                     Width="*"
                                     ElementStyle="{StaticResource CenterCellText}"
                                     Binding="{Binding Date, Converter={StaticResource UtcToUzbekistanTimeConverter},StringFormat=dd.MM.yyyy}" />
-                <DataGridTextColumn Header="Mahsulot turi"
+                <DataGridTextColumn Header="{loc:Loc Supplies.ProductTypeColumn}"
                                     Binding="{Binding CategoryName}"
                                     Width="1.5*" />
-                <DataGridTextColumn Header="Mahsulot"
+                <DataGridTextColumn Header="{loc:Loc Supplies.ProductColumn}"
                                     Binding="{Binding ProductName}"
                                     Width="2*" />
-                <DataGridTextColumn Header="To'plam soni"
+                <DataGridTextColumn Header="{loc:Loc Supplies.BundleCount}"
                                     Binding="{Binding RollCount, StringFormat=N2}"
                                     ElementStyle="{StaticResource RightCellText}"
                                     Width="*" />
-                <DataGridTextColumn Header="To'plamda"
+                <DataGridTextColumn Header="{loc:Loc Supplies.PerBundle}"
                                     Binding="{Binding LengthPerRoll, StringFormat=N2}"
                                     ElementStyle="{StaticResource RightCellText}"
                                     Width="*" />
-                <DataGridTextColumn Header="Jami"
+                <DataGridTextColumn Header="{loc:Loc Common.Total}"
                                     Binding="{Binding TotalLength, StringFormat=N2}"
                                     ElementStyle="{StaticResource RightCellText}"
                                     Width="*" />
@@ -333,6 +334,6 @@
         <controls:Pager Grid.Row="2" Margin="0,12,0,0" DataContext="{Binding Pagination}" />
         <controls:BusyOverlay Grid.Row="0" Grid.RowSpan="3"
                               IsBusy="{Binding IsLoading}"
-                              Message="Yuklanmoqda..." />
+                              Message="{loc:Loc Common.Loading}" />
     </Grid>
 </Page>
