@@ -41,8 +41,6 @@ public static class DataGridRowNumbering
 
     private static void DataGrid_LoadingRow(object? sender, DataGridRowEventArgs e)
     {
-        // GetIndex() - O(1); ilgari Items.IndexOf(...) ishlatilgan bo'lib, har qator uchun
-        // O(n) qidiruv qilardi va katta jadvallarda kvadratik sekinlashishga olib kelardi.
         e.Row.Header = (e.Row.GetIndex() + 1).ToString();
     }
 

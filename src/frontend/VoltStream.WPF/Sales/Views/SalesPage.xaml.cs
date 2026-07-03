@@ -669,7 +669,9 @@ public partial class SalesPage : Page
             }
         }
         decimal beginSum = decimal.TryParse(beginBalans.Text, out decimal value) ? value : 0;
-        decimal endSum = beginSum - finalSum;
+        var rate = (CurrencyType.SelectedItem as CurrencyResponse)?.ExchangeRate ?? 1m;
+        if (rate == 0m) rate = 1m;
+        decimal endSum = beginSum - finalSum * rate;
         lastBalans.Text = endSum.ToString();
 
     }
@@ -734,8 +736,6 @@ public partial class SalesPage : Page
                 FinalAmount = i.FinalSumProduct ?? 0
             })]
         };
-
-        var s = sale.CurrencyId;
 
         var response = await salesApi.CreateAsync(saleRequest)
             .Handle(isLoading => sale.IsLoading = isLoading);

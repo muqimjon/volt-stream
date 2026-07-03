@@ -17,8 +17,5 @@ public class SaleMappingRegister : IRegister
         config.NewConfig<SaleItemViewModel, SaleItemRequest>();
 
         config.NewConfig<WarehouseStockResponse, WarehouseStockViewModel>();
-
-        config.NewConfig<SaleResponse, SalePageViewModel>()
-            .Map(dest => dest.Date, src => src.Date.LocalDateTime);
     }
 }

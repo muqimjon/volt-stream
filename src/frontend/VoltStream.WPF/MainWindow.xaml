@@ -6,6 +6,7 @@
     xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
     xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:uc="clr-namespace:VoltStream.WPF.Commons.UserControls"
     xmlns:vm="clr-namespace:VoltStream.WPF"
     Title="Volt Stream"
     Width="1350"
@@ -25,6 +26,13 @@
             GlassFrameThickness="0"
             ResizeBorderThickness="8" />
     </WindowChrome.WindowChrome>
+
+    <Window.InputBindings>
+        <KeyBinding
+            Key="K"
+            Command="{Binding TogglePaletteCommand}"
+            Modifiers="Control" />
+    </Window.InputBindings>
 
     <Border
         x:Name="MainBorder"
@@ -90,7 +98,7 @@
                     <RadioButton
                         Command="{Binding ShowDashboardViewCommand}"
                         GroupName="MenuGroup"
-                        IsChecked="True"
+                        IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.Dashboard, Mode=OneWay}"
                         Style="{DynamicResource menuButton}"
                         Tag="{DynamicResource color1}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
@@ -102,6 +110,7 @@
                     <RadioButton
                         Command="{Binding ShowSuppliesViewCommand}"
                         GroupName="MenuGroup"
+                        IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.Production, Mode=OneWay}"
                         Style="{DynamicResource menuButton}"
                         Tag="{DynamicResource color2}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
@@ -113,6 +122,7 @@
                     <RadioButton
                         Command="{Binding ShowSalesViewCommand}"
                         GroupName="MenuGroup"
+                        IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.Sales, Mode=OneWay}"
                         Style="{DynamicResource menuButton}"
                         Tag="{DynamicResource color3}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
@@ -125,6 +135,7 @@
                     <RadioButton
                         Command="{Binding ShowPaymentViewCommand}"
                         GroupName="MenuGroup"
+                        IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.Payment, Mode=OneWay}"
                         Style="{DynamicResource menuButton}"
                         Tag="{DynamicResource color6}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
@@ -136,6 +147,7 @@
                     <RadioButton
                         Command="{Binding ShowProductViewCommand}"
                         GroupName="MenuGroup"
+                        IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.Products, Mode=OneWay}"
                         Style="{DynamicResource menuButton}"
                         Tag="{DynamicResource color8}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
@@ -147,6 +159,7 @@
                     <RadioButton
                         Command="{Binding ShowSalesHistoryViewCommand}"
                         GroupName="MenuGroup"
+                        IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.SalesAnalytics, Mode=OneWay}"
                         Style="{DynamicResource menuButton}"
                         Tag="{DynamicResource color7}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
@@ -158,6 +171,7 @@
                     <RadioButton
                         Command="{Binding ShowDebitorCreditorCommand}"
                         GroupName="MenuGroup"
+                        IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.Counterparties, Mode=OneWay}"
                         Style="{DynamicResource menuButton}"
                         Tag="{DynamicResource color5}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
@@ -169,6 +183,7 @@
                     <RadioButton
                         Command="{Binding ShowTurnoversPageCommand}"
                         GroupName="MenuGroup"
+                        IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.CustomerReport, Mode=OneWay}"
                         Style="{DynamicResource menuButton}"
                         Tag="{DynamicResource color10}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
@@ -180,6 +195,7 @@
                     <RadioButton
                         Command="{Binding ShowSettingsCommand}"
                         GroupName="MenuGroup"
+                        IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.Settings, Mode=OneWay}"
                         Style="{DynamicResource menuButton}"
                         Tag="{DynamicResource color9}">
                         <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
@@ -313,6 +329,17 @@
                                 </Setter>
                             </Style>
                         </StackPanel.Resources>
+
+                        <Button
+                            Command="{Binding TogglePaletteCommand}"
+                            Style="{StaticResource WindowControlButtonStyle}"
+                            ToolTip="{loc:Loc Tooltip.Palette}">
+                            <fa:IconImage
+                                Width="14"
+                                Height="14"
+                                Foreground="{DynamicResource HeaderText}"
+                                Icon="MagnifyingGlass" />
+                        </Button>
 
                         <Button
                             x:Name="LanguageButton"
@@ -496,6 +523,11 @@
                     </Grid>
                 </Border>
             </Grid>
+
+            <uc:CommandPalette
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Panel.ZIndex="200" />
         </Grid>
     </Border>
 </Window>

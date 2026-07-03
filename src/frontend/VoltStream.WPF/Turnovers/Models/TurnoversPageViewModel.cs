@@ -60,6 +60,8 @@ public partial class TurnoversPageViewModel : ViewModelBase
         _ = LoadInitialDataAsync();
     }
 
+    public void Cleanup() => WeakReferenceMessenger.Default.Unregister<EntityUpdatedMessage<string>>(this);
+
     public PaginationViewModel Pagination { get; }
 
     [ObservableProperty] private CustomerResponse? selectedCustomer;

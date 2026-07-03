@@ -23,12 +23,23 @@ public partial class CustomerViewModel : ViewModelBase
     [ObservableProperty] private decimal balance;
     [ObservableProperty] private decimal openingBalance;
 
-    partial void OnAccountsChanged(ObservableCollection<AccountViewModel> value)
+    partial void OnAccountsChanged(ObservableCollection<AccountViewModel>? oldValue, ObservableCollection<AccountViewModel> newValue)
     {
-        if (Accounts is not null)
-            foreach (var account in Accounts)
-                if (account.Currency is not null && account.Currency.Code == "UZS")
-                    Balance = account.Balance;
+        if (oldValue is not null)
+        {
+            oldValue.CollectionChanged -= Accounts_CollectionChanged;
+            foreach (var account in oldValue)
+                account.PropertyChanged -= Account_PropertyChanged;
+        }
+
+        if (newValue is not null)
+        {
+            newValue.CollectionChanged += Accounts_CollectionChanged;
+            foreach (var account in newValue)
+                account.PropertyChanged += Account_PropertyChanged;
+        }
+
+        RecalculateBalance();
     }
 
 

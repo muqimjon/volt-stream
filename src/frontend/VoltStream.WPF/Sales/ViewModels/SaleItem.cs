@@ -26,10 +26,23 @@ public partial class SaleItem : ViewModelBase
     partial void OnRollCountChanged(int? value) => Recalculate();
     partial void OnQuantityChanged(decimal? value) => Recalculate();
     partial void OnPriceChanged(decimal? value) => Recalculate();
-    partial void OnPerDiscountChanged(decimal? value) => Recalculate();
-    partial void OnDiscountChanged(decimal? value) => Recalculate();
+
+    partial void OnPerDiscountChanged(decimal? value)
+    {
+        if (isUpdating) return;
+        discountByAmount = false;
+        Recalculate();
+    }
+
+    partial void OnDiscountChanged(decimal? value)
+    {
+        if (isUpdating) return;
+        discountByAmount = true;
+        Recalculate();
+    }
 
     private bool isUpdating = false;
+    private bool discountByAmount = false;
 
     private void Recalculate()
     {
@@ -47,9 +60,9 @@ public partial class SaleItem : ViewModelBase
             if (Price.HasValue && Quantity.HasValue)
                 Sum = Price.Value * Quantity.Value;
 
-            if (PerDiscount.HasValue && PerDiscount.Value > 0 && Sum.HasValue)
+            if (!discountByAmount && PerDiscount.HasValue && PerDiscount.Value > 0 && Sum.HasValue)
                 Discount = Sum.Value * (PerDiscount.Value / 100);
-            else if (Discount.HasValue && Sum.HasValue && Sum.Value > 0)
+            else if (discountByAmount && Discount.HasValue && Sum.HasValue && Sum.Value > 0)
                 PerDiscount = Math.Round((Discount.Value / Sum.Value) * 100, 2);
 
             if (Sum.HasValue && Discount.HasValue)

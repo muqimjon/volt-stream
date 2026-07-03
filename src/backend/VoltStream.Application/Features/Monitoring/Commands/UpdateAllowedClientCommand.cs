@@ -23,7 +23,6 @@ public class UpdateAllowedClientCommandHandler(
     {
         var client = await context.AllowedClients.FirstOrDefaultAsync(wh => wh.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(AllowedClient), nameof(request.Id), request.Id);
-        Console.WriteLine($"DeviceName: {request.DeviceName}");
 
         mapper.Map(request, client);
         return await context.SaveAsync(cancellationToken) > 0;

@@ -139,8 +139,7 @@ public partial class DebitorCreditorPageViewModel : ViewModelBase
         Address = x.Address ?? string.Empty,
         Discount = x.Discount,
         Debitor = x.Debitor,
-        Creditor = x.Creditor,
-        TotalBalance = x.Creditor - x.Debitor
+        Creditor = x.Creditor
     };
 
     [RelayCommand]

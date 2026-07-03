@@ -29,9 +29,6 @@ public class GetCustomerOperationByCustomerIdQueryHandler(
             ? DateTime.SpecifyKind(request.EndDate.Value.Date, DateTimeKind.Utc)
             : (DateTime?)null;
 
-        var beginUtc = DateTime.SpecifyKind(beginDate!.Value, DateTimeKind.Local).ToUniversalTime();
-
-        // 🔹 Shu mijozning accountini olish
         var account = await _context.Accounts
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.CustomerId == request.CustomerId, cancellationToken);
@@ -44,14 +41,12 @@ public class GetCustomerOperationByCustomerIdQueryHandler(
             .Include(x => x.Account)
             .Where(x => x.Account.CustomerId == request.CustomerId);
 
-        // 🔹 Boshlang‘ich balans = OpeningBalance + BeginDate gacha bo‘lgan operatsiyalar
         decimal beginBalance = account.OpeningBalance;
         decimal beforeBeginSum = 0;
         if (beginDate.HasValue)
         {
-
             beforeBeginSum = await allOperations
-                .Where(x => x.Date < beginUtc)
+                .Where(x => x.Date < beginDate.Value)
                 .SumAsync(x => x.Amount, cancellationToken);
         }
         beginBalance += beforeBeginSum;
@@ -59,7 +54,6 @@ public class GetCustomerOperationByCustomerIdQueryHandler(
 
         if (endDate.HasValue)
         {
-            // ⏰ Tugash sanasini 23:59:59.999 qilib olamiz
             var adjustedEndDate = endDate.Value.Date.AddDays(1).AddTicks(-1);
 
             var beforeEndSum = await allOperations
@@ -69,12 +63,11 @@ public class GetCustomerOperationByCustomerIdQueryHandler(
             endBalance += beforeEndSum;
         }
 
-        // 🔹 Sana oralig‘idagi operatsiyalar (BeginDate ≤ Date ≤ EndDate)
         var filtered = allOperations.AsQueryable();
 
         if (beginDate.HasValue)
         {
-            filtered = filtered.Where(x => x.Date >= beginUtc);
+            filtered = filtered.Where(x => x.Date >= beginDate.Value);
         }
 
         if (endDate.HasValue)
@@ -90,7 +83,6 @@ public class GetCustomerOperationByCustomerIdQueryHandler(
 
         var operationDtos = _mapper.Map<IReadOnlyCollection<CustomerOperationDto>>(operations);
 
-        // 🔹 Yakuniy javob
         return new CustomerOperationSummaryDto
         {
             BeginBalance = beginBalance,

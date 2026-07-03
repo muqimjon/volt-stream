@@ -40,10 +40,11 @@ public static partial class DevKeyService
         
         using var aes = Aes.Create();
         aes.Key = EncryptionKey;
-        aes.IV = InitializationVector;
+        aes.GenerateIV();
 
         using var encryptor = aes.CreateEncryptor();
         using var ms = new MemoryStream();
+        ms.Write(aes.IV, 0, aes.IV.Length);
         using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
         using (var sw = new StreamWriter(cs)) { sw.Write(rawContent); }
 
@@ -58,10 +59,16 @@ public static partial class DevKeyService
             var encryptedBytes = File.ReadAllBytes(filePath);
             using var aes = Aes.Create();
             aes.Key = EncryptionKey;
-            aes.IV = InitializationVector;
+
+            var ivLength = aes.BlockSize / 8;
+            if (encryptedBytes.Length <= ivLength) return null;
+
+            var iv = new byte[ivLength];
+            Array.Copy(encryptedBytes, iv, ivLength);
+            aes.IV = iv;
 
             using var decryptor = aes.CreateDecryptor();
-            using var ms = new MemoryStream(encryptedBytes);
+            using var ms = new MemoryStream(encryptedBytes, ivLength, encryptedBytes.Length - ivLength);
             using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
             using var sr = new StreamReader(cs);
             

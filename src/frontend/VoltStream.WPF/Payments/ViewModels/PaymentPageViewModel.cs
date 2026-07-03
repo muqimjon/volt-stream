@@ -31,6 +31,8 @@ partial class PaymentPageViewModel : ViewModelBase
     [ObservableProperty] private CustomerViewModel? customer;
 
     private long customerId;
+    private bool isBatchLoading;
+    private DateTime loadedDate;
 
     public PaginationViewModel Pagination { get; }
 
@@ -110,7 +112,13 @@ partial class PaymentPageViewModel : ViewModelBase
         return Task.CompletedTask;
     }
 
-    private async Task LoadDataAsync() => await Task.WhenAll(LoadCustomersAsync(), LoadCurrenciesAsync(), LoadDatagrid());
+    private async Task LoadDataAsync()
+    {
+        IsLoading = true;
+        isBatchLoading = true;
+        try { await Task.WhenAll(LoadCustomersAsync(), LoadCurrenciesAsync(), LoadDatagrid()); }
+        finally { isBatchLoading = false; IsLoading = false; }
+    }
 
     private async Task LoadDatagrid()
     {
@@ -127,8 +135,10 @@ partial class PaymentPageViewModel : ViewModelBase
             Filters = new() { ["paidAt"] = [$"{Payment.PaidAt ?? DateTime.Today:yyyy.MM.dd}"], ["customer"] = ["include"], ["currency"] = ["include"] }
         };
 
+        loadedDate = (Payment.PaidAt ?? DateTime.Today).Date;
+
         using var scope = PagingScope.Begin();
-        var response = await paymentApi.FilterAsync(request).Handle(l => IsLoading = l);
+        var response = await paymentApi.FilterAsync(request).Handle(l => { if (!isBatchLoading) IsLoading = l; });
         if (!response.IsSuccess) return;
 
         Pagination.Apply(PagingScope.Result);
@@ -137,17 +147,17 @@ partial class PaymentPageViewModel : ViewModelBase
 
     private async Task LoadCurrenciesAsync()
     {
-        var response = await currenciesApi.Filter(new FilteringRequest { Filters = new() { ["isactive"] = ["true"] } }).Handle(l => IsLoading = l);
+        var response = await currenciesApi.Filter(new FilteringRequest { Filters = new() { ["isactive"] = ["true"] } }).Handle(l => { if (!isBatchLoading) IsLoading = l; });
         if (response.IsSuccess)
         {
             AvailableCurrencies = mapper.Map<ObservableCollection<CurrencyViewModel>>(response.Data);
-            Payment.Currency = AvailableCurrencies.FirstOrDefault(c => c.IsDefault)!;
+            Payment.Currency ??= AvailableCurrencies.FirstOrDefault(c => c.IsDefault)!;
         }
     }
 
     public async Task LoadCustomersAsync()
     {
-        var response = await customersApi.GetAllAsync().Handle(l => IsLoading = l);
+        var response = await customersApi.GetAllAsync().Handle(l => { if (!isBatchLoading) IsLoading = l; });
         if (response.IsSuccess)
             AvailableCustomers = mapper.Map<ObservableCollection<CustomerViewModel>>(response.Data);
     }
@@ -208,7 +218,8 @@ partial class PaymentPageViewModel : ViewModelBase
                 if (Payment.Currency != null) Payment.ExchangeRate = Payment.Currency.ExchangeRate;
                 break;
             case nameof(PaymentViewModel.PaidAt):
-                _ = LoadDatagrid();
+                if (!isBatchLoading && (Payment.PaidAt ?? DateTime.Today).Date != loadedDate)
+                    _ = LoadDatagrid();
                 break;
         }
     }

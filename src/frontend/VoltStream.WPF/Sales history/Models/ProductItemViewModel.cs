@@ -15,7 +15,7 @@ public partial class ProductItemViewModel : ViewModelBase
     [ObservableProperty] private string? name = string.Empty;
     [ObservableProperty] private decimal? rollLength;
     [ObservableProperty] private decimal? quantity;
-    [ObservableProperty] private int? totalCount;
+    [ObservableProperty] private decimal? totalCount;
     [ObservableProperty] private string? unit;
     [ObservableProperty] private decimal? price;
     [ObservableProperty] private decimal? totalAmount;
@@ -24,7 +24,7 @@ public partial class ProductItemViewModel : ViewModelBase
     partial void OnPriceChanged(decimal? value)
         => ReCalculateTotalAmount();
 
-    partial void OnTotalCountChanged(int? value)
+    partial void OnTotalCountChanged(decimal? value)
         => ReCalculateTotalAmount();
 
     private void ReCalculateTotalAmount()

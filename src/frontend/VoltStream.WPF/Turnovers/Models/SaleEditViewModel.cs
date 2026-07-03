@@ -346,7 +346,7 @@ public partial class SaleEditViewModel : ViewModelBase
         }
     }
 
-    partial void OnSelectedWarehouseStockChanging(WarehouseStockViewModel? value)
+    partial void OnSelectedWarehouseStockChanged(WarehouseStockViewModel? value)
     {
         if (value is null) return;
 

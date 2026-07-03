@@ -27,7 +27,7 @@ public class UpdateCurrencyCommandHandler(
 {
     public async Task<bool> Handle(UpdateCurrencyCommand request, CancellationToken cancellationToken)
     {
-        var entity = await context.Categories.FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken)
+        var entity = await context.Currencies.FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(Currency), nameof(request.Id), request.Id);
 
         mapper.Map(request, entity);

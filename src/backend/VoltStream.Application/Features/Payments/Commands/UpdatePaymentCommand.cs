@@ -33,27 +33,27 @@ public class UpdatePaymentCommandHandler(
         if (oldPayment.CustomerOperation is null)
             throw new ConflictException("Tahrirlash uchun Payment yozuviga bog'langan CustomerOperation topilmadi.");
 
+        await context.BeginTransactionAsync(cancellationToken);
+
         try
         {
-            var deleteCommand = new DeleteCustomerOperationCommand(oldPayment.CustomerOperation.Id);
-            await mediator.Send(deleteCommand, cancellationToken);
+            await mediator.Send(new DeleteCustomerOperationCommand(oldPayment.CustomerOperation.Id), cancellationToken);
+
+            await mediator.Send(new CreatePaymentCommand(
+                request.PaidAt,
+                request.CustomerId,
+                request.Amount,
+                request.CurrencyId,
+                request.ExchangeRate,
+                request.NetAmount,
+                request.Description), cancellationToken);
+
+            return await context.CommitTransactionAsync(cancellationToken);
         }
-        catch (Exception ex)
+        catch
         {
-            throw new ConflictException($"Eski to'lov amalini qaytarishda xatolik yuz berdi: {ex.Message}");
+            await context.RollbackTransactionAsync(cancellationToken);
+            throw;
         }
-
-        var createCommand = new CreatePaymentCommand(
-            request.PaidAt,
-            request.CustomerId,
-            request.Amount,
-            request.CurrencyId,
-            request.ExchangeRate,
-            request.NetAmount,
-            request.Description
-        );
-
-        await mediator.Send(createCommand, cancellationToken);
-        return true;
     }
 }

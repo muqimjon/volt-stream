@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Infrastructure.Authentication;
 using VoltStream.Infrastructure.Persistence;
 using VoltStream.Infrastructure.Persistence.Interceptors;
 using VoltStream.Infrastructure.Web;
@@ -27,10 +27,9 @@ public static class DependencyInjection
                .AddInterceptors(sp.GetRequiredService<AuditInterceptor>()));
 
         services.AddScoped<IPagingMetadataWriter, HttpPagingMetadataWriter>();
-        services.AddScoped<IJwtProvider, Authentication.JwtProvider>();
+        services.AddScoped<IJwtProvider, JwtProvider>();
 
-        var secretKey = conf["Jwt:Secret"] ?? "SuperSecretKeyForVoltStreamDasturi2026!";
-        var key = Encoding.UTF8.GetBytes(secretKey);
+        var key = JwtSecretResolver.Resolve(conf);
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>

@@ -20,8 +20,11 @@ public class CreateAllowedClientCommandHandler(
 {
     public async Task<long> Handle(CreateAllowedClientCommand request, CancellationToken cancellationToken)
     {
-        _ = await context.AllowedClients.FirstOrDefaultAsync(wh => wh.NormalizedName == request.IpAddress, cancellationToken)
-            ?? throw new AlreadyExistException(nameof(AllowedClient), nameof(request.IpAddress), request.IpAddress);
+        var exists = await context.AllowedClients
+            .AnyAsync(c => c.IpAddress == request.IpAddress, cancellationToken);
+
+        if (exists)
+            throw new AlreadyExistException(nameof(AllowedClient), nameof(request.IpAddress), request.IpAddress);
 
         var client = mapper.Map<AllowedClient>(request);
         context.AllowedClients.Add(client);

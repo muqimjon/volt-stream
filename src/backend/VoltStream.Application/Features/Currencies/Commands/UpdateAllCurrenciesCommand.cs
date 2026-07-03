@@ -22,7 +22,8 @@ public class UpdateAllCurrenciesCommandHandler(
             .Where(db => incoming.All(dto => dto.Id != db.Id))
             .ToList();
 
-        context.Currencies.RemoveRange(toDelete);
+        foreach (var currency in toDelete)
+            currency.IsDeleted = true;
 
         foreach (var dto in incoming)
         {

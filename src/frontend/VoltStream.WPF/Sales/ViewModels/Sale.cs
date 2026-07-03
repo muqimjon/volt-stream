@@ -3,6 +3,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using VoltStream.WPF.Commons;
 
 public partial class Sale : ViewModelBase
@@ -42,15 +43,18 @@ public partial class Sale : ViewModelBase
 
     private void SaleItems_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        if (e.OldItems != null)
+            foreach (SaleItem item in e.OldItems)
+                item.PropertyChanged -= OnSaleItemPropertyChanged;
+
         if (e.NewItems != null)
-        {
             foreach (SaleItem item in e.NewItems)
-            {
-                item.PropertyChanged += (s, _) => RecalculateTotals();
-            }
-        }
+                item.PropertyChanged += OnSaleItemPropertyChanged;
+
         RecalculateTotals();
     }
+
+    private void OnSaleItemPropertyChanged(object? sender, PropertyChangedEventArgs e) => RecalculateTotals();
 
     partial void OnIsDiscountAppliedChanged(bool value) => RecalculateTotals();
 

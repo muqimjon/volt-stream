@@ -47,6 +47,12 @@ WebApi seeding'dan OLDIN tinglay boshlaydi (migratsiya/seeding `DatabaseInitiali
 - `TranslationSource` (INotifyPropertyChanged singleton) indeksator orqali jonli yangilanadi; `LocalizationManager` JSON'ni yuklaydi, tanlovni `config/language.json` ga saqlaydi, `LanguageChanged` event beradi (`App.OnStartup` da `Initialize`).
 - Yangi matn qo'shsang: 4 JSON'ga bir xil kalit qo'sh (izchillik uchun `Common.*` va glossariyni qayta ishlat), keyin `{loc:Loc}`/`T(...)` bilan bog'la. Brend "Volt Stream" va til menyusi autonimlari tarjima qilinmaydi.
 
+## Tez o'tish (Command palette)
+
+- `Ctrl+K` (yoki header'dagi qidiruv tugmasi) istalgan joyda command palette'ni ochadi — sahifalar bo'yicha tez qidirish va o'tish. `↑↓` tanlash, `↵` ochish, `Esc` yopish.
+- Ro'yxat `MainViewModel.paletteItems` da (`PaletteItem`: `Nav.*` kaliti + `IconChar` + navigatsiya). Yangi sahifa qo'shsang shu ro'yxatga ham element qo'sh.
+- Sidebar faol holati `ActivePageKey` orqali sinxron (palette bilan o'tganda ham to'g'ri belgi yonadi). Matnlar `Palette.*` kalitlarida (4 tilda).
+
 ## Kod uslubi
 
 Izohsiz, sodda, kam kod; mavjud arxitektura va fayl uslubiga sodiq; tayyor ishonchli kutubxonalardan foydalanish.

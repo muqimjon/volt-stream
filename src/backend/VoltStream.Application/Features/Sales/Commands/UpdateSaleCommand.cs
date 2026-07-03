@@ -34,35 +34,32 @@ public class UpdateSaleCommandHandler(
             ?? throw new NotFoundException(nameof(Sale), nameof(request.Id), request.Id);
 
         if (oldSale.CustomerOperation is null)
-        {
             throw new ConflictException("Tahrirlash uchun Sale yozuviga bog'langan CustomerOperation topilmadi.");
-        }
+
+        await context.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var deleteCommand = new DeleteCustomerOperationCommand(oldSale.CustomerOperation.Id);
-            await mediator.Send(deleteCommand, cancellationToken);
+            await mediator.Send(new DeleteCustomerOperationCommand(oldSale.CustomerOperation.Id), cancellationToken);
+
+            await mediator.Send(new CreateSaleCommand(
+                request.Date,
+                request.CustomerId,
+                request.CurrencyId,
+                request.RollCount,
+                request.Length,
+                request.Amount,
+                request.IsDiscountApplied,
+                request.Discount,
+                request.Description,
+                request.Items), cancellationToken);
+
+            return await context.CommitTransactionAsync(cancellationToken);
         }
-        catch (Exception ex)
+        catch
         {
-            throw new ConflictException($"Eski savdo amalini qaytarishda xatolik yuz berdi: {ex.Message}");
+            await context.RollbackTransactionAsync(cancellationToken);
+            throw;
         }
-
-        var createCommand = new CreateSaleCommand(
-            request.Date,
-            request.CustomerId,
-            request.CurrencyId,
-            request.RollCount,
-            request.Length,
-            request.Amount,
-            request.IsDiscountApplied,
-            request.Discount,
-            request.Description,
-            request.Items
-        );
-
-        await mediator.Send(createCommand, cancellationToken);
-
-        return true;
     }
 }

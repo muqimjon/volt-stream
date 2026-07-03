@@ -15,17 +15,5 @@ public class CustomerOperationConfiguration : IEntityTypeConfiguration<CustomerO
                .WithMany()
                .HasForeignKey(co => co.AccountId)
                .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasOne(co => co.Sale)
-               .WithOne(s => s.CustomerOperation)
-               .HasForeignKey<Sale>(s => s.CustomerOperationId)
-               .IsRequired(false)
-               .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasOne(co => co.Payment)
-               .WithOne(p => p.CustomerOperation)
-               .HasForeignKey<Payment>(p => p.CustomerOperationId)
-               .IsRequired(false)
-               .OnDelete(DeleteBehavior.Cascade);
     }
 }

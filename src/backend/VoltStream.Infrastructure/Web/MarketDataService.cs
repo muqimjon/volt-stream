@@ -43,6 +43,10 @@ public partial class MarketDataService : IMarketDataService
             var (usd, eur, date) = await FetchCbuAsync(cancellationToken);
             var metals = await FetchMetalsAsync(cancellationToken);
 
+            var hasData = usd is not null || eur is not null || metals.Count > 0;
+            if (!hasData)
+                return cache ?? new MarketDataDto { RateDate = date, Metals = metals, MetalsAvailable = false };
+
             cache = new MarketDataDto
             {
                 Usd = usd,

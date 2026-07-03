@@ -2,60 +2,24 @@
 
 using System.Diagnostics;
 using System.Net;
-using VoltStream.Application.Commons.Exceptions;
 using VoltStream.WebApi.Models;
 
-public class RequestLoggerMiddleware(RequestDelegate next, ILogger<RequestLoggerMiddleware> logger, Action<RequestLog>? logCallback = null)
+public class RequestLoggerMiddleware(RequestDelegate next, Action<RequestLog>? logCallback = null)
 {
     public async Task Invoke(HttpContext context)
     {
         var sw = Stopwatch.StartNew();
         int statusCode = (int)HttpStatusCode.OK;
-        string message = HttpStatusCode.OK.ToString();
 
         try
         {
             await next(context);
             statusCode = context.Response.StatusCode;
-            message = ((HttpStatusCode)statusCode).ToString();
         }
-        catch (AppException ex)
-        {
-            statusCode = (int)ex.StatusCode;
-            message = ex.Message;
-
-            logger.LogWarning(ex, "Handled AppException");
-
-            context.Response.StatusCode = statusCode;
-            context.Response.ContentType = "application/json";
-
-            var errorResponse = new Response
-            {
-                StatusCode = statusCode,
-                Message = message,
-                Data = ex.Data
-            };
-
-            await context.Response.WriteAsJsonAsync(errorResponse);
-        }
-        catch (Exception ex)
+        catch
         {
             statusCode = (int)HttpStatusCode.InternalServerError;
-            message = "Internal Server Error";
-
-            logger.LogError(ex, "Unhandled exception");
-
-            context.Response.StatusCode = statusCode;
-            context.Response.ContentType = "application/json";
-
-            var errorResponse = new Response
-            {
-                StatusCode = statusCode,
-                Message = message,
-                Data = new { error = ex.Message }
-            };
-
-            await context.Response.WriteAsJsonAsync(errorResponse);
+            throw;
         }
         finally
         {

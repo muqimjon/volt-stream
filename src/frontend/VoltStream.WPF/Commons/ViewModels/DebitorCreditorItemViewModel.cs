@@ -8,6 +8,4 @@ public class DebitorCreditorItemViewModel
     public decimal Discount { get; set; }
     public decimal Debitor { get; set; }
     public decimal Creditor { get; set; }
-    public decimal TotalBalance { get; set; }
-
 }

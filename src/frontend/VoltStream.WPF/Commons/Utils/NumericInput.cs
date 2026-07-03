@@ -9,8 +9,6 @@ using System.Windows.Input;
 
 public static class NumericInput
 {
-    #region Dependency Properties
-
     public static readonly DependencyProperty IsNumericProperty =
         DependencyProperty.RegisterAttached("IsNumeric", typeof(bool), typeof(NumericInput), new PropertyMetadata(false, OnIsNumericChanged));
 
@@ -34,8 +32,6 @@ public static class NumericInput
 
     public static int? GetPrecision(DependencyObject obj) => obj != null ? (int?)obj.GetValue(PrecisionProperty) : null;
     public static void SetPrecision(DependencyObject obj, int? value) => obj?.SetValue(PrecisionProperty, value);
-
-    #endregion
 
     private static void OnIsNumericChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -97,7 +93,6 @@ public static class NumericInput
     {
         textBox.SetValue(IsInternalChangeProperty, true);
 
-        // O'zidan yoki TemplatedParent (ComboBox) dan qiymatlarni olish
         var parent = textBox.TemplatedParent as DependencyObject;
         var value = GetValue(textBox) ?? (parent != null ? GetValue(parent) : null);
         var precision = GetPrecision(textBox) ?? (parent != null ? GetPrecision(parent) : null);
@@ -147,14 +142,12 @@ public static class NumericInput
     {
         DependencyObject targetObj = (textBox.TemplatedParent is ComboBox cb) ? cb : textBox;
 
-        // ValueProperty ni yangilash (binding orqali ViewModelga boradi)
         if (val == null)
         {
             targetObj.SetCurrentValue(ValueProperty, null);
             return;
         }
 
-        // To'g'ri tipga o'girish (int, double, decimal...)
         var binding = (targetObj as FrameworkElement)?.GetBindingExpression(ValueProperty);
         if (binding?.ResolvedSourcePropertyName != null)
         {
@@ -175,7 +168,6 @@ public static class NumericInput
         targetObj.SetCurrentValue(ValueProperty, val.Value);
     }
 
-    // Yordamchi metodlar (O'zgarishsiz)
     private static void OnGotFocus(object sender, RoutedEventArgs e) => (sender as TextBox)?.SelectAll();
     private static void OnLostFocus(object sender, RoutedEventArgs e) => FormatValue((TextBox)sender);
     private static void OnPreviewTextInput(object sender, TextCompositionEventArgs e)

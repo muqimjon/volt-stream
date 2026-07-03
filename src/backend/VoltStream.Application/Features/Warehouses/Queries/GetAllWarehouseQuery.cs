@@ -15,6 +15,6 @@ public class GetAllWarehouseQueryHandler(
     IRequestHandler<GetAllWarehouseQuery, IReadOnlyCollection<WarehouseDto>>
 {
     public async Task<IReadOnlyCollection<WarehouseDto>> Handle(GetAllWarehouseQuery query, CancellationToken cancellationToken)
-        => mapper.Map<IReadOnlyCollection<WarehouseDto>>(await context.Warehouses.ToListAsync(cancellationToken));
+        => mapper.Map<IReadOnlyCollection<WarehouseDto>>(await context.Warehouses.Where(w => !w.IsDeleted).ToListAsync(cancellationToken));
 }
 

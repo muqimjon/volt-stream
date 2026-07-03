@@ -14,12 +14,10 @@ public class DeleteSupplyCommandHandler(
 {
     public async Task<bool> Handle(DeleteSupplyCommand request, CancellationToken cancellationToken)
     {
-        // Supply ni olish
         var supply = await context.Supplies
             .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(Supply), nameof(request.Id), request.Id);
 
-        // WarehouseStock ni olish
         var stock = await context.WarehouseStocks
             .FirstOrDefaultAsync(ws => ws.ProductId == supply.ProductId &&
                                        ws.LengthPerRoll == supply.LengthPerRoll,
@@ -33,11 +31,9 @@ public class DeleteSupplyCommandHandler(
 
         try
         {
-            // WarehouseStockni kamaytirish
             stock.TotalLength -= supply.TotalLength;
             stock.RollCount -= supply.RollCount;
 
-            // Supply ni soft delete qilish
             context.Supplies.Remove(supply);
 
             return await context.CommitTransactionAsync(cancellationToken);

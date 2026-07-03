@@ -37,10 +37,13 @@ public class NamozTimeService
             {
                 var daysRemaining = (lastDate.Date - DateTime.Now.Date).Days;
 
-                if (daysRemaining <= 10)
-                    _ = RefreshCacheAsync();
+                if (daysRemaining >= 0)
+                {
+                    if (daysRemaining <= 10)
+                        _ = RefreshCacheAsync();
 
-                return cachedData;
+                    return cachedData;
+                }
             }
         }
 

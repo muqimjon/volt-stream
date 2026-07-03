@@ -15,5 +15,5 @@ public class GetAllCashesQueryHandler(
     : IRequestHandler<GetAllCashesQuery, IReadOnlyCollection<CashDto>>
 {
     public async Task<IReadOnlyCollection<CashDto>> Handle(GetAllCashesQuery request, CancellationToken cancellationToken)
-        => mapper.Map<IReadOnlyCollection<CashDto>>(await context.Cashes.ToListAsync(cancellationToken));
+        => mapper.Map<IReadOnlyCollection<CashDto>>(await context.Cashes.Where(c => !c.IsDeleted).ToListAsync(cancellationToken));
 }

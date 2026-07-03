@@ -23,7 +23,6 @@ public class UpdateWarehouseCommandHandler(
             ?? throw new NotFoundException(nameof(Warehouse), nameof(request.Id), request.Id);
 
         mapper.Map(request, warehouse);
-        await context.SaveAsync(cancellationToken);
         return await context.SaveAsync(cancellationToken) > 0;
     }
 }

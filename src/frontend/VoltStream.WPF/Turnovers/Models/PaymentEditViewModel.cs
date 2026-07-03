@@ -56,11 +56,12 @@ public partial class PaymentEditViewModel : ViewModelBase
 
     #region Property Changes
 
-    private async void Payment_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private void Payment_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(Payment.IncomeAmount) ||
             e.PropertyName == nameof(Payment.ExpenseAmount))
         {
+            RecalculateAmount();
             CalculateLastBalance();
         }
     }
@@ -210,6 +211,12 @@ public partial class PaymentEditViewModel : ViewModelBase
     #endregion Commands
 
     #region Private Helpers
+
+    private void RecalculateAmount()
+    {
+        Payment.NetAmount = (Payment.IncomeAmount ?? 0) - (Payment.ExpenseAmount ?? 0);
+        Payment.Amount = Payment.NetAmount * Payment.ExchangeRate;
+    }
 
     private void CalculateLastBalance()
     {

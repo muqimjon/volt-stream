@@ -4,6 +4,7 @@ using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
+using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Domain.Entities;
 
@@ -18,8 +19,11 @@ public class CreateWarehouseCommandHandler(
 {
     public async Task<long> Handle(CreateWarehouseCommand request, CancellationToken cancellationToken)
     {
-        _ = await context.Warehouses.FirstOrDefaultAsync(wh => wh.NormalizedName == request.Name, cancellationToken)
-            ?? throw new AlreadyExistException(nameof(Warehouse), nameof(request.Name), request.Name);
+        var exists = await context.Warehouses
+            .AnyAsync(wh => wh.NormalizedName == request.Name.ToNormalized(), cancellationToken);
+
+        if (exists)
+            throw new AlreadyExistException(nameof(Warehouse), nameof(request.Name), request.Name);
 
         var warehouse = mapper.Map<Warehouse>(request);
         context.Warehouses.Add(warehouse);

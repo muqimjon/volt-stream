@@ -8,14 +8,8 @@ using System.Windows.Threading;
 
 public static class FocusNavigator
 {
-    #region Configuration (Optional - for advanced scenarios)
-
     public static Func<UIElement, bool>? CustomFocusabilityChecker { get; set; }
     public static Action<UIElement>? CustomFocusHandler { get; set; }
-
-    #endregion
-
-    #region Private Classes
 
     private class FocusContext
     {
@@ -25,16 +19,8 @@ public static class FocusNavigator
         public FrameworkElement? RootView { get; set; }
     }
 
-    #endregion
-
-    #region Private Fields
-
     private static readonly Dictionary<FrameworkElement, FocusContext> ViewContexts = [];
     private static readonly Lock _lock = new();
-
-    #endregion
-
-    #region Public Methods
 
     public static void RegisterElements(List<UIElement> focusOrder)
     {
@@ -133,10 +119,6 @@ public static class FocusNavigator
             }
         }
     }
-
-    #endregion
-
-    #region Private Helper Methods
 
     private static FrameworkElement? FindRootView(DependencyObject element)
     {
@@ -473,6 +455,4 @@ public static class FocusNavigator
 
         context.FocusOrder.Clear();
     }
-
-    #endregion
 }

@@ -48,7 +48,6 @@ public partial class DashboardPageViewModel : ViewModelBase
     [ObservableProperty] private ChartData chart = new();
 
     // Tashqi bozor ma'lumotlari (CBU valyuta kursi + investing.com metall narxlari)
-    [ObservableProperty] private bool hasRates;
     [ObservableProperty] private bool marketLoadFailed;
     [ObservableProperty] private decimal usdRate;
     [ObservableProperty] private decimal usdDiff;
@@ -148,7 +147,6 @@ public partial class DashboardPageViewModel : ViewModelBase
             UsdRate = m.Usd.Rate;
             UsdDiff = m.Usd.Diff;
             UsdUp = m.Usd.Diff >= 0;
-            HasRates = true;
         }
 
         if (m.Eur is not null)

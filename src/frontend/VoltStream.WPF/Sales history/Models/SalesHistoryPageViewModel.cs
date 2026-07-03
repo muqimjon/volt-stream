@@ -142,7 +142,7 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
         Quantity = r.RollCount,
         Price = r.UnitPrice,
         Unit = r.Unit,
-        TotalCount = (int)r.TotalLength,
+        TotalCount = r.TotalLength,
         Customer = r.Customer,
     };
 

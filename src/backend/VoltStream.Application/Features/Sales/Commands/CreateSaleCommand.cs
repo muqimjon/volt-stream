@@ -47,8 +47,7 @@ public class CreateSaleCommandHandler(
                 if (account is null)
                     customer.Accounts.Add(account = new()
                     {
-                        CurrencyId = request.CurrencyId,
-                        OpeningBalance = sale.Amount
+                        CurrencyId = request.CurrencyId
                     });
 
                 UpdateAccountBalance(account, sale.Amount, sale.Discount, request.IsDiscountApplied);
@@ -97,6 +96,9 @@ public class CreateSaleCommandHandler(
             var residue = warehouse.Stocks
                 .FirstOrDefault(r => r.ProductId == item.ProductId && r.LengthPerRoll == item.LengthPerRoll)
                 ?? throw new NotFoundException(nameof(WarehouseStock), nameof(item.Id), item.Id);
+
+            if (residue.RollCount < item.RollCount || residue.TotalLength < item.RollCount * item.LengthPerRoll)
+                throw new ConflictException($"Omborda bu mahsulotdan yetarli emas! Mavjud: {residue.RollCount} rulon, {residue.TotalLength:N2} metr.");
 
             residue.RollCount -= item.RollCount;
             residue.TotalLength -= item.RollCount * item.LengthPerRoll;

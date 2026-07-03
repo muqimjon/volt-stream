@@ -35,7 +35,8 @@ public class CreateCustomerComandHandler(
         Currency currency = await GetCurrencyAsync(cancellationToken);
 
         var customer = mapper.Map<Customer>(request);
-        customer.Accounts.First().Currency = currency;
+        foreach (var account in customer.Accounts.Where(a => a.CurrencyId == 0))
+            account.Currency = currency;
         context.Customers.Add(customer);
 
         await context.SaveAsync(cancellationToken);

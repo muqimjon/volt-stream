@@ -4,6 +4,7 @@ using ClosedXML.Excel;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Features.Currencies.Commands;
 using VoltStream.Application.Features.Users.Commands;
@@ -132,10 +133,22 @@ public class ExcelDataSeeder(
             if (cellValue != null)
             {
                 var targetType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
-                prop.SetValue(obj, Convert.ChangeType(cellValue, targetType));
+                prop.SetValue(obj, ConvertCell(cellValue, targetType));
             }
         }
         context.GetType().GetMethod("Add")?.Invoke(context, [obj]);
+    }
+
+    private static object ConvertCell(string value, Type targetType)
+    {
+        if (targetType.IsEnum)
+            return Enum.Parse(targetType, value, ignoreCase: true);
+        if (targetType == typeof(Guid))
+            return Guid.Parse(value);
+        if (targetType == typeof(DateTimeOffset))
+            return DateTimeOffset.Parse(value, CultureInfo.InvariantCulture);
+
+        return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
     }
 
     private static string? GetValue(IXLRangeRow row, IXLRow headers, string colName)

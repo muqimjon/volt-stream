@@ -1,5 +1,6 @@
 ﻿namespace VoltStream.WPF.Payments.PayDiscountWindow.Views;
 
+using System.Globalization;
 using System.Windows;
 
 public partial class PayDiscountWindow : Window
@@ -34,7 +35,7 @@ public partial class PayDiscountWindow : Window
         ResultOfDiscount = new
         {
             discountCash = inCash.IsChecked == true ? true : false,
-            discountSum = decimal.TryParse(DiscountSum.Text, out var d) ? d : 0,
+            discountSum = decimal.TryParse(DiscountSum.Text.Replace(" ", string.Empty), NumberStyles.Any, CultureInfo.InvariantCulture, out var d) ? d : 0,
             discountInfo = txtDescription.Text
         };
         DialogResult = true;

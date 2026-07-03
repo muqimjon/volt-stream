@@ -9,7 +9,6 @@ using System.Text;
 /*
 public static partial class DevKeyService
 {
-    private static readonly byte[] EncryptionKey = Encoding.UTF8.GetBytes("YOUR_SECRET_KEY_HERE_12345678901"); // Must be 32 bytes for AES-256 usually, or appropriate size
-    private static readonly byte[] InitializationVector = Encoding.UTF8.GetBytes("YOUR_INIT_VECTOR"); // Must be 16 bytes for AES
+    private static readonly byte[] EncryptionKey = Encoding.UTF8.GetBytes("YOUR_SECRET_KEY_HERE_12345678901"); // Must be 32 bytes for AES-256
 }
 */

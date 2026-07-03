@@ -21,7 +21,6 @@ public partial class SettingsPage : Page
         if (e.OriginalSource != SettingsTabControl) return;
         if (session.IsAdmin) return;
 
-        // Har safar sahifa almashtirganda qayta bloklash
         if (CurrencyLock != null) CurrencyLock.IsLocked = true;
         if (CategoryLock != null) CategoryLock.IsLocked = true;
         if (ProductLock != null) ProductLock.IsLocked = true;

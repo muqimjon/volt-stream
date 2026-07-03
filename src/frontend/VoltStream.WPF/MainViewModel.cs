@@ -2,7 +2,9 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FontAwesome.Sharp;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using VoltStream.WPF.Commons;
 using VoltStream.WPF.Commons.Localization;
@@ -28,6 +30,13 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty] private object? currentChildView;
     [ObservableProperty] private string currentPageTitle = string.Empty;
     [ObservableProperty] private bool isSidebarCollapsed = false;
+    [ObservableProperty] private string activePageKey = "Nav.Dashboard";
+
+    [ObservableProperty] private bool isPaletteOpen;
+    [ObservableProperty] private string paletteQuery = string.Empty;
+    [ObservableProperty] private int paletteSelectedIndex;
+    public ObservableCollection<PaletteItem> PaletteResults { get; } = [];
+    private readonly List<PaletteItem> paletteItems;
 
     private string currentTitleKey = "Nav.Dashboard";
 
@@ -53,10 +62,62 @@ public partial class MainViewModel : ViewModelBase
             navImpl.PropertyChanged += NavigationService_PropertyChanged;
         }
 
-        LocalizationManager.LanguageChanged += _ => CurrentPageTitle = TranslationSource.T(currentTitleKey);
-        CurrentPageTitle = TranslationSource.T(currentTitleKey);
+        paletteItems =
+        [
+            new("Nav.Dashboard", IconChar.Home, ShowDashboardView),
+            new("Nav.Production", IconChar.ProjectDiagram, ShowSuppliesView),
+            new("Nav.Sales", IconChar.ShoppingCart, ShowSalesView),
+            new("Nav.Payment", IconChar.MoneyBillWave, ShowPaymentView),
+            new("Nav.Products", IconChar.Boxes, ShowProductView),
+            new("Nav.SalesAnalytics", IconChar.FileAlt, ShowSalesHistoryView),
+            new("Nav.Counterparties", IconChar.BalanceScale, ShowDebitorCreditor),
+            new("Nav.CustomerReport", IconChar.ArrowsRotate, ShowTurnoversPage),
+            new("Nav.Settings", IconChar.Sliders, ShowSettings),
+        ];
+        FilterPalette();
 
-        this.navigationService.Navigate(this.services.GetRequiredService<DashboardPage>());
+        LocalizationManager.LanguageChanged += _ => CurrentPageTitle = TranslationSource.T(currentTitleKey);
+
+        ShowDashboardView();
+    }
+
+    [RelayCommand]
+    private void TogglePalette()
+    {
+        if (IsPaletteOpen) { IsPaletteOpen = false; return; }
+        PaletteQuery = string.Empty;
+        PaletteSelectedIndex = PaletteResults.Count > 0 ? 0 : -1;
+        IsPaletteOpen = true;
+    }
+
+    [RelayCommand] private void ClosePalette() => IsPaletteOpen = false;
+
+    [RelayCommand]
+    private void ExecutePalette()
+    {
+        if (PaletteSelectedIndex < 0 || PaletteSelectedIndex >= PaletteResults.Count) return;
+        var item = PaletteResults[PaletteSelectedIndex];
+        IsPaletteOpen = false;
+        item.Invoke();
+    }
+
+    public void MovePalette(int delta)
+    {
+        if (PaletteResults.Count == 0) return;
+        var i = (PaletteSelectedIndex + delta + PaletteResults.Count) % PaletteResults.Count;
+        PaletteSelectedIndex = i;
+    }
+
+    partial void OnPaletteQueryChanged(string value) => FilterPalette();
+
+    private void FilterPalette()
+    {
+        var q = PaletteQuery?.Trim() ?? string.Empty;
+        PaletteResults.Clear();
+        foreach (var item in paletteItems)
+            if (q.Length == 0 || item.Title.Contains(q, StringComparison.OrdinalIgnoreCase))
+                PaletteResults.Add(item);
+        PaletteSelectedIndex = PaletteResults.Count > 0 ? 0 : -1;
     }
 
     public async Task LoadNamozTimesAsync()
@@ -99,6 +160,7 @@ public partial class MainViewModel : ViewModelBase
     {
         navigationService.Navigate(services.GetRequiredService<T>());
         currentTitleKey = titleKey;
+        ActivePageKey = titleKey;
         CurrentPageTitle = TranslationSource.T(titleKey);
     }
 }

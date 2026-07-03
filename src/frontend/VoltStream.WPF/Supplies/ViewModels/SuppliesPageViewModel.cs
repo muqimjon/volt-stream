@@ -247,6 +247,18 @@ public partial class SuppliesPageViewModel : ViewModelBase
             return;
         }
 
+        if (string.IsNullOrWhiteSpace(Unit))
+        {
+            Warning = TranslationSource.T("Supplies.UnitRequired");
+            return;
+        }
+
+        if (RollCount is not > 0 || WarehouseStockValue is not > 0 || UnitPrice is not > 0)
+        {
+            Warning = TranslationSource.T("Supplies.QuantityFieldsRequired");
+            return;
+        }
+
         var request = new SupplyRequest
         {
             Id = IsEditing && EditingItemBackup is not null ? EditingItemBackup.Id : 0,

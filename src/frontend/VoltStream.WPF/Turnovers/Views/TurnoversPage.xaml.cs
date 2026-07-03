@@ -13,6 +13,7 @@ public partial class TurnoversPage : Page
         DataContext = App.Services!.GetRequiredService<TurnoversPageViewModel>();
 
         Loaded += (s, e) => RegisterFocusNavigation();
+        Unloaded += (s, e) => (DataContext as TurnoversPageViewModel)?.Cleanup();
     }
     
     private void RegisterFocusNavigation()

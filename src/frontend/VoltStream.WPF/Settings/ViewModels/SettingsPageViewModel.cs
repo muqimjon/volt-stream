@@ -64,7 +64,7 @@ public partial class SettingsPageViewModel : ViewModelBase
         var dtoList = mapper.Map<List<CurrencyRequest>>(Currencies);
 
         var response = await client.SaveAllAsync(dtoList)
-            .Handle(isLoading => IsSelected = isLoading);
+            .Handle(isLoading => IsLoading = isLoading);
 
         if (response.IsSuccess && response.Data) Success = TranslationSource.T("Settings.ChangesSaved");
         else Error = response.Message ?? TranslationSource.T("Settings.SaveCurrenciesError");
@@ -74,7 +74,7 @@ public partial class SettingsPageViewModel : ViewModelBase
 
     #region Load Data
 
-    private async Task LoadData() => await Task.WhenAll(LoadCurrencies(), CategorySettings.LoadCategories(), ProductSettings.LoadData(), CustomerSettings.LoadCustomers());
+    private async Task LoadData() => await LoadCurrencies();
 
     private async Task LoadCurrencies()
     {

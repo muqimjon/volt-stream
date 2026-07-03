@@ -38,17 +38,14 @@ public class CreatePaymentCommandHandler(
                 .FirstOrDefaultAsync(c => c.Id == request.CurrencyId, cancellationToken)
                 ?? throw new NotFoundException(nameof(Currency), nameof(request.CurrencyId), request.CurrencyId);
 
-            var account = customer.Accounts.FirstOrDefault();
+            var account = customer.Accounts.FirstOrDefault(a => a.CurrencyId == request.CurrencyId);
 
             if (account is null)
             {
-                var defaultCurrency = await context.Currencies.FirstOrDefaultAsync(c => c.IsDefault, cancellationToken: cancellationToken)
-                    ?? throw new NotFoundException("Birlamchi valyuta turi kiritilmagan");
-
                 account = new Account
                 {
                     CustomerId = customer.Id,
-                    CurrencyId = defaultCurrency.Id,
+                    CurrencyId = request.CurrencyId,
                 };
 
                 customer.Accounts.Add(account);

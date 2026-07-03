@@ -124,7 +124,7 @@
                     Foreground="{DynamicResource Danger}"
                     IsHitTestVisible="False"
                     Text="{loc:Loc Customer.DebtPlaceholder}"
-                    Visibility="{Binding ElementName=txtBeginningSum, Path=Text.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    Visibility="{Binding ElementName=txtBeginningSum, Path=Text, Converter={StaticResource EmptyToVisibleConverter}}" />
 				<TextBox
                     x:Name="txtBeginningSum"
                     Grid.Column="0"
@@ -134,7 +134,7 @@
                     utils:TextBoxTabBehavior.EnableTabOnKeys="True"
                     FontSize="14"
                     Foreground="{DynamicResource Danger}"
-                    Visibility="{Binding ElementName=txtBeginningSum2, Path=Text.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    Visibility="{Binding ElementName=txtBeginningSum2, Path=Text, Converter={StaticResource EmptyToVisibleConverter}}" />
 				<TextBlock
                     Grid.Column="1"
                     Margin="15,5"
@@ -142,7 +142,7 @@
                     Foreground="{DynamicResource TextSecondary}"
                     IsHitTestVisible="False"
                     Text="{loc:Loc Customer.CreditPlaceholder}"
-                    Visibility="{Binding ElementName=txtBeginningSum2, Path=Text.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    Visibility="{Binding ElementName=txtBeginningSum2, Path=Text, Converter={StaticResource EmptyToVisibleConverter}}" />
 				<TextBox
                     x:Name="txtBeginningSum2"
                     Grid.Column="1"
@@ -151,7 +151,7 @@
                     utils:NumericInput.IsNumeric="True"
                     utils:TextBoxTabBehavior.EnableTabOnKeys="True"
                     FontSize="14"
-                    Visibility="{Binding ElementName=txtBeginningSum, Path=Text.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    Visibility="{Binding ElementName=txtBeginningSum, Path=Text, Converter={StaticResource EmptyToVisibleConverter}}" />
 			</Grid>
 			<TextBlock
                 Grid.Row="5"

@@ -25,9 +25,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<User> Users { get; set; }
 
     private IDbContextTransaction? currentTransaction;
-
-    // AuditInterceptor DI orqali (DependencyInjection.cs) bir marta ro'yxatdan o'tadi.
-    // Bu yerda qayta qo'shilsa, har SaveChanges'da ikki marta ishlardi - shuning uchun olib tashlandi.
+    private int transactionDepth;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -38,21 +36,36 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
         if (currentTransaction is not null)
+        {
+            transactionDepth++;
             return currentTransaction;
+        }
 
         currentTransaction = await Database.BeginTransactionAsync(cancellationToken);
+        transactionDepth = 1;
         return currentTransaction;
     }
 
     public async Task<bool> CommitTransactionAsync(CancellationToken cancellationToken = default)
     {
-        bool isSuccess;
+        if (currentTransaction is null)
+        {
+            await SaveChangesAsync(cancellationToken);
+            return true;
+        }
+
+        if (transactionDepth > 1)
+        {
+            transactionDepth--;
+            await SaveChangesAsync(cancellationToken);
+            return true;
+        }
+
         try
         {
             await SaveChangesAsync(cancellationToken);
-            if (currentTransaction is not null)
-                await currentTransaction.CommitAsync(cancellationToken);
-            isSuccess = true;
+            await currentTransaction.CommitAsync(cancellationToken);
+            return true;
         }
         catch
         {
@@ -66,9 +79,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 await currentTransaction.DisposeAsync();
                 currentTransaction = null;
             }
+            transactionDepth = 0;
         }
-
-        return isSuccess;
     }
 
     public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
@@ -79,6 +91,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             await currentTransaction.DisposeAsync();
             currentTransaction = null;
         }
+        transactionDepth = 0;
     }
 
     public Task<int> SaveAsync(CancellationToken cancellationToken)

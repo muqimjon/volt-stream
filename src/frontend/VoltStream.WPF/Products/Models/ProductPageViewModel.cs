@@ -161,7 +161,7 @@ public partial class ProductPageViewModel : ViewModelBase
         Quantity = item.RollCount,
         Price = item.UnitPrice,
         Unit = item.Product.Unit,
-        TotalCount = (int)item.TotalLength,
+        TotalCount = item.TotalLength,
     };
 
     partial void OnSelectedCategoryChanged(CategoryResponse? value)
