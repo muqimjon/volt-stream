@@ -118,7 +118,7 @@ public static class NumericInput
         if (sender is not TextBox textBox || (bool)textBox.GetValue(IsInternalChangeProperty)) return;
 
         textBox.SetValue(IsInternalChangeProperty, true);
-        string clean = textBox.Text.Replace(" ", "");
+        string clean = Normalize(textBox.Text);
         string original = textBox.Text;
         int caret = textBox.CaretIndex;
         textBox.SetValue(IsInternalChangeProperty, false);
@@ -173,16 +173,18 @@ public static class NumericInput
     private static void OnPreviewTextInput(object sender, TextCompositionEventArgs e)
     {
         var tb = (TextBox)sender;
-        string nextText = tb.Text.Remove(tb.SelectionStart, tb.SelectionLength).Insert(tb.SelectionStart, e.Text).Replace(" ", "");
+        string nextText = Normalize(tb.Text.Remove(tb.SelectionStart, tb.SelectionLength).Insert(tb.SelectionStart, e.Text));
         if (!Regex.IsMatch(e.Text, @"^[\d\.,]+$") || nextText.Count(c => c == '.') > 1) e.Handled = true;
     }
     private static void OnPaste(object sender, DataObjectPastingEventArgs e)
     {
         if (e.DataObject.GetDataPresent(DataFormats.Text))
         {
-            if (!Regex.IsMatch((string)e.DataObject.GetData(DataFormats.Text), @"^[\d\s\.]+$")) e.CancelCommand();
+            if (!Regex.IsMatch((string)e.DataObject.GetData(DataFormats.Text), @"^[\d\s\.,]+$")) e.CancelCommand();
         }
     }
+    private static string Normalize(string text)
+        => new string(text.Where(c => !char.IsWhiteSpace(c)).ToArray()).Replace(',', '.');
     private static string ApplyFormatting(string clean)
     {
         if (string.IsNullOrEmpty(clean) || clean == ".") return clean;

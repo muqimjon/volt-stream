@@ -74,7 +74,7 @@ public partial class CustomerViewModel : ViewModelBase
 
     private void RecalculateBalance()
     {
-        Balance = Accounts.Sum(a => a.Balance * a.Currency.ExchangeRate);
-        OpeningBalance = Accounts.Sum(a => a.OpeningBalance * a.Currency.ExchangeRate);
+        Balance = Accounts.Sum(a => a.Balance * (a.Currency?.ExchangeRate ?? 1));
+        OpeningBalance = Accounts.Sum(a => a.OpeningBalance * (a.Currency?.ExchangeRate ?? 1));
     }
 }
