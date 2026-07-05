@@ -73,7 +73,47 @@
             </Grid.ColumnDefinitions>
 
             <Grid x:Name="Sidebar">
-                <StackPanel>
+                <DockPanel>
+                    <Button
+                        DockPanel.Dock="Bottom"
+                        Height="48"
+                        Margin="10,4,10,12"
+                        HorizontalContentAlignment="Left"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="LogoutButton_Click"
+                        Cursor="Hand"
+                        ToolTip="{loc:Loc Nav.Logout}">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="8">
+                                    <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bd" Property="Background" Value="{DynamicResource DangerSubtle}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                            <fa:IconImage
+                                Width="22"
+                                Height="22"
+                                Margin="35,0,20,0"
+                                Foreground="{DynamicResource Danger}"
+                                Icon="RightFromBracket" />
+                            <TextBlock
+                                VerticalAlignment="Center"
+                                FontFamily="Montserrat"
+                                FontSize="13.5"
+                                FontWeight="Medium"
+                                Foreground="{DynamicResource Danger}"
+                                Text="{loc:Loc Nav.Logout}" />
+                        </StackPanel>
+                    </Button>
+
+                    <StackPanel>
                     <ToggleButton
                         Width="250"
                         HorizontalContentAlignment="Left"
@@ -205,7 +245,7 @@
                     </RadioButton>
 
                 </StackPanel>
-
+                </DockPanel>
             </Grid>
 
             <Grid Grid.Column="1">

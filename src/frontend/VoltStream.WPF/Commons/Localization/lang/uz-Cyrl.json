@@ -137,6 +137,8 @@
   "Nav.Sales": "Савдо",
   "Nav.SalesAnalytics": "Сотув таҳлили",
   "Nav.Settings": "Созламалар",
+  "Nav.Logout": "Чиқиш",
+  "Nav.LogoutConfirm": "Тизимдан чиқасизми? Бошқа фойдаланувчи билан кириш учун дастур қайта ишга тушади.",
   "Palette.Empty": "Ҳеч нарса топилмади",
   "Palette.Open": "очиш",
   "Palette.Placeholder": "Буйруқ ёки саҳифани қидиринг...",

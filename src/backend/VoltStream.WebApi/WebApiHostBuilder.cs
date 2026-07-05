@@ -1,6 +1,5 @@
 namespace VoltStream.WebApi;
 
-using VoltStream.WebApi.Extensions;
 using VoltStream.WebApi.Middlewares;
 
 public static class WebApiHostBuilder
@@ -16,7 +15,6 @@ public static class WebApiHostBuilder
         app.UseMiddleware<ExceptionHandlerMiddleware>();
         app.UseVoltStreamPipeline();
         app.UseOpenApiDocumentation();
-        app.UseVoltStreamMiddlewares();
 
         app.MapControllers();
 

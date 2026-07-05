@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using VoltStream.WPF.Commons.Animations;
 using VoltStream.WPF.Commons.Enums;
+using VoltStream.WPF.Configurations;
 using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.ViewModels;
@@ -14,11 +15,13 @@ using VoltStream.WPF.ViewModels;
 public partial class MainWindow : Window
 {
     private readonly MainViewModel vm;
+    private readonly IServiceProvider services;
 
     public MainWindow(IServiceProvider serviceProvider)
     {
         InitializeComponent();
         Commons.Utils.MonitorMaximizeHelper.Enable(this);
+        services = serviceProvider;
         vm = serviceProvider.GetRequiredService<MainViewModel>();
         DataContext = vm;
         NotificationService.Init(this);
@@ -79,6 +82,26 @@ public partial class MainWindow : Window
     private void BtnClose_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private void LogoutButton_Click(object sender, RoutedEventArgs e)
+    {
+        var confirm = MessageBox.Show(
+            TranslationSource.T("Nav.LogoutConfirm"),
+            TranslationSource.T("Nav.Logout"),
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (confirm != MessageBoxResult.Yes)
+            return;
+
+        services.GetRequiredService<CredentialStore>().Clear();
+
+        var path = Environment.ProcessPath;
+        if (!string.IsNullOrEmpty(path))
+            System.Diagnostics.Process.Start(path);
+
+        Application.Current.Shutdown();
     }
 
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

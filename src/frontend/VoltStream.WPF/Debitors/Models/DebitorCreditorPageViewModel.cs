@@ -45,14 +45,18 @@ public partial class DebitorCreditorPageViewModel : ViewModelBase
     public List<string> Signs { get; } = ["Barchasi", ">", ">=", "=", "<", "<=", "<>"];
     public List<string> BalanceTypes { get; } = ["Barchasi", "Debitorlar", "Kreditorlar"];
 
-    partial void OnSignChanged(string? value) => _ = ReloadAsync();
-    partial void OnAmountChanged(decimal value) => _ = ReloadAsync();
-    partial void OnSelectedBalanceTypeChanged(string value) => _ = ReloadAsync();
-    partial void OnSelectedCustomerChanged(CustomerViewModel? value) => _ = ReloadAsync();
+    private bool suppressReload;
+
+    partial void OnSignChanged(string? value) { if (!suppressReload) _ = ReloadAsync(); }
+    partial void OnAmountChanged(decimal value) { if (!suppressReload) _ = ReloadAsync(); }
+    partial void OnSelectedBalanceTypeChanged(string value) { if (!suppressReload) _ = ReloadAsync(); }
+    partial void OnSelectedCustomerChanged(CustomerViewModel? value) { if (!suppressReload) _ = ReloadAsync(); }
 
     private async Task LoadInitialAsync()
     {
+        suppressReload = true;
         await LoadCustomers();
+        suppressReload = false;
         await ReloadAsync();
     }
 
@@ -145,10 +149,12 @@ public partial class DebitorCreditorPageViewModel : ViewModelBase
     [RelayCommand]
     private void ClearFilter()
     {
+        suppressReload = true;
         SelectedCustomer = AvailableCustomers.FirstOrDefault();
         Sign = "Barchasi";
         Amount = 0;
         SelectedBalanceType = "Barchasi";
+        suppressReload = false;
         _ = ReloadAsync();
     }
 

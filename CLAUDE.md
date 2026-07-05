@@ -53,6 +53,18 @@ WebApi seeding'dan OLDIN tinglay boshlaydi (migratsiya/seeding `DatabaseInitiali
 - Ro'yxat `MainViewModel.paletteItems` da (`PaletteItem`: `Nav.*` kaliti + `IconChar` + navigatsiya). Yangi sahifa qo'shsang shu ro'yxatga ham element qo'sh.
 - Sidebar faol holati `ActivePageKey` orqali sinxron (palette bilan o'tganda ham to'g'ri belgi yonadi). Matnlar `Palette.*` kalitlarida (4 tilda).
 
+## Biznes qoidalari (ATAYLAB shunday — buzma)
+
+Bu yerdagi qoidalar "mantiqan g'alati" ko'rinishi mumkin, lekin BUYURTMACHI so'ragani uchun ataylab shunday qilingan. Upgrade/refactor paytida bularni "xato" deb tuzatma — avval shu ro'yxatni tekshir. Yangi shunday qaror qabul qilinsa, shu ro'yxatga qo'sh.
+
+- **Ombor minusga tushishi mumkin (oversell).** Savdoda mahsulot omborda yetarli bo'lmasa ham sotishga ruxsat beriladi; foydalanuvchi ogohlantiriladi va tasdiqlasa, savdo o'tadi va qoldiq minusga hisoblanadi. Backendda `CreateSaleCommand` da qoldiq yetarliligini tekshirib `ConflictException` tashlash YO'Q (olib tashlangan) — qaytarib qo'yma.
+- **Rulonni kesish (partial roll).** So'ralgan metr to'plam uzunligiga bo'linmasa, foydalanuvchi tasdig'i bilan rulon kesiladi va qoldiq bo'lak alohida `WarehouseStock` sifatida omborga qaytadi (`HandleResidueAsync`).
+- **Raqam kiritish universal.** Kasr ajratgich sifatida ham nuqta (`.`) ham vergul (`,`) qabul qilinadi — interfeys/OS tili qanday bo'lishidan qat'i nazar (`NumericInput.Normalize`). Buni bitta madaniyatga qulflab qo'yma.
+- **To'lovda asosiy valyuta kursi qulf.** To'lov sahifasida tanlangan valyuta `IsDefault=true` bo'lsa, kurs maydoni tahrirlanmaydi.
+- **IP-allowlist / so'rov-log middleware YO'Q.** Ilgari `ClientIpMiddleware` (IP oq ro'yxat) bor edi — u ulanishni bloklab, sekinlashtirgani uchun buyurtmachi talabi bilan butunlay olib tashlangan. Qaytarib kiritma.
+
 ## Kod uslubi
 
 Izohsiz, sodda, kam kod; mavjud arxitektura va fayl uslubiga sodiq; tayyor ishonchli kutubxonalardan foydalanish.
+
+Upgrade topshirilganda: mavjud ishlayotgan xatti-harakatni buzma. O'zgartirishdan oldin "Biznes qoidalari" bo'limini o'qi; mantiqan g'alati ko'ringan kodni "tuzatishdan" oldin buyurtmachi ataylab so'raganmi — tekshir yoki so'ra.

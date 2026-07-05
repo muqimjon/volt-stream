@@ -123,7 +123,7 @@ public class ExcelDataSeeder(
         var entityType = dbSetProp.PropertyType.GetGenericArguments()[0];
 
         var dbSet = dbSetProp.GetValue(context);
-        var anyMethod = typeof(Enumerable).GetMethods().First(m => m.Name == "Any" && m.GetParameters().Length == 1).MakeGenericMethod(entityType);
+        var anyMethod = typeof(Queryable).GetMethods().First(m => m.Name == "Any" && m.GetParameters().Length == 1).MakeGenericMethod(entityType);
         if ((bool)anyMethod.Invoke(null, [dbSet])!) return;
 
         var obj = Activator.CreateInstance(entityType)!;

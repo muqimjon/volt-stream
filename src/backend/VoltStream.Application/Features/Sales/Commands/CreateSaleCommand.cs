@@ -97,9 +97,6 @@ public class CreateSaleCommandHandler(
                 .FirstOrDefault(r => r.ProductId == item.ProductId && r.LengthPerRoll == item.LengthPerRoll)
                 ?? throw new NotFoundException(nameof(WarehouseStock), nameof(item.Id), item.Id);
 
-            if (residue.RollCount < item.RollCount || residue.TotalLength < item.RollCount * item.LengthPerRoll)
-                throw new ConflictException($"Omborda bu mahsulotdan yetarli emas! Mavjud: {residue.RollCount} rulon, {residue.TotalLength:N2} metr.");
-
             residue.RollCount -= item.RollCount;
             residue.TotalLength -= item.RollCount * item.LengthPerRoll;
             residue.UnitPrice = item.UnitPrice;

@@ -137,6 +137,8 @@
   "Nav.Sales": "Продажи",
   "Nav.SalesAnalytics": "Анализ продаж",
   "Nav.Settings": "Настройки",
+  "Nav.Logout": "Выход",
+  "Nav.LogoutConfirm": "Выйти из системы? Приложение перезапустится для входа под другим пользователем.",
   "Palette.Empty": "Ничего не найдено",
   "Palette.Open": "открыть",
   "Palette.Placeholder": "Поиск команды или страницы...",

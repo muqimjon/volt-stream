@@ -70,6 +70,7 @@ public static class QueryExtensions
         else if (raw.StartsWith("<=")) { op = "<="; value = raw[2..]; }
         else if (raw.StartsWith('>')) { op = ">"; value = raw[1..]; }
         else if (raw.StartsWith('<')) { op = "<"; value = raw[1..]; }
+        else if (raw.StartsWith('=')) { op = "="; value = raw[1..]; }
         else if (raw.StartsWith('!')) { op = "not"; value = raw[1..]; }
         else if (raw.StartsWith("in:", StringComparison.OrdinalIgnoreCase)) { op = "in"; value = raw[3..]; }
         else if (raw.StartsWith("contains:", StringComparison.OrdinalIgnoreCase)) { op = "contains"; value = raw[9..]; }
@@ -114,10 +115,9 @@ public static class QueryExtensions
         try { converted = ConversionHelper.TryConvert(value, targetType); }
         catch { return null; }
 
-        var constant = Expression.Constant(converted, targetType);
-
         if (targetType == typeof(string))
         {
+            var constant = Expression.Constant(converted, targetType);
             var memberLower = Expression.Call(member, nameof(string.ToLower), Type.EmptyTypes);
             var constLower = Expression.Call(constant, nameof(string.ToLower), Type.EmptyTypes);
             return op switch
@@ -130,13 +130,18 @@ public static class QueryExtensions
             };
         }
 
+        var underlying = Nullable.GetUnderlyingType(targetType);
+        Expression valueConst = underlying is null || converted is null
+            ? Expression.Constant(converted, targetType)
+            : Expression.Convert(Expression.Constant(converted, underlying), targetType);
+
         return op switch
         {
-            "=" => Expression.Equal(member, constant),
-            ">" => Expression.GreaterThan(member, constant),
-            ">=" => Expression.GreaterThanOrEqual(member, constant),
-            "<" => Expression.LessThan(member, constant),
-            "<=" => Expression.LessThanOrEqual(member, constant),
+            "=" => Expression.Equal(member, valueConst),
+            ">" => Expression.GreaterThan(member, valueConst),
+            ">=" => Expression.GreaterThanOrEqual(member, valueConst),
+            "<" => Expression.LessThan(member, valueConst),
+            "<=" => Expression.LessThanOrEqual(member, valueConst),
             _ => null
         };
     }

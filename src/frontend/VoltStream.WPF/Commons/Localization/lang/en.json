@@ -137,6 +137,8 @@
   "Nav.Sales": "Sales",
   "Nav.SalesAnalytics": "Sales analytics",
   "Nav.Settings": "Settings",
+  "Nav.Logout": "Log out",
+  "Nav.LogoutConfirm": "Log out? The app will restart so you can sign in as a different user.",
   "Palette.Empty": "Nothing found",
   "Palette.Open": "open",
   "Palette.Placeholder": "Search a command or page...",

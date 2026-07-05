@@ -75,11 +75,13 @@ public partial class TurnoversPageViewModel : ViewModelBase
 
     #region Property Changes
 
-    partial void OnSelectedCustomerChanged(CustomerResponse? value) => _ = ReloadAsync();
+    private bool suppressReload;
 
-    partial void OnBeginDateChanged(DateTime value) => _ = ReloadAsync();
+    partial void OnSelectedCustomerChanged(CustomerResponse? value) { if (!suppressReload) _ = ReloadAsync(); }
 
-    partial void OnEndDateChanged(DateTime value) => _ = ReloadAsync();
+    partial void OnBeginDateChanged(DateTime value) { if (!suppressReload) _ = ReloadAsync(); }
+
+    partial void OnEndDateChanged(DateTime value) { if (!suppressReload) _ = ReloadAsync(); }
 
     #endregion Property Changes
 
@@ -287,9 +289,12 @@ public partial class TurnoversPageViewModel : ViewModelBase
     [RelayCommand]
     private void ClearFilter()
     {
+        suppressReload = true;
         SelectedCustomer = null;
         BeginDate = DateTime.Now.AddMonths(-1);
         EndDate = DateTime.Now;
+        suppressReload = false;
+        _ = ReloadAsync();
     }
 
     [RelayCommand]

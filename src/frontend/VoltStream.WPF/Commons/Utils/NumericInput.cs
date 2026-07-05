@@ -183,8 +183,8 @@ public static class NumericInput
             if (!Regex.IsMatch((string)e.DataObject.GetData(DataFormats.Text), @"^[\d\s\.,]+$")) e.CancelCommand();
         }
     }
-    private static string Normalize(string text)
-        => new string(text.Where(c => !char.IsWhiteSpace(c)).ToArray()).Replace(',', '.');
+    internal static string Normalize(string text)
+        => new string((text ?? "").Where(c => !char.IsWhiteSpace(c)).ToArray()).Replace(',', '.');
     private static string ApplyFormatting(string clean)
     {
         if (string.IsNullOrEmpty(clean) || clean == ".") return clean;

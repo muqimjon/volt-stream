@@ -197,7 +197,7 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
             FileName = TranslationSource.T("SalesHistory.ReportName"),
             Columns =
             [
-                new() { Header = TranslationSource.T("Common.Date"), Width = 60, Align = ReportAlign.Center, Value = x => x.OperationDate?.ToString("dd.MM.yyyy") },
+                new() { Header = TranslationSource.T("Common.Date"), Width = 74, Align = ReportAlign.Center, Value = x => x.OperationDate?.ToString("dd.MM.yyyy") },
                 new() { Header = TranslationSource.T("SalesHistory.Customer"), Width = 82, Value = x => x.Customer },
                 new() { Header = TranslationSource.T("SalesHistory.ProductType"), Width = 80, Value = x => x.Category },
                 new() { Header = TranslationSource.T("Common.Name"), Width = 82, Value = x => x.Name },

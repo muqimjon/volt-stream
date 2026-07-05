@@ -85,7 +85,9 @@ partial class PaymentPageViewModel : ViewModelBase
         {
             Success = TranslationSource.T("Payments.SuccessRegistered");
             ResetPaymentForm();
-            await LoadDataAsync();
+            Payment.Currency = AvailableCurrencies?.FirstOrDefault(c => c.IsDefault);
+            await LoadCustomerDetailsAsync();
+            await LoadDatagrid();
         }
         else Error = response.Message ?? TranslationSource.T("Payments.TechnicalError");
     }
@@ -259,7 +261,6 @@ partial class PaymentPageViewModel : ViewModelBase
     private void ResetPaymentForm()
     {
         Payment = new();
-        Customer = null;
     }
 
     public async Task ApplyDiscountResultAsync(dynamic? result)

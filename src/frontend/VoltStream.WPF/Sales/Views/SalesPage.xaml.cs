@@ -28,6 +28,8 @@ public partial class SalesPage : Page
 
     private readonly SaleSession saleSession;
     public Sale sale;
+    private long? loadedProductCategoryId;
+    private bool productsLoaded;
 
     public SalesPage(IServiceProvider services)
     {
@@ -124,8 +126,9 @@ public partial class SalesPage : Page
             var response = await customersApi.CreateAsync(newCustomer).Handle();
             if (response.IsSuccess)
             {
+                await LoadCustomerNameAsync(true);
+                CustomerName.SelectedValue = response.Data;
                 await LoadCustomerByIdAsync(response.Data);
-                CustomerName.Text = newCustomer.Name;
                 sale.CustomerId = response.Data;
                 await LoadCurrencyAsync();
             }
@@ -201,8 +204,10 @@ public partial class SalesPage : Page
     {
         await LoadCustomerNameAsync();
     }
-    private async Task LoadCustomerNameAsync()
+    private async Task LoadCustomerNameAsync(bool force = false)
     {
+        if (!force && CustomerName.ItemsSource != null) return;
+
         var selectedValue = CustomerName.SelectedValue;
         var response = await customersApi.GetAllAsync().Handle();
 
@@ -316,7 +321,7 @@ public partial class SalesPage : Page
     private void TxtQuantity_PreviewLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
     {
         if (decimal.TryParse(txtQuantity.Text, out decimal quantity) &&
-            decimal.TryParse(cbxPerRollCount.Text, out decimal perRollCount) &&
+            decimal.TryParse(NumericInput.Normalize(cbxPerRollCount.Text), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal perRollCount) &&
             perRollCount != 0)
         {
             if ((decimal.TryParse(txtQuantity.Text, out decimal value) ? value : 0) > sale.WarehouseQuantity)
@@ -365,7 +370,7 @@ public partial class SalesPage : Page
         if (sender == cbxPerRollCount || sender == txtRollCount)
         {
             if (decimal.TryParse(txtRollCount.Text, out decimal rollCount) &&
-            decimal.TryParse(cbxPerRollCount.Text, out decimal perRollCount))
+            decimal.TryParse(NumericInput.Normalize(cbxPerRollCount.Text), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal perRollCount))
             {
                 decimal totalQuantity = rollCount * perRollCount;
                 txtQuantity.Text = totalQuantity.ToString();
@@ -458,6 +463,8 @@ public partial class SalesPage : Page
 
     private async Task LoadCategoryAsync()
     {
+        if (cbxCategoryName.ItemsSource != null) return;
+
         var selectedValue = cbxCategoryName.SelectedValue;
 
         var response = await categoriesApi.GetAllAsync().Handle();
@@ -476,6 +483,8 @@ public partial class SalesPage : Page
 
     private async Task LoadProductAsync(long? categoryId)
     {
+        if (productsLoaded && loadedProductCategoryId == categoryId) return;
+
         var selectedValue = cbxProductName.SelectedValue;
         Response<List<ProductResponse>> response;
 
@@ -494,6 +503,9 @@ public partial class SalesPage : Page
 
             if (selectedValue is not null)
                 cbxProductName.SelectedValue = selectedValue;
+
+            productsLoaded = true;
+            loadedProductCategoryId = categoryId;
         }
         else
             sale.Error = response.Message ?? TranslationSource.T("Sales.ProductsLoadError");
@@ -533,7 +545,7 @@ public partial class SalesPage : Page
             CategoryName = cbxCategoryName.Text,
             ProductId = (long)cbxProductName.SelectedValue,
             ProductName = cbxProductName.Text,
-            PerRollCount = decimal.TryParse(cbxPerRollCount.Text, out decimal perRollCount) ? perRollCount : 0,
+            PerRollCount = decimal.TryParse(NumericInput.Normalize(cbxPerRollCount.Text), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal perRollCount) ? perRollCount : 0,
             RollCount = int.TryParse(txtRollCount.Text, out int rollCount) ? rollCount : 0,
             WarehouseCountRoll = sale.WarehouseCountRoll,
             Quantity = decimal.TryParse(txtQuantity.Text, out decimal quantity) ? quantity : 0,
@@ -563,6 +575,38 @@ public partial class SalesPage : Page
         sale.NewQuantity = 0;
         sale.WarehouseCountRoll = 0;
         sale.WarehouseQuantity = 0;
+    }
+
+    private async void DataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    {
+        if (dataGrid.SelectedItem is not SaleItem item)
+            return;
+
+        await LoadCategoryAsync();
+        await LoadProductAsync(null);
+        cbxProductName.SelectedValue = item.ProductId;
+
+        await LoadWarehouseItemsAsync(item.ProductId);
+        if (item.PerRollCount.HasValue)
+            cbxPerRollCount.SelectedValue = item.PerRollCount.Value;
+
+        sale.WarehouseCountRoll = item.WarehouseCountRoll;
+        sale.WarehouseQuantity = item.WarehouseQuantity;
+        sale.NewQuantity = item.NewQuantity;
+
+        txtRollCount.Text = item.RollCount?.ToString();
+        txtQuantity.Text = item.Quantity?.ToString();
+        txtPrice.Text = item.Price?.ToString();
+        txtSum.Text = item.Sum?.ToString();
+        txtPerDiscount.Text = item.PerDiscount?.ToString();
+        txtDiscount.Text = item.Discount?.ToString();
+        txtFinalSumProduct.Text = item.FinalSumProduct?.ToString();
+
+        sale.SaleItems.Remove(item);
+        CalcSaleSum();
+
+        txtQuantity.Focus();
+        txtQuantity.SelectAll();
     }
 
     private bool IsSaleItemCompleted()
@@ -759,6 +803,31 @@ public partial class SalesPage : Page
         await LoadCategoryAsync();
         await LoadCurrencyAsync();
         RegisterFocusNavigation();
+        await RestoreSessionAsync();
+    }
+
+    private async Task RestoreSessionAsync()
+    {
+        if (sale.CategoryId > 0)
+            cbxCategoryName.SelectedValue = sale.CategoryId;
+
+        if (sale.CustomerId is long customerId && customerId > 0)
+        {
+            await LoadCustomerNameAsync();
+            CustomerName.SelectedValue = customerId;
+            await LoadCustomerByIdAsync(customerId);
+        }
+
+        if (sale.ProductId > 0)
+        {
+            await LoadProductAsync(sale.CategoryId);
+            cbxProductName.SelectedValue = sale.ProductId;
+            await LoadWarehouseItemsAsync(sale.ProductId);
+
+            if (!string.IsNullOrWhiteSpace(sale.PerRollCount)
+                && decimal.TryParse(NumericInput.Normalize(sale.PerRollCount), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal perRoll))
+                cbxPerRollCount.SelectedValue = perRoll;
+        }
     }
 
     private void RegisterFocusNavigation()

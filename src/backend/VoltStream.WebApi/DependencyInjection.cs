@@ -46,7 +46,7 @@ public static class DependencyInjection
 
     public static void UseOpenApiDocumentation(this WebApplication app)
     {
-        if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
+        if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
             app.MapScalarApiReference(opt =>

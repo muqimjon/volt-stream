@@ -409,7 +409,7 @@ public static class ReportService
 
             using var gfx = XGraphics.FromPdfPage(pdfPage);
             using var image = XImage.FromStream(ms);
-            gfx.DrawImage(image, 0, 0, pdfPage.Width, pdfPage.Height);
+            gfx.DrawImage(image, 0, 0, pdfPage.Width.Point, pdfPage.Height.Point);
         }
         pdf.Save(path);
     }

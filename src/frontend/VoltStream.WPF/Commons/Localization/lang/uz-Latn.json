@@ -137,6 +137,8 @@
   "Nav.Sales": "Savdo",
   "Nav.SalesAnalytics": "Sotuv tahlili",
   "Nav.Settings": "Sozlamalar",
+  "Nav.Logout": "Chiqish",
+  "Nav.LogoutConfirm": "Tizimdan chiqasizmi? Boshqa foydalanuvchi bilan kirish uchun dastur qayta ishga tushadi.",
   "Palette.Empty": "Hech narsa topilmadi",
   "Palette.Open": "ochish",
   "Palette.Placeholder": "Buyruq yoki sahifani qidiring...",

@@ -136,7 +136,7 @@
 
 					<ComboBox x:Name="cbxWarehouseStock" Style="{StaticResource RoundedCombo}" Height="28"
                               IsEditable="True"
-                              IsTextSearchEnabled="False"
+                              IsTextSearchEnabled="True"
                               ItemsSource="{Binding WarehouseStocks}"
                               SelectedItem="{Binding SelectedWarehouseStock}"
                               utils:NumericInput.Value="{Binding WarehouseStockValue, UpdateSourceTrigger=LostFocus}"

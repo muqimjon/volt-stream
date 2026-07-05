@@ -1,5 +1,6 @@
 ﻿namespace VoltStream.WPF.Commons.Utils;
 
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,12 +15,18 @@ public static class ComboBoxHelper
         var input = cb.Text?.Trim() ?? "";
         if (string.IsNullOrEmpty(input)) return false;
 
-        var items = cb.ItemsSource?.Cast<object>() ?? [];
+        if (cb.ItemsSource is null) return false;
+
+        var items = cb.ItemsSource.Cast<object>();
         var prop = string.IsNullOrEmpty(cb.DisplayMemberPath) ? null : items.FirstOrDefault()?.GetType().GetProperty(cb.DisplayMemberPath);
+
+        bool inputIsNumber = decimal.TryParse(NumericInput.Normalize(input), NumberStyles.Any, CultureInfo.InvariantCulture, out var inputNumber);
 
         bool exists = items.Any(item =>
         {
             var val = prop != null ? prop.GetValue(item)?.ToString() : item?.ToString();
+            if (inputIsNumber && decimal.TryParse(NumericInput.Normalize(val ?? ""), NumberStyles.Any, CultureInfo.InvariantCulture, out var valNumber))
+                return valNumber == inputNumber;
             return string.Equals(val?.Trim(), input, StringComparison.OrdinalIgnoreCase);
         });
 

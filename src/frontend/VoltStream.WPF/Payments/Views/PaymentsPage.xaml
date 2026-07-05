@@ -99,7 +99,7 @@
                              Grid.Column="2"
                              Margin="0 2"
                              Validation.ErrorTemplate="{x:Null}"
-                             IsEnabled="{Binding Payment.Currency.IsEditable}"
+                             IsEnabled="{Binding Payment.Currency.IsDefault, Converter={StaticResource InverseBoolToBoolConverter}}"
                              utils:NumericInput.Value="{Binding Payment.ExchangeRate, UpdateSourceTrigger=LostFocus}"
                              Style="{StaticResource ModernTextBox}"
                              utils:NumericInput.IsNumeric="True"

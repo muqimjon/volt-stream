@@ -22,11 +22,16 @@ public class CustomerBalanceSummaryQueryHandler(
     {
         var projected = CustomerBalanceQueryHandler.Project(context, request.CustomerId, request.Sign, request.Amount, request.Type);
 
-        return new CustomerBalanceSummaryDto
-        {
-            Discount = await projected.SumAsync(x => (decimal?)x.Discount, cancellationToken) ?? 0,
-            Debitor = await projected.SumAsync(x => (decimal?)x.Debitor, cancellationToken) ?? 0,
-            Creditor = await projected.SumAsync(x => (decimal?)x.Creditor, cancellationToken) ?? 0
-        };
+        var summary = await projected
+            .GroupBy(_ => 1)
+            .Select(g => new CustomerBalanceSummaryDto
+            {
+                Discount = g.Sum(x => (decimal?)x.Discount) ?? 0,
+                Debitor = g.Sum(x => (decimal?)x.Debitor) ?? 0,
+                Creditor = g.Sum(x => (decimal?)x.Creditor) ?? 0
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return summary ?? new CustomerBalanceSummaryDto();
     }
 }
