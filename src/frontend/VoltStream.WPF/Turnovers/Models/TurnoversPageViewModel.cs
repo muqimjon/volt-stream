@@ -37,7 +37,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
     private static readonly Brush PdfAccent = new SolidColorBrush(Color.FromRgb(0x4F, 0x46, 0xE5));
     private static readonly Brush PdfInk = new SolidColorBrush(Color.FromRgb(0x1F, 0x29, 0x37));
     private static readonly Brush PdfMuted = new SolidColorBrush(Color.FromRgb(0x6B, 0x72, 0x80));
-    private static readonly Brush PdfLine = new SolidColorBrush(Color.FromRgb(0xE5, 0xE7, 0xEB));
+    private static readonly Brush PdfLine = new SolidColorBrush(Color.FromRgb(0x9C, 0xA3, 0xAF));
     private static readonly Brush PdfHeaderBg = new SolidColorBrush(Color.FromRgb(0xEE, 0xF0, 0xFD));
     private static readonly Brush PdfDanger = new SolidColorBrush(Color.FromRgb(0xDC, 0x26, 0x26));
 
@@ -570,18 +570,18 @@ public partial class TurnoversPageViewModel : ViewModelBase
         Brush amountBrush = op.Debit > 0 ? PdfDanger : PdfInk;
         string amountText = op.Debit > 0 ? op.Debit.ToString("N2") : op.Credit.ToString("N2");
 
-        AddSimpleCell(grid, row, 0, op.Date.ToString("dd.MM.yyyy"), TextAlignment.Center, FontWeights.Normal, 12.5, new Thickness(0.5, 0.5, 0, 0.5), PdfInk);
+        AddSimpleCell(grid, row, 0, op.Date.ToString("dd.MM.yyyy"), TextAlignment.Center, FontWeights.Normal, 12.5, new Thickness(1, 1, 0, 1), PdfInk);
 
         var borderDesc = new Border
         {
             BorderBrush = PdfLine,
-            BorderThickness = new Thickness(0.5, 0, 0, 0.5),
+            BorderThickness = new Thickness(1, 0, 0, 1),
             Padding = new Thickness(6, 4, 6, 4),
             Child = BuildDescriptionContent(op, descWidth - 12)
         };
         Grid.SetRow(borderDesc, row); Grid.SetColumn(borderDesc, 1); grid.Children.Add(borderDesc);
 
-        AddSimpleCell(grid, row, 2, amountText, TextAlignment.Right, FontWeights.Bold, 12.5, new Thickness(0.5, 0, 0.5, 0.5), amountBrush);
+        AddSimpleCell(grid, row, 2, amountText, TextAlignment.Right, FontWeights.Bold, 12.5, new Thickness(1, 0, 1, 1), amountBrush);
     }
 
     private FrameworkElement BuildDescriptionContent(CustomerOperationForDisplayViewModel op, double width)
@@ -642,10 +642,10 @@ public partial class TurnoversPageViewModel : ViewModelBase
         g.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         bool hasDisc = disc.Length > 0;
 
-        g.Children.Add(ItemCell(name, 0, r, TextAlignment.Left, PdfInk, FontWeights.SemiBold, new Thickness(0, 1, 10, 1), true));
+        g.Children.Add(ItemCell(name, 0, r, TextAlignment.Left, PdfInk, FontWeights.Normal, new Thickness(0, 1, 10, 1), true));
         g.Children.Add(ItemCell(length, 1, r, TextAlignment.Right, PdfMuted, FontWeights.Normal, new Thickness(0, 1, 10, 1), false));
         g.Children.Add(ItemCell("× " + price, 2, r, TextAlignment.Right, PdfMuted, FontWeights.Normal, new Thickness(0, 1, 10, 1), false));
-        g.Children.Add(ItemCell("= " + sum, 3, r, TextAlignment.Right, PdfInk, FontWeights.Bold, new Thickness(0, 1, hasDisc ? 10 : 0, 1), false));
+        g.Children.Add(ItemCell("= " + sum, 3, r, TextAlignment.Right, PdfInk, FontWeights.Normal, new Thickness(0, 1, hasDisc ? 10 : 0, 1), false));
         if (hasDisc)
             g.Children.Add(ItemCell("(" + disc + ")", 4, r, TextAlignment.Right, PdfDanger, FontWeights.Normal, new Thickness(0, 1, 0, 1), false));
     }

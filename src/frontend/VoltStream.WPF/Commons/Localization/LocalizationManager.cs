@@ -4,12 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using VoltStream.WPF.Configurations;
 
 public enum AppLanguage { UzLatn, UzCyrl, Ru, En }
 
 public static class LocalizationManager
 {
-    private const string ConfigPath = "config/language.json";
+    private static readonly string ConfigPath = AppStorage.PathFor("language.json");
     private const AppLanguage Fallback = AppLanguage.UzLatn;
 
     private static readonly Dictionary<AppLanguage, string> Codes = new()

@@ -85,7 +85,7 @@ partial class PaymentPageViewModel : ViewModelBase
         {
             Success = TranslationSource.T("Payments.SuccessRegistered");
             ResetPaymentForm();
-            Payment.Currency = AvailableCurrencies?.FirstOrDefault(c => c.IsDefault);
+            Payment.Currency = AvailableCurrencies.FirstOrDefault(c => c.IsDefault)!;
             await LoadCustomerDetailsAsync();
             await LoadDatagrid();
         }

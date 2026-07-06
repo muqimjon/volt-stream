@@ -4,12 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Windows;
+using VoltStream.WPF.Configurations;
 
 public enum AppTheme { Light, Dark }
 
 public static class ThemeManager
 {
-    private const string ConfigPath = "config/app-settings.json";
+    private static readonly string ConfigPath = AppStorage.PathFor("app-settings.json");
 
     private static readonly Uri LightUri = new("pack://application:,,,/VoltStream.WPF;component/Commons/Styles/Theme/Light.xaml");
     private static readonly Uri DarkUri = new("pack://application:,,,/VoltStream.WPF;component/Commons/Styles/Theme/Dark.xaml");

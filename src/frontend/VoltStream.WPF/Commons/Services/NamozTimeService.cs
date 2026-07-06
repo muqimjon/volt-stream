@@ -4,11 +4,12 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
+using VoltStream.WPF.Configurations;
 
 public class NamozTimeService
 {
     private const string ApiUrl = "https://namoz-vaqti.uz/?format=json&lang=lotin&period=month&region=qoqon-shahri";
-    private static readonly string CachePath = Path.Combine(AppContext.BaseDirectory, "namoz_times.json");
+    private static readonly string CachePath = AppStorage.PathFor("namoz_times.json");
     private static readonly HttpClient _httpClient = new();
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {

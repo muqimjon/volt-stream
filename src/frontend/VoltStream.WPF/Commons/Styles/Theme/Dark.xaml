@@ -7,11 +7,13 @@
     <Color x:Key="BrandHoverColor">#818CF8</Color>
     <Color x:Key="BrandPressedColor">#4F46E5</Color>
     <Color x:Key="BrandSubtleColor">#232C44</Color>
+    <Color x:Key="RowSelectedColor">#34416B</Color>
     <Color x:Key="OnBrandColor">#FFFFFF</Color>
 
     <Color x:Key="CanvasColor">#0F1420</Color>
     <Color x:Key="SurfaceColor">#1A2030</Color>
     <Color x:Key="SurfaceAltColor">#222A3C</Color>
+    <Color x:Key="RowAltColor">#212A3C</Color>
 
     <Color x:Key="BorderColor">#2B3650</Color>
     <Color x:Key="BorderStrongColor">#3A465F</Color>
@@ -48,10 +50,12 @@
     <SolidColorBrush x:Key="BrandHover" Color="{StaticResource BrandHoverColor}" />
     <SolidColorBrush x:Key="BrandPressed" Color="{StaticResource BrandPressedColor}" />
     <SolidColorBrush x:Key="BrandSubtle" Color="{StaticResource BrandSubtleColor}" />
+    <SolidColorBrush x:Key="RowSelected" Color="{StaticResource RowSelectedColor}" />
     <SolidColorBrush x:Key="OnBrand" Color="{StaticResource OnBrandColor}" />
 
     <SolidColorBrush x:Key="Canvas" Color="{StaticResource CanvasColor}" />
     <SolidColorBrush x:Key="Surface" Color="{StaticResource SurfaceColor}" />
+    <SolidColorBrush x:Key="RowAlt" Color="{StaticResource RowAltColor}" />
     <SolidColorBrush x:Key="SurfaceAlt" Color="{StaticResource SurfaceAltColor}" />
     <SolidColorBrush x:Key="Card" Color="{StaticResource SurfaceColor}" />
 

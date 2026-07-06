@@ -66,13 +66,45 @@
             Grid.Row="1"
             CanUserAddRows="False"
             CanUserDeleteRows="False"
+            GridLinesVisibility="None"
             HeadersVisibility="Column, Row"
             IsReadOnly="True"
             ItemsSource="{Binding PagedCustomerOperationsForDisplay}"
             RowHeaderWidth="48"
             RowHeight="{x:Static sys:Double.NaN}"
+            ScrollViewer.CanContentScroll="True"
             SelectionMode="Single"
+            VirtualizingPanel.ScrollUnit="Pixel"
             utils:DataGridRowNumbering.IsEnabled="True">
+            <DataGrid.Resources>
+                <Style BasedOn="{StaticResource {x:Type DataGridCell}}" TargetType="DataGridCell">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="DataGridCell">
+                                <Border x:Name="bd" Padding="2,0" Background="Transparent">
+                                    <ContentPresenter VerticalAlignment="Center" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="bd" Property="Background" Value="{DynamicResource RowSelected}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.Resources>
+            <DataGrid.RowStyle>
+                <Style BasedOn="{StaticResource {x:Type DataGridRow}}" TargetType="DataGridRow">
+                    <Setter Property="Height" Value="{x:Static sys:Double.NaN}" />
+                    <Style.Triggers>
+                        <Trigger Property="AlternationIndex" Value="1">
+                            <Setter Property="Background" Value="{DynamicResource RowAlt}" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
             <DataGrid.Columns>
                 <DataGridTextColumn
                     Width="0.7*"

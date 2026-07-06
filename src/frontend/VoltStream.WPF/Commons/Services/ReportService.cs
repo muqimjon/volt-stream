@@ -68,7 +68,7 @@ public static class ReportService
     private static readonly Brush HeaderBg = Freeze(new SolidColorBrush(Color.FromRgb(0xEE, 0xF0, 0xFD)));
     private static readonly Brush Ink = Freeze(new SolidColorBrush(Color.FromRgb(0x1F, 0x29, 0x37)));
     private static readonly Brush Muted = Freeze(new SolidColorBrush(Color.FromRgb(0x6B, 0x72, 0x80)));
-    private static readonly Brush RowLine = Freeze(new SolidColorBrush(Color.FromRgb(0xE5, 0xE7, 0xEB)));
+    private static readonly Brush RowLine = Freeze(new SolidColorBrush(Color.FromRgb(0x9C, 0xA3, 0xAF)));
     private static readonly Brush Zebra = Freeze(new SolidColorBrush(Color.FromRgb(0xF9, 0xFA, 0xFB)));
 
     public static bool ExportExcel<T>(ReportDefinition<T> def)
@@ -622,7 +622,7 @@ public static class ReportService
         => BuildCell(text, 11.5, true, align, new Thickness(6, 7, 6, 7), HeaderBg, Accent, new Thickness(0, 0, 0, 1.5), Accent);
 
     private static Border BodyCell(string text, TextAlignment align, Brush background)
-        => BuildCell(text, 11, false, align, new Thickness(6, 6, 6, 6), background, Ink, new Thickness(0, 0, 0, 0.6), RowLine);
+        => BuildCell(text, 11, false, align, new Thickness(6, 6, 6, 6), background, Ink, new Thickness(0, 0, 0, 1), RowLine);
 
     private static Border TotalCell(string text, TextAlignment align, Thickness padding)
         => BuildCell(text, 11.5, true, align, padding, HeaderBg, Accent, new Thickness(0, 1.5, 0, 0), Accent);
