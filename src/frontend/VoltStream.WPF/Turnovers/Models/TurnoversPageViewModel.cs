@@ -116,7 +116,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
             return;
         }
 
-        var response = await customerOperationsApi.GetByCustomerId(SelectedCustomer.Id, BeginDate, EndDate)
+        var response = await customerOperationsApi.GetByCustomerId(SelectedCustomer.Id, BeginDate, EndDate, FilteringRequest.LocalTimeZone)
             .Handle(isLoading => IsLoading = isLoading);
 
         if (response.IsSuccess && response.Data is not null)

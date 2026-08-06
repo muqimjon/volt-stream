@@ -9,7 +9,8 @@ using VoltStream.Application.Features.CustomerOperations.DTOs;
 public record GetCustomerOperationByCustomerIdQuery(
     long CustomerId,
     DateTime? BeginDate,
-    DateTime? EndDate
+    DateTime? EndDate,
+    double? TimeZone
 ) : IRequest<CustomerOperationSummaryDto>;
 
 public class GetCustomerOperationByCustomerIdQueryHandler(
@@ -21,60 +22,49 @@ public class GetCustomerOperationByCustomerIdQueryHandler(
        GetCustomerOperationByCustomerIdQuery request,
        CancellationToken cancellationToken)
     {
+        var offset = TimeSpan.FromHours(request.TimeZone ?? 0);
+
         var beginDate = request.BeginDate.HasValue
-      ? DateTime.SpecifyKind(request.BeginDate.Value.Date, DateTimeKind.Utc)
-      : (DateTime?)null;
+            ? new DateTimeOffset(DateTime.SpecifyKind(request.BeginDate.Value.Date, DateTimeKind.Unspecified), offset).ToUniversalTime()
+            : (DateTimeOffset?)null;
 
         var endDate = request.EndDate.HasValue
-            ? DateTime.SpecifyKind(request.EndDate.Value.Date, DateTimeKind.Utc)
-            : (DateTime?)null;
+            ? new DateTimeOffset(DateTime.SpecifyKind(request.EndDate.Value.Date, DateTimeKind.Unspecified), offset).AddDays(1).ToUniversalTime()
+            : (DateTimeOffset?)null;
 
-        var account = await _context.Accounts
+        var accounts = _context.Accounts
             .AsNoTracking()
-            .FirstOrDefaultAsync(a => a.CustomerId == request.CustomerId, cancellationToken);
+            .Where(a => a.CustomerId == request.CustomerId);
 
-        if (account == null)
+        if (!await accounts.AnyAsync(cancellationToken))
             throw new InvalidOperationException("Hisob topilmadi.");
+
+        var openingBalance = await accounts.SumAsync(a => a.OpeningBalance, cancellationToken);
 
         var allOperations = _context.CustomerOperations
             .AsNoTracking()
             .Include(x => x.Account)
             .Where(x => x.Account.CustomerId == request.CustomerId);
 
-        decimal beginBalance = account.OpeningBalance;
-        decimal beforeBeginSum = 0;
+        decimal beginBalance = openingBalance;
         if (beginDate.HasValue)
         {
-            beforeBeginSum = await allOperations
+            beginBalance += await allOperations
                 .Where(x => x.Date < beginDate.Value)
                 .SumAsync(x => x.Amount, cancellationToken);
         }
-        beginBalance += beforeBeginSum;
-        decimal endBalance = account.OpeningBalance;
 
-        if (endDate.HasValue)
-        {
-            var adjustedEndDate = endDate.Value.Date.AddDays(1).AddTicks(-1);
-
-            var beforeEndSum = await allOperations
-                .Where(x => x.Date <= adjustedEndDate)
-                .SumAsync(x => x.Amount, cancellationToken);
-
-            endBalance += beforeEndSum;
-        }
+        decimal endBalance = openingBalance + await (endDate.HasValue
+            ? allOperations.Where(x => x.Date < endDate.Value)
+            : allOperations).SumAsync(x => x.Amount, cancellationToken);
 
         var filtered = allOperations.AsQueryable();
 
         if (beginDate.HasValue)
-        {
             filtered = filtered.Where(x => x.Date >= beginDate.Value);
-        }
 
         if (endDate.HasValue)
-        {
-            var endUtc = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-            filtered = filtered.Where(x => x.Date <= endUtc);
-        }
+            filtered = filtered.Where(x => x.Date < endDate.Value);
 
         var operations = await filtered
             .OrderBy(x => x.Date)

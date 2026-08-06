@@ -15,6 +15,8 @@ public partial class CurrencyViewModel : ViewModelBase
     [ObservableProperty] private bool isCash;
     [ObservableProperty] private int position;
 
+    public bool IsRateEditable => IsEditable && !IsDefault;
+
     public CurrencyViewModel? selected;
     public CurrencyViewModel Selected
     {

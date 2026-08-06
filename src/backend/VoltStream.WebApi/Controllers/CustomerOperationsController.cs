@@ -27,12 +27,13 @@ public class CustomerOperationsController : BaseController
     [HttpGet("by-customer-id/{customerId}")]
     public async Task<IActionResult> GetByCustomerId(long customerId,
         [FromQuery] DateTime? beginDate = null,
-        [FromQuery] DateTime? endDate = null)
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] double? timeZone = null)
     {
         return Ok(new Response
         {
             Data = await Mediator.Send(
-            new GetCustomerOperationByCustomerIdQuery(customerId, beginDate, endDate))
+            new GetCustomerOperationByCustomerIdQuery(customerId, beginDate, endDate, timeZone))
         });
     }
 }

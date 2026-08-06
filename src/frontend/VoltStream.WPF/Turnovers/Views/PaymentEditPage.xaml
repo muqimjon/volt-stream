@@ -95,7 +95,7 @@
                         Grid.Column="2"
                         Margin="5,2"
                         FontSize="14"
-                        IsEnabled="{Binding Payment.Currency.IsEditable}"
+                        IsEnabled="{Binding Payment.Currency.IsRateEditable}"
                         Style="{StaticResource ModernTextBox}"
                         Text="{Binding Payment.ExchangeRate}"
                         utils:NumericInput.IsNumeric="True" />

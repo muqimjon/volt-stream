@@ -5,12 +5,14 @@ using ApiServices.Interfaces;
 using ApiServices.Models;
 using ApiServices.Models.Requests;
 using ApiServices.Models.Responses;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using VoltStream.WPF.Commons.Localization;
+using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.Utils;
 using VoltStream.WPF.Customer;
@@ -186,17 +188,9 @@ public partial class SalesPage : Page
     {
         if (customer?.Accounts == null) return "0";
 
-        decimal totalUzs = 0m;
-        foreach (var acc in customer.Accounts)
-        {
-            if (acc == null) continue;
-            var rate = acc.Currency?.ExchangeRate ?? 1m;
-            if (rate == 0m) rate = 1m;
-            totalUzs += acc.Balance * rate;
-        }
+        var totalUzs = customer.Accounts.Where(a => a != null).Sum(a => a.Balance);
 
-        var rounded = Math.Round(totalUzs, 0, MidpointRounding.AwayFromZero);
-        return rounded.ToString("F0");
+        return Math.Round(totalUzs, 0, MidpointRounding.AwayFromZero).ToString("F0");
     }
 
 
@@ -791,6 +785,7 @@ public partial class SalesPage : Page
             sale = saleSession.Current;
             await ClearUI();
             CustomerName.Focus();
+            WeakReferenceMessenger.Default.Send(new EntityUpdatedMessage<string>("OperationUpdated"));
         }
         else
         {

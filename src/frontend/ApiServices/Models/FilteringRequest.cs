@@ -8,8 +8,8 @@ public record FilteringRequest
     public int PageSize { get; set; }
     public string? SortBy { get; set; }
     public bool Descending { get; set; }
-    public double TimeZone { get; set; } = GetLocalTimezone();
+    public double TimeZone { get; set; } = LocalTimeZone;
 
-    private static double GetLocalTimezone()
+    public static double LocalTimeZone
         => TimeZoneInfo.Local.GetUtcOffset(DateTime.UtcNow).TotalHours;
 }

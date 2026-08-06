@@ -19,7 +19,8 @@ public interface ICustomerOperationsApi
     Task<Response<CustomerOperationSummaryDto>> GetByCustomerId(
         long customerId,
         [Query] DateTime? beginDate = null,
-        [Query] DateTime? endDate = null);
+        [Query] DateTime? endDate = null,
+        [Query] double? timeZone = null);
 
     [Get("/customer-operations/{id}")]
     Task<Response<CustomerOperationResponse>> GetById(long id);

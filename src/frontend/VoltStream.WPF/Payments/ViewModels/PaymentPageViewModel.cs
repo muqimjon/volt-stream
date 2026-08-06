@@ -88,6 +88,7 @@ partial class PaymentPageViewModel : ViewModelBase
             Payment.Currency = AvailableCurrencies.FirstOrDefault(c => c.IsDefault)!;
             await LoadCustomerDetailsAsync();
             await LoadDatagrid();
+            WeakReferenceMessenger.Default.Send(new EntityUpdatedMessage<string>("OperationUpdated"));
         }
         else Error = response.Message ?? TranslationSource.T("Payments.TechnicalError");
     }
@@ -174,11 +175,10 @@ partial class PaymentPageViewModel : ViewModelBase
             if (data != null)
             {
                 var mapped = mapper.Map<CustomerViewModel>(data);
-                var uzsAccount = mapped.Accounts?.FirstOrDefault(a => a.Currency?.Code == "UZS");
-                if (uzsAccount != null)
+                if (mapped.Accounts is not null)
                 {
-                    Payment.Balance = uzsAccount.Balance;
-                    Payment.Discount = uzsAccount.Discount;
+                    Payment.Balance = mapped.Accounts.Sum(a => a.Balance);
+                    Payment.Discount = mapped.Accounts.Sum(a => a.Discount);
                 }
                 ResetCalculations();
             }

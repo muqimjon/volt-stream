@@ -286,14 +286,14 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1.3*" />
                 <ColumnDefinition Width="1.6*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="0.6*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="1.2*" />
+                <ColumnDefinition Width="0.9*" />
                 <ColumnDefinition Width="0.8*" />
+                <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="1.2*" />
+                <ColumnDefinition Width="0.75*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="1.1*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock
