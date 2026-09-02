@@ -21,6 +21,7 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUser, HttpCurrentUser>();
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<ExcelDataSeeder>();
+        services.AddScoped<IAuditLogWriter, AuditLogWriter>();
         services.AddHostedService<DatabaseInitializer>();
         services.AddSingleton<IMarketDataService, Web.MarketDataService>();
 

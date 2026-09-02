@@ -3,13 +3,14 @@ namespace VoltStream.Application.Commons.Services;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Domain.Entities;
 
 public class BranchContext(IAppDbContext context, ICurrentUser user)
 {
     public async Task<long> ResolveAsync(long? requested, CancellationToken cancellationToken = default)
     {
-        if (!user.IsAdmin && user.BranchId is long own)
+        if (!user.Has(Permissions.BranchesAll) && user.BranchId is long own)
             return own;
 
         return requested ?? await DefaultIdAsync(cancellationToken);
@@ -17,7 +18,7 @@ public class BranchContext(IAppDbContext context, ICurrentUser user)
 
     public async Task<long?> ResolveFilterAsync(long? requested, bool allowAll, CancellationToken cancellationToken = default)
     {
-        if (!user.IsAdmin && user.BranchId is long own)
+        if (!user.Has(Permissions.BranchesAll) && user.BranchId is long own)
             return own;
 
         if (requested is not null)

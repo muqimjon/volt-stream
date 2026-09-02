@@ -1,11 +1,13 @@
-﻿namespace VoltStream.Application.Features.CustomerOperations.Queries;
+namespace VoltStream.Application.Features.CustomerOperations.Queries;
 
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Features.CustomerOperations.DTOs;
 
+[RequirePermission(Permissions.ReportsView)]
 public record GetCustomerOperationByCustomerIdQuery(
     long CustomerId,
     DateTime? BeginDate,

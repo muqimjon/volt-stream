@@ -1,12 +1,14 @@
-﻿namespace VoltStream.WebApi;
+namespace VoltStream.WebApi;
 
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
 using VoltStream.Application;
+using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Infrastructure;
 using VoltStream.WebApi.Conventions;
+using VoltStream.WebApi.Hubs;
 
 public static class DependencyInjection
 {
@@ -14,6 +16,9 @@ public static class DependencyInjection
     {
         services.AddApplicationServices();
         services.AddInfrastructureServices(conf);
+        services.AddScoped<IPrintJobNotifier, PrintJobNotifier>();
+        services.AddSignalR()
+                .AddJsonProtocol(opt => opt.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
         services.AddControllers(opt => opt.Conventions.Add(new RouteTokenTransformerConvention(new SlugifyParameterTransformer())))
                 .AddApplicationPart(typeof(DependencyInjection).Assembly)

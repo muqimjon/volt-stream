@@ -55,6 +55,12 @@ public static class PriceMask
         sale.Amount = 0;
         sale.Discount = 0;
 
+        if (sale.CustomerOperation is not null)
+        {
+            sale.CustomerOperation.Amount = 0;
+            sale.CustomerOperation.Description = string.Empty;
+        }
+
         foreach (var item in sale.Items ?? [])
         {
             item.UnitPrice = 0;

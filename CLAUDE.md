@@ -4,17 +4,19 @@ Kabel zavodi uchun hisob-kitob (savdo, ta'minot, to'lovlar, debitor/kreditor, om
 
 ## Arxitektura
 
-`.NET 9`. Yechim ikki qismdan iborat (`VoltStream.sln`):
+`.NET 9`. Yechim uch qismdan iborat (`VoltStream.sln` + `src/web`):
 
 **Backend** (`src/backend`) — Clean Architecture + CQRS (MediatR):
 - `VoltStream.Domain` — entitilar, enumlar.
-- `VoltStream.Application` — CQRS komandalar/so'rovlar, validatsiya, interfeyslar.
+- `VoltStream.Application` — CQRS komandalar/so'rovlar, interfeyslar, `Commons/Security` (ruxsatlar), `Commons/Behaviors` (MediatR pipeline: `PermissionBehavior`, `AuditLogBehavior`).
 - `VoltStream.Infrastructure` — EF Core (PostgreSQL/Npgsql), `AppDbContext`, JWT, Excel seeding (`ExcelDataSeeder`, `SeedData/*.xlsx` orqali), `DatabaseInitializer` (migratsiya + seeding fon `BackgroundService`).
 - `VoltStream.WebApi` — controllerlar, middleware, Scalar API hujjati. Kompozitsiya `WebApiHostBuilder.Build` da; `Program.cs` shuni chaqiradi.
 
 **Frontend** (`src/frontend`) — WPF (MVVM, CommunityToolkit.Mvvm, Mapster):
 - `VoltStream.WPF` — oynalar/sahifalar/ViewModel'lar, DI uchun generic `Host`.
 - `ApiServices` — Refit klient interfeyslari (`I*Api`) va modellar.
+
+**Web** (`src/web/VoltStream.Web`) — Angular 22 + PWA (planshet/telefon uchun: savdo, kirim, sotilganlar, statistika, loglar, profil). Standalone komponentlar, signal'lar, UI kutubxonasiz. Build natijasi `src/backend/VoltStream.WebApi/wwwroot` ga tushadi (gitignored) va WebApi'ning o'zi SPA sifatida xizmat qiladi (`MapFallbackToFile`, `/api`, `/hubs`, `/scalar` bundan mustasno). `dotnet publish` `BuildWeb` target orqali `npm ci && npm run build` ni ishga tushiradi (`-p:BuildWeb=false` bilan o'tkazib yuboriladi). Dev: `npm start` (proxy `/api`, `/hubs` → `https://localhost:7285`). Node 24 LTS (`.node-version`).
 
 ## Ishga tushirish
 
@@ -28,6 +30,29 @@ Kabel zavodi uchun hisob-kitob (savdo, ta'minot, to'lovlar, debitor/kreditor, om
    ```
 
 WebApi seeding'dan OLDIN tinglay boshlaydi (migratsiya/seeding `DatabaseInitializer` da fonda). Shuning uchun klient va server bir vaqtda ishga tushsa ham klient muzlab qolmaydi.
+
+`Jwt:Secret` (kamida 32 belgi) MAJBURIY — yo'q bo'lsa server ishga tushmaydi. Dev qiymati `appsettings.Development.json` da (gitignored); production'da `appsettings.Production.json` (gitignored) yoki `Jwt__Secret` env. Kalit o'zgarsa barcha tokenlar bekor bo'ladi (WPF qayta login qiladi).
+
+## Migratsiyalar va ma'lumot backfill
+
+- EF migratsiyalari `src/backend/VoltStream.Infrastructure/Persistence/Migrations` da, gitda saqlanadi. Yaratish (WebApi papkasidan): `ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations add <Name> --project ../VoltStream.Infrastructure --startup-project . --output-dir Persistence/Migrations` (`dotnet-ef` 9.0.10 lokal manifestda; 10.x net9 bilan ishlamaydi).
+- **Generatsiya fayllariga (migratsiya, snapshot) qo'l bilan tegilmaydi.** Kerakli natija model/konfiguratsiya orqali olinadi: default satr → `HasData`, ustun defaulti → `HasDefaultValue` (keyin olib tashlab ikkinchi migratsiya), shartli `UPDATE` → `DatabaseInitializer.dataMigrations` (migratsiya ID'siga bog'langan SQL, `__DataMigrationsHistory` jadvali orqali bir marta va qayta uriniladigan).
+
+## Filiallar, ruxsatlar, audit
+
+- `Branch` — filial; har filialda aynan bitta `Warehouse` (birga yaratiladi). `Sale`, `Supply`, `Warehouse`, `PrintJob` da `BranchId`; `User.BranchId` null = admin (hammasi). Default filial "Asosiy filial" (`HasData`, Id=1).
+- Filial serverda `BranchContext` orqali aniqlanadi: non-admin uchun DOIM tokendagi `branch` claim (klient yuborgan `BranchId` e'tiborsiz); admin (yoki `branches.all`) so'rovda `BranchId?` yuboradi, yubormasa savdo/kirimda default filial, hisobotlarda hamma filial. WPF'da admin header'dagi combo orqali tanlaydi (`BranchContext`, `%APPDATA%\Ovoza\VoltStream\branch.json`).
+- Ruxsatlar: katalog `Application/Commons/Security/Permissions.cs` (`sales.*`, `supplies.*`, `settings.*`, `print.request`, `print.agent`, ...). Har foydalanuvchida `User.Permissions` (`text[]`); `UserRole` faqat shablon (`RolePresets`), Admin doim hammasi. Server tomonda `[RequirePermission("...")]` command/query record'ida + `PermissionBehavior` (MediatR pipeline). JWT'da `permission` claim'lari, `AuthResponse.permissions`. WPF: `session.Has(key)`, XAML'da `utils:Permission.Require="key"` (yashiradi) / `.Enable`; Sozlamalar tablari shu orqali ko'rinadi (parolli qoplama YO'Q — olib tashlangan). Web: `*appHasPermission`, marshrut guard'lari.
+- Yangi ruxsat qo'shsang: `Permissions.cs` + `RolePresets` + WPF `Permissions.<key>` loc kalitlari (4 til) + web i18n.
+- `sales.view_prices` bo'lmasa: web/desktop narx maydonlarini ko'rsatmaydi; server savdoda narxni `WarehouseStock`dan oladi va javoblarda narxlarni 0 qiladi (`PriceMask`).
+- Audit log: `AuditLogBehavior` har `*Command` ni (eng tashqisini) `AuditLogs` jadvaliga yozadi (`Password*` maydonlari `***`), alohida `AppDbContext` bilan, xatosi command'ni buzmaydi. `X-Client` header (Desktop/Web/Agent) → `Source`. Ko'rish: Sozlamalar → Loglar (`settings.audit`), web'da o'z loglari (`logs.view_own`). `Auditable.CreatedByUserId` interceptor orqali to'ldiriladi.
+
+## Masofaviy chop etish (print-agent)
+
+- Oqim: web/desktop `POST /api/print-jobs {saleId}` → `PrintJob` (Pending) → SignalR `PrintHub` (`/hubs/print`, JWT `access_token` query) `PrintJobCreated` filial agentlariga → agent (WPF `PrintAgentService`) `claim` (409 bo'lsa boshqa agent olgan) → `GET /api/sales/{id}/receipt` → `ReceiptDocumentBuilder` (Og'irlik rejimi) → printer → `complete`/`fail` → `PrintJobStatusChanged` so'rovchiga.
+- Bir savdoga Pending/Printing job bo'lsa yangi so'rov 409 (`force` bilan qayta). `User.PrintPolicy` Auto/Ask/Deny: Deny → 403 serverda; Ask → agentda Ha/Yo'q dialog.
+- Agent sozlamalari lokal: Sozlamalar → Printer (`settings.printer`), `%APPDATA%\Ovoza\VoltStream\printer.json`; ishlashi uchun `print.agent` ruxsati. Qayta ulanganda `GET /api/print-jobs/pending` bilan o'tkazib yuborilgan joblar chop etiladi.
+- Chek (`Receipt*`): og'irlik + miqdor bilan, narxsiz; desktop preview'da `sales.view_prices` bo'lsa Pul/Og'irlik toggle. Og'irlik: `Product.IsWeightTracked` + `WeightPerUnit` (kg/birlik), `SaleItem.Weight` savdo paytida saqlanadi (keyin o'zgarmaydi).
 
 ## Klient ↔ server ulanishi
 
@@ -62,6 +87,11 @@ Bu yerdagi qoidalar "mantiqan g'alati" ko'rinishi mumkin, lekin BUYURTMACHI so'r
 - **Raqam kiritish universal.** Kasr ajratgich sifatida ham nuqta (`.`) ham vergul (`,`) qabul qilinadi — interfeys/OS tili qanday bo'lishidan qat'i nazar (`NumericInput.Normalize`). Buni bitta madaniyatga qulflab qo'yma.
 - **To'lovda asosiy valyuta kursi qulf.** To'lov sahifasida tanlangan valyuta `IsDefault=true` bo'lsa, kurs maydoni tahrirlanmaydi.
 - **IP-allowlist / so'rov-log middleware YO'Q.** Ilgari `ClientIpMiddleware` (IP oq ro'yxat) bor edi — u ulanishni bloklab, sekinlashtirgani uchun buyurtmachi talabi bilan butunlay olib tashlangan. Qaytarib kiritma.
+- **Narxsiz savdo (web).** `sales.view_prices` bo'lmagan hodim savdo qilsa server narxni ombordagi `WarehouseStock.UnitPrice/DiscountRate` dan oladi va summani o'zi hisoblaydi; ofis keyin SaleEdit'da to'g'rilaydi. Bu "narx 0 bo'lib qoladi" xatosi emas.
+- **Narxsiz kirim stock narxini buzmaydi.** `CreateSupplyCommand.UnitPrice` null bo'lsa mavjud stock narxi ustidan yozilmaydi (ilgari 0 yozib yuborardi).
+- **Bir savdoga bitta faol print job.** Pending/Printing job bo'lsa yangi so'rov 409 — qog'oz isrofini oldini olish uchun ataylab. `force` faqat ongli qayta chop etish uchun.
+- **Chekda narx yo'q (og'irlik + miqdor).** Mahsulot bir necha qo'ldan o'tadi, har qo'l o'z narxini qo'yadi — shuning uchun zavod cheki narxsiz. Desktopda faqat ruxsat bilan Pul rejimi.
+- **Katalog umumiy, qoldiq filial bo'yicha.** `Product` filialga bog'lanmaydi; `WarehouseStock` filial omboriga bog'lanadi.
 
 ## Kod uslubi
 

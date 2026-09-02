@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Commons.Interfaces;
+namespace VoltStream.Application.Commons.Interfaces;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -22,6 +22,8 @@ public interface IAppDbContext
     DbSet<User> Users { get; }
     DbSet<Currency> Currencies { get; }
     DbSet<Branch> Branches { get; }
+    DbSet<AuditLog> AuditLogs { get; }
+    DbSet<PrintJob> PrintJobs { get; }
 
     Task<int> SaveAsync(CancellationToken cancellationToken);
 

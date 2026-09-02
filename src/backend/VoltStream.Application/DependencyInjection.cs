@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application;
+namespace VoltStream.Application;
 
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +14,9 @@ public static class DependencyInjection
         services.AddMediatR(assembly);
         services.AddAutoMapper(assembly);
         services.AddScoped<BranchContext>();
+        services.AddScoped<AuditScope>();
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PermissionBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuditLogBehavior<,>));
 
         return services;
     }

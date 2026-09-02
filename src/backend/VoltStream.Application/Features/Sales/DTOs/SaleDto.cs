@@ -3,6 +3,7 @@ namespace VoltStream.Application.Features.Sales.DTOs;
 using VoltStream.Application.Features.Currencies.DTOs;
 using VoltStream.Application.Features.CustomerOperations.DTOs;
 using VoltStream.Application.Features.Customers.DTOs;
+using VoltStream.Domain.Enums;
 
 public record SaleDto
 {
@@ -27,4 +28,13 @@ public record SaleDto
     public CustomerDto Customer { get; set; } = default!;
 
     public ICollection<SaleItemDto> Items { get; set; } = default!;
+
+    public SalePrintJobDto? PrintJob { get; set; }
+}
+
+public record SalePrintJobDto
+{
+    public long Id { get; set; }
+    public PrintJobStatus Status { get; set; }
+    public string? Error { get; set; }
 }

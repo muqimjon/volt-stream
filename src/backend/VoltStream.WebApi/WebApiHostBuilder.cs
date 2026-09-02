@@ -1,5 +1,6 @@
 namespace VoltStream.WebApi;
 
+using VoltStream.WebApi.Hubs;
 using VoltStream.WebApi.Middlewares;
 
 public static class WebApiHostBuilder
@@ -17,6 +18,7 @@ public static class WebApiHostBuilder
         app.UseOpenApiDocumentation();
 
         app.MapControllers();
+        app.MapHub<PrintHub>("/hubs/print");
         app.MapFallbackToFile("{*path:regex(^(?!(api|hubs|scalar|openapi)(/|$)).*$)}", "index.html").AllowAnonymous();
 
         return app;

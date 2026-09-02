@@ -1,13 +1,15 @@
-﻿namespace VoltStream.Application.Features.CustomerOperations.Queries;
+namespace VoltStream.Application.Features.CustomerOperations.Queries;
 
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Features.CustomerOperations.DTOs;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.ReportsView)]
 public record GetCustomerOperationByIdQuery(long Id) : IRequest<CustomerOperationDto>;
 
 public class GetCustomerOperationByIdQueryHandler(

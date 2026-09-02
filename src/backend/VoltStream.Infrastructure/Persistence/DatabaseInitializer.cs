@@ -36,9 +36,8 @@ public class DatabaseInitializer(
                 using var scope = services.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                var pending = await context.Database.GetPendingMigrationsAsync(stoppingToken);
                 await context.Database.MigrateAsync(stoppingToken);
-                await ApplyDataMigrationsAsync(context, pending, stoppingToken);
+                await ApplyDataMigrationsAsync(context, stoppingToken);
                 await EnsureDefaultBranchAsync(context, stoppingToken);
                 await EnsurePerformanceIndexesAsync(context, stoppingToken);
 
@@ -54,11 +53,25 @@ public class DatabaseInitializer(
         }
     }
 
-    private static async Task ApplyDataMigrationsAsync(AppDbContext context, IEnumerable<string> applied, CancellationToken ct)
+    private static async Task ApplyDataMigrationsAsync(AppDbContext context, CancellationToken ct)
     {
-        foreach (var id in applied)
-            if (dataMigrations.TryGetValue(id, out var sql))
-                await context.Database.ExecuteSqlRawAsync(sql, ct);
+        await context.Database.ExecuteSqlRawAsync(
+            """CREATE TABLE IF NOT EXISTS "__DataMigrationsHistory" ("MigrationId" text PRIMARY KEY);""", ct);
+
+        var done = await context.Database
+            .SqlQueryRaw<string>("""SELECT "MigrationId" AS "Value" FROM "__DataMigrationsHistory";""")
+            .ToListAsync(ct);
+
+        var applied = await context.Database.GetAppliedMigrationsAsync(ct);
+
+        foreach (var id in applied.Where(dataMigrations.ContainsKey).Except(done))
+        {
+            await using var transaction = await context.Database.BeginTransactionAsync(ct);
+            await context.Database.ExecuteSqlRawAsync(dataMigrations[id], ct);
+            await context.Database.ExecuteSqlRawAsync(
+                """INSERT INTO "__DataMigrationsHistory" ("MigrationId") VALUES ({0});""", [id], ct);
+            await transaction.CommitAsync(ct);
+        }
     }
 
     private static async Task EnsureDefaultBranchAsync(AppDbContext context, CancellationToken ct)

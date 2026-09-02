@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Infrastructure.Persistence;
+namespace VoltStream.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -24,6 +24,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Warehouse> Warehouses { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Branch> Branches { get; set; }
+    public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<PrintJob> PrintJobs { get; set; }
 
     private IDbContextTransaction? currentTransaction;
     private int transactionDepth;

@@ -2,6 +2,7 @@ namespace VoltStream.Application.Features.Sales.Queries;
 
 using AutoMapper;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Models;
@@ -28,7 +29,30 @@ public class SaleFilterQueryHandler(
             ? context.Sales
             : context.Sales.Where(s => s.BranchId == branchId);
 
-        return user.Apply(mapper.Map<IReadOnlyCollection<SaleDto>>(await query
+        var sales = user.Apply(mapper.Map<IReadOnlyCollection<SaleDto>>(await query
             .ToPagedListAsync(request, writer, cancellationToken)));
+
+        await AttachPrintJobsAsync(sales, cancellationToken);
+
+        return sales;
+    }
+
+    private async Task AttachPrintJobsAsync(IReadOnlyCollection<SaleDto> sales, CancellationToken cancellationToken)
+    {
+        var ids = sales.Select(sale => sale.Id).ToList();
+
+        var jobs = await context.PrintJobs
+            .AsNoTracking()
+            .Where(job => ids.Contains(job.SaleId))
+            .Select(job => new { job.Id, job.SaleId, job.Status, job.Error })
+            .ToListAsync(cancellationToken);
+
+        var latest = jobs
+            .GroupBy(job => job.SaleId)
+            .ToDictionary(group => group.Key, group => group.MaxBy(job => job.Id)!);
+
+        foreach (var sale in sales)
+            if (latest.TryGetValue(sale.Id, out var job))
+                sale.PrintJob = new SalePrintJobDto { Id = job.Id, Status = job.Status, Error = job.Error };
     }
 }

@@ -10,9 +10,11 @@ public class SupplyMappingProfile : Profile
     public SupplyMappingProfile()
     {
         CreateMap<CreateSupplyCommand, Supply>()
+            .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Date.ToOffset(TimeSpan.Zero)))
             .ForMember(dest => dest.UnitPrice, opt => opt.Ignore())
             .ForMember(dest => dest.DiscountRate, opt => opt.Ignore());
-        CreateMap<UpdateSupplyCommand, Supply>();
+        CreateMap<UpdateSupplyCommand, Supply>()
+            .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Date.ToOffset(TimeSpan.Zero)));
         CreateMap<CreateSupplyCommand, WarehouseStock>()
             .ForMember(dest => dest.UnitPrice, opt => opt.Ignore())
             .ForMember(dest => dest.DiscountRate, opt => opt.Ignore());

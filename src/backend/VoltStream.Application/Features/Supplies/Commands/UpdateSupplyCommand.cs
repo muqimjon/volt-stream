@@ -118,7 +118,7 @@ public class UpdateSupplyCommandHandler(
                 newStock.DiscountRate = request.DiscountRate;
             }
 
-            supply.Date = request.Date;
+            supply.Date = request.Date.ToOffset(TimeSpan.Zero);
             supply.RollCount = request.RollCount;
             supply.LengthPerRoll = request.LengthPerRoll;
             supply.TotalLength = request.TotalLength;
