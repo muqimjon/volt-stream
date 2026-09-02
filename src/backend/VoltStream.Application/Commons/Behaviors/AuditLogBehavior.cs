@@ -11,6 +11,7 @@ using VoltStream.Domain.Entities;
 public class AuditScope
 {
     public int Depth { get; set; }
+    public int RequestDepth { get; set; }
 }
 
 public class AuditLogBehavior<TRequest, TResponse>(

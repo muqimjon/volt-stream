@@ -32,6 +32,8 @@ export class PrintHubService {
 
   track(job: PrintJob | null | undefined): void {
     if (!job) return;
+    const existing = this.bySale()[job.saleId];
+    if (existing?.id === job.id && existing.status === job.status) return;
     this.bySale.update((map) => ({ ...map, [job.saleId]: job }));
   }
 
