@@ -9,6 +9,11 @@ public class DatabaseInitializer(
     IServiceProvider services,
     ILogger<DatabaseInitializer> logger) : BackgroundService
 {
+    private static readonly Dictionary<string, string> dataMigrations = new()
+    {
+        ["20260902114838_AddCreatedByUserId"] = """UPDATE "Users" SET "IsActive" = true;"""
+    };
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         for (var attempt = 1; attempt <= 5 && !stoppingToken.IsCancellationRequested; attempt++)
@@ -18,7 +23,9 @@ public class DatabaseInitializer(
                 using var scope = services.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
+                var pending = await context.Database.GetPendingMigrationsAsync(stoppingToken);
                 await context.Database.MigrateAsync(stoppingToken);
+                await ApplyDataMigrationsAsync(context, pending, stoppingToken);
                 await EnsurePerformanceIndexesAsync(context, stoppingToken);
 
                 var seeder = scope.ServiceProvider.GetRequiredService<ExcelDataSeeder>();
@@ -31,6 +38,13 @@ public class DatabaseInitializer(
                 await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
             }
         }
+    }
+
+    private static async Task ApplyDataMigrationsAsync(AppDbContext context, IEnumerable<string> applied, CancellationToken ct)
+    {
+        foreach (var id in applied)
+            if (dataMigrations.TryGetValue(id, out var sql))
+                await context.Database.ExecuteSqlRawAsync(sql, ct);
     }
 
     private static Task EnsurePerformanceIndexesAsync(AppDbContext context, CancellationToken ct)

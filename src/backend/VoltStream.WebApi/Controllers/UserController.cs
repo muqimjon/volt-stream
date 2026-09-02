@@ -1,5 +1,6 @@
-﻿namespace VoltStream.WebApi.Controllers;
+namespace VoltStream.WebApi.Controllers;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VoltStream.Application.Features.Users.Commands;
 using VoltStream.WebApi.Controllers.Common;
@@ -11,6 +12,7 @@ public class UserController : BaseController
     public async Task<IActionResult> Create([FromBody] CreateUserCommand command)
         => Ok(new Response { Data = await Mediator.Send(command) });
 
+    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginUserCommand command)
         => Ok(new Response { Data = await Mediator.Send(command) });

@@ -71,7 +71,8 @@ public class ExcelDataSeeder(
                 Phone: GetValue(row, headers, "Phone"),
                 Email: GetValue(row, headers, "Email"),
                 Address: GetValue(row, headers, "Address"),
-                DateOfBirth: DateTime.TryParse(GetValue(row, headers, "DateOfBirth"), out var dob) ? dob : null
+                DateOfBirth: DateTime.TryParse(GetValue(row, headers, "DateOfBirth"), out var dob) ? dob : null,
+                IsActive: !bool.TryParse(GetValue(row, headers, "IsActive"), out var isActive) || isActive
             );
 
             await mediator.Send(command);

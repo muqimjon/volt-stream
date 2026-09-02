@@ -48,14 +48,14 @@ public static class DependencyInjection
     {
         if (app.Environment.IsDevelopment())
         {
-            app.MapOpenApi();
+            app.MapOpenApi().AllowAnonymous();
             app.MapScalarApiReference(opt =>
             {
                 opt.WithTheme(ScalarTheme.BluePlanet);
                 opt.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
                 opt.WithTitle("VoltStream API Documentation");
                 opt.WithFavicon("favicon.ico");
-            });
+            }).AllowAnonymous();
         }
     }
 

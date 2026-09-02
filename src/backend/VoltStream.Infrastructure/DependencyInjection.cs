@@ -1,10 +1,12 @@
-﻿namespace VoltStream.Infrastructure;
+namespace VoltStream.Infrastructure;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Infrastructure.Authentication;
 using VoltStream.Infrastructure.Persistence;
@@ -16,7 +18,8 @@ public static class DependencyInjection
     public static void AddInfrastructureServices(this IServiceCollection services, IConfiguration conf)
     {
         services.AddHttpContextAccessor();
-        services.AddSingleton<AuditInterceptor>();
+        services.AddScoped<ICurrentUser, HttpCurrentUser>();
+        services.AddScoped<AuditInterceptor>();
         services.AddScoped<ExcelDataSeeder>();
         services.AddHostedService<DatabaseInitializer>();
         services.AddSingleton<IMarketDataService, Web.MarketDataService>();
@@ -34,6 +37,7 @@ public static class DependencyInjection
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
+                options.MapInboundClaims = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -42,10 +46,23 @@ public static class DependencyInjection
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = conf["Jwt:Issuer"] ?? "VoltStream",
                     ValidAudience = conf["Jwt:Audience"] ?? "VoltStreamUser",
-                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    RoleClaimType = ClaimTypes.Role,
+                    NameClaimType = "unique_name"
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = ctx =>
+                    {
+                        var token = ctx.Request.Query["access_token"];
+                        if (!string.IsNullOrEmpty(token) && ctx.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                            ctx.Token = token;
+                        return Task.CompletedTask;
+                    }
                 };
             });
 
-        services.AddAuthorization();
+        services.AddAuthorization(o =>
+            o.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
     }
 }

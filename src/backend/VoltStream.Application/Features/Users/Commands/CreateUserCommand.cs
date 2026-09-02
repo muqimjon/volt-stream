@@ -17,7 +17,8 @@ public record CreateUserCommand(
     string? Phone,
     string? Email,
     string? Address,
-    DateTime? DateOfBirth)
+    DateTime? DateOfBirth,
+    bool IsActive = true)
     : IRequest<long>;
 
 public class CreateUserCommandHandler(IAppDbContext context, IMapper mapper)

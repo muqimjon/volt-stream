@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Features.Users.Commands;
+namespace VoltStream.Application.Features.Users.Commands;
 
 using BCrypt.Net;
 using MediatR;
@@ -23,6 +23,12 @@ public class LoginUserCommandHandler(IAppDbContext context, IJwtProvider jwtProv
 
         if (!BCrypt.Verify(request.Password, user.PasswordHash))
             throw new NotFoundException("Login yoki parol xato!");
+
+        if (!user.IsActive)
+            throw new ForbiddenException("Foydalanuvchi faol emas!");
+
+        user.LastLoginDate = DateTimeOffset.UtcNow;
+        await context.SaveAsync(cancellationToken);
 
         var token = jwtProvider.Generate(user);
         return new AuthResponse(user.Id, user.Username, token, user.Role);

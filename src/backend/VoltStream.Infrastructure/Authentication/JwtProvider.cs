@@ -4,19 +4,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Domain.Entities;
 
 public static class JwtSecretResolver
 {
-    private static string? cached;
-
     public static byte[] Resolve(IConfiguration configuration)
     {
-        cached ??= configuration["Jwt:Secret"] ?? Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
-        return Encoding.UTF8.GetBytes(cached);
+        var secret = configuration["Jwt:Secret"];
+        if (string.IsNullOrWhiteSpace(secret) || secret.Length < 32)
+            throw new InvalidOperationException("Jwt:Secret sozlanmagan (kamida 32 belgi).");
+        return Encoding.UTF8.GetBytes(secret);
     }
 }
 
