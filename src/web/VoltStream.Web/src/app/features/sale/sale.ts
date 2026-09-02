@@ -316,6 +316,8 @@ export class SalePage {
   protected async submit(): Promise<void> {
     if (this.submitting()) return;
 
+    if (!this.customer()) return this.warn('Sales.CustomerRequired');
+
     const draft = this.store.draft();
     const day = fromDateInput(draft.date);
     if (!day) return this.warn('Sales.DateNotSelected');
@@ -338,7 +340,7 @@ export class SalePage {
       amount: round(totals.amount),
       isDiscountApplied: false,
       discount: round(totals.discount),
-      description: draft.description || null,
+      description: draft.description || '',
       branchId: this.auth.branchId(),
       items: draft.items.map((i) => ({
         productId: i.productId,

@@ -81,6 +81,7 @@
   "Sales.CustomerLabel": "Клиент:",
   "Sales.CustomersLoadError": "Ошибка при загрузке клиентов!",
   "Sales.CustomersLoadFailed": "Ошибка при загрузке клиентов!",
+  "Sales.CustomerRequired": "Выберите покупателя",
   "Sales.DateLabel": "Дата:",
   "Sales.DateNotSelected": "Дата не выбрана!",
   "Sales.DiscountAmount": "Сумма скидки",

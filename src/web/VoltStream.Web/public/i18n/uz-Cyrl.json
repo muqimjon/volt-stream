@@ -81,6 +81,7 @@
   "Sales.CustomerLabel": "Мижоз:",
   "Sales.CustomersLoadError": "Харидорларни юклашда хатолик юз берди!",
   "Sales.CustomersLoadFailed": "Мижозларни юклашда хатолик!",
+  "Sales.CustomerRequired": "Харидорни танланг",
   "Sales.DateLabel": "Сана:",
   "Sales.DateNotSelected": "Сана танланмаган!",
   "Sales.DiscountAmount": "Чегирма суммаси",

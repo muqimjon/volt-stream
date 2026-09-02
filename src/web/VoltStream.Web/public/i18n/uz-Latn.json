@@ -81,6 +81,7 @@
   "Sales.CustomerLabel": "Mijoz:",
   "Sales.CustomersLoadError": "Xaridorlarni yuklashda xatolik yuz berdi!",
   "Sales.CustomersLoadFailed": "Mijozlarni yuklashda xatolik!",
+  "Sales.CustomerRequired": "Xaridorni tanlang",
   "Sales.DateLabel": "Sana:",
   "Sales.DateNotSelected": "Sana tanlanmagan!",
   "Sales.DiscountAmount": "Chegirma summasi",

@@ -37,9 +37,11 @@ export class LoginPage {
     } catch (e) {
       const err = e as ApiError;
       this.error.set(
-        err.status === 401 || err.status === 400
-          ? this.translate.t('Login.InvalidCredentials')
-          : err.message,
+        err.status === 0
+          ? this.translate.t('Login.ServerUnreachable')
+          : err.status === 404 || err.status === 401 || err.status === 403
+            ? this.translate.t('Login.InvalidCredentials')
+            : err.message,
       );
     } finally {
       this.busy.set(false);

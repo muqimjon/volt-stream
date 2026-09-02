@@ -81,6 +81,7 @@
   "Sales.CustomerLabel": "Customer:",
   "Sales.CustomersLoadError": "Failed to load customers!",
   "Sales.CustomersLoadFailed": "Failed to load customers!",
+  "Sales.CustomerRequired": "Select a customer",
   "Sales.DateLabel": "Date:",
   "Sales.DateNotSelected": "The date is not selected!",
   "Sales.DiscountAmount": "Discount amount",
