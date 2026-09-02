@@ -5,6 +5,7 @@
     xmlns:controls="clr-namespace:VoltStream.WPF.Commons.UserControls"
     xmlns:converter="clr-namespace:VoltStream.WPF.Commons.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
     xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
     xmlns:local="clr-namespace:VoltStream.WPF.Sales.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -545,6 +546,26 @@
                         Content="{loc:Loc Common.Clear}"
                         Style="{StaticResource SecondaryButton}"
                         FontSize="14" />
+
+                    <Button
+                        x:Name="receiptButton"
+                        Margin="0,0,6,0"
+                        Padding="14,0"
+                        Click="ReceiptButton_Click"
+                        IsEnabled="False"
+                        Style="{StaticResource SecondaryButton}"
+                        FontSize="14">
+                        <StackPanel Orientation="Horizontal">
+                            <fa:IconImage
+                                Width="14"
+                                Height="14"
+                                Margin="0,0,8,0"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource Brand}"
+                                Icon="Receipt" />
+                            <TextBlock VerticalAlignment="Center" Text="{loc:Loc Receipt.Show}" />
+                        </StackPanel>
+                    </Button>
 
                     <Button
                         Padding="18,0"

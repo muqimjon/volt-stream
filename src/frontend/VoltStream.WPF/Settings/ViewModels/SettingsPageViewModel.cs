@@ -28,6 +28,8 @@ public partial class SettingsPageViewModel : ViewModelBase
         CustomerSettings = services.GetRequiredService<CustomerSettingsViewModel>();
         BranchSettings = services.GetRequiredService<BranchSettingsViewModel>();
         UserSettings = services.GetRequiredService<UserSettingsViewModel>();
+        PrinterSettings = services.GetRequiredService<PrinterSettingsViewModel>();
+        AuditLog = services.GetRequiredService<AuditLogViewModel>();
 
         _ = LoadData();
     }
@@ -40,6 +42,8 @@ public partial class SettingsPageViewModel : ViewModelBase
     [ObservableProperty] private CustomerSettingsViewModel customerSettings;
     [ObservableProperty] private BranchSettingsViewModel branchSettings;
     [ObservableProperty] private UserSettingsViewModel userSettings;
+    [ObservableProperty] private PrinterSettingsViewModel printerSettings;
+    [ObservableProperty] private AuditLogViewModel auditLog;
 
     #region Commands
 

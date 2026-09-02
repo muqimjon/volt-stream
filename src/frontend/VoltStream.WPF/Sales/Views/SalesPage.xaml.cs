@@ -33,6 +33,7 @@ public partial class SalesPage : Page
     public Sale sale;
     private long? loadedProductCategoryId;
     private bool productsLoaded;
+    private long? lastSaleId;
 
     public SalesPage(IServiceProvider services)
     {
@@ -789,6 +790,8 @@ public partial class SalesPage : Page
 
         if (response.IsSuccess)
         {
+            lastSaleId = response.Data;
+            receiptButton.IsEnabled = true;
             sale.Success = TranslationSource.T("Sales.SaveSuccess");
             saleSession.Reset();
             sale = saleSession.Current;
@@ -800,6 +803,22 @@ public partial class SalesPage : Page
         {
             sale.Error = $"{TranslationSource.T("Sales.ServerError")}: {response.StatusCode}";
         }
+    }
+
+    private async void ReceiptButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (lastSaleId is not long saleId) return;
+
+        var response = await salesApi.GetReceipt(saleId).Handle(isLoading => sale.IsLoading = isLoading);
+
+        if (!response.IsSuccess)
+        {
+            sale.Error = response.Message ?? TranslationSource.T("Receipt.LoadError");
+            return;
+        }
+
+        var session = services.GetRequiredService<ISessionService>();
+        ReceiptDocumentBuilder.Preview(response.Data, session.Has("sales.view_prices"));
     }
 
     private async void Page_Loaded(object sender, RoutedEventArgs e)

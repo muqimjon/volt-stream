@@ -185,13 +185,25 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Width="90" Header="{loc:Loc Common.Actions}">
+                <DataGridTemplateColumn Width="130" Header="{loc:Loc Common.Actions}">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
                                 Orientation="Horizontal">
+                                <Button
+                                    Command="{Binding DataContext.ReceiptCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}"
+                                    IsEnabled="{Binding CanEdit}"
+                                    Style="{StaticResource GridActionButton}"
+                                    ToolTip="{loc:Loc Receipt.Show}">
+                                    <fa:IconImage
+                                        Width="16"
+                                        Height="16"
+                                        Icon="Receipt"
+                                        Foreground="{DynamicResource Brand}" />
+                                </Button>
                                 <Button
                                     Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                     CommandParameter="{Binding}"

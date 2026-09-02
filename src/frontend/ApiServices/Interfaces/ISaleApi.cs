@@ -27,4 +27,7 @@ public interface ISaleApi
 
     [Get("/sales/{id}")]
     Task<Response<SaleResponse>> GetById(long id);
+
+    [Get("/sales/{id}/receipt")]
+    Task<Response<ReceiptResponse>> GetReceipt(long id);
 }

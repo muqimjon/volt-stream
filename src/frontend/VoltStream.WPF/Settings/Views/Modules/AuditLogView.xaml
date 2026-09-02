@@ -1,0 +1,203 @@
+<UserControl
+    x:Class="VoltStream.WPF.Settings.Views.Modules.AuditLogView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:VoltStream.WPF.Commons.UserControls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+    xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
+    d:DesignHeight="450"
+    d:DesignWidth="900"
+    mc:Ignorable="d">
+
+    <Grid Margin="10" Background="{DynamicResource Canvas}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <controls:FilterBar
+            Margin="0,0,0,12"
+            ActionsEnabled="{Binding Pagination.TotalCount, Converter={StaticResource CountToBool}}"
+            ClearCommand="{Binding ClearFilterCommand}"
+            ExcelCommand="{Binding ExportToExcelCommand}"
+            PreviewCommand="{Binding PreviewCommand}"
+            PrintCommand="{Binding PrintCommand}">
+            <controls:FilterBar.Filters>
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Turnovers.StartDate}" />
+                        <controls:UserCalendar
+                            Width="120"
+                            utils:EnterKeyTab.IsEnabled="True"
+                            SelectedDate="{Binding BeginDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Turnovers.EndDate}" />
+                        <controls:UserCalendar
+                            Width="120"
+                            utils:EnterKeyTab.IsEnabled="True"
+                            SelectedDate="{Binding EndDate, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Logs.User}" />
+                        <ComboBox
+                            Width="150"
+                            DisplayMemberPath="Username"
+                            ItemsSource="{Binding Users}"
+                            SelectedItem="{Binding SelectedUser}"
+                            Style="{StaticResource ModernCombo}" />
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,14,0" Visibility="{Binding CanSelectBranch, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Logs.Branch}" />
+                        <ComboBox
+                            Width="150"
+                            DisplayMemberPath="Name"
+                            ItemsSource="{Binding Branches}"
+                            SelectedItem="{Binding SelectedBranch}"
+                            Style="{StaticResource ModernCombo}" />
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Logs.Action}" />
+                        <ComboBox
+                            Width="170"
+                            ItemsSource="{Binding Actions}"
+                            SelectedItem="{Binding SelectedAction}"
+                            Style="{StaticResource ModernCombo}" />
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Common.Search}" />
+                        <TextBox
+                            Width="180"
+                            Style="{StaticResource ModernTextBox}"
+                            Text="{Binding Search, UpdateSourceTrigger=LostFocus}" />
+                    </StackPanel>
+
+                    <Button
+                        VerticalAlignment="Bottom"
+                        Command="{Binding ReloadCommand}"
+                        Style="{StaticResource IconButton}"
+                        ToolTip="{loc:Loc Common.Refresh}">
+                        <fa:IconImage
+                            Width="14"
+                            Height="14"
+                            Foreground="{DynamicResource TextSecondary}"
+                            Icon="ArrowsRotate" />
+                    </Button>
+                </StackPanel>
+            </controls:FilterBar.Filters>
+        </controls:FilterBar>
+
+        <DataGrid
+            Grid.Row="1"
+            CanUserAddRows="False"
+            CanUserDeleteRows="False"
+            IsReadOnly="True"
+            ItemsSource="{Binding Logs}"
+            SelectionMode="Single"
+            utils:DataGridRowNumbering.IsEnabled="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn
+                    Width="140"
+                    Binding="{Binding Timestamp.LocalDateTime, StringFormat={}{0:dd.MM.yyyy HH:mm:ss}}"
+                    ElementStyle="{StaticResource CenterCellText}"
+                    Header="{loc:Loc Logs.Time}" />
+                <DataGridTextColumn
+                    Width="110"
+                    Binding="{Binding Username}"
+                    Header="{loc:Loc Logs.User}" />
+                <DataGridTextColumn
+                    Width="110"
+                    Binding="{Binding BranchName}"
+                    Header="{loc:Loc Logs.Branch}" />
+                <DataGridTextColumn
+                    Width="150"
+                    Binding="{Binding Action}"
+                    Header="{loc:Loc Logs.Action}" />
+                <DataGridTextColumn
+                    Width="120"
+                    Binding="{Binding EntityName}"
+                    Header="{loc:Loc Logs.Entity}" />
+                <DataGridTextColumn
+                    Width="60"
+                    Binding="{Binding EntityId}"
+                    ElementStyle="{StaticResource RightCellText}"
+                    Header="Id" />
+                <DataGridTextColumn
+                    Width="80"
+                    Binding="{Binding Source}"
+                    ElementStyle="{StaticResource CenterCellText}"
+                    Header="{loc:Loc Logs.Source}" />
+                <DataGridTemplateColumn Width="60" Header="{loc:Loc Logs.Status}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <fa:IconImage
+                                Width="14"
+                                Height="14"
+                                HorizontalAlignment="Center"
+                                ToolTip="{Binding Error}">
+                                <fa:IconImage.Style>
+                                    <Style TargetType="fa:IconImage">
+                                        <Setter Property="Icon" Value="Check" />
+                                        <Setter Property="Foreground" Value="{DynamicResource Success}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Success}" Value="False">
+                                                <Setter Property="Icon" Value="Xmark" />
+                                                <Setter Property="Foreground" Value="{DynamicResource Danger}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:IconImage.Style>
+                            </fa:IconImage>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTemplateColumn Width="*" Header="{loc:Loc Logs.Details}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock
+                                Margin="4,0"
+                                Foreground="{DynamicResource TextSecondary}"
+                                Text="{Binding Details}"
+                                TextTrimming="CharacterEllipsis">
+                                <TextBlock.ToolTip>
+                                    <ToolTip MaxWidth="620">
+                                        <TextBlock
+                                            FontFamily="Consolas"
+                                            Foreground="{DynamicResource TextPrimary}"
+                                            Text="{Binding Details, Converter={StaticResource JsonPretty}}"
+                                            TextWrapping="Wrap" />
+                                    </ToolTip>
+                                </TextBlock.ToolTip>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <controls:EmptyState
+            Grid.Row="1"
+            Message="{loc:Loc Logs.NoData}"
+            Visibility="{Binding Pagination.TotalCount, Converter={StaticResource CountToEmptyVisibility}}" />
+
+        <controls:Pager
+            Grid.Row="2"
+            Margin="0,12,0,0"
+            DataContext="{Binding Pagination}" />
+
+        <controls:BusyOverlay
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            IsBusy="{Binding IsLoading}"
+            Message="{loc:Loc Common.Loading}" />
+    </Grid>
+</UserControl>

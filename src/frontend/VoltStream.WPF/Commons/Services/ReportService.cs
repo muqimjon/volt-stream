@@ -93,9 +93,10 @@ public static class ReportService
     public static void Preview<T>(ReportDefinition<T> def)
         => Preview(BuildFixedDocument(def), def.FileName, def.Title);
 
-    public static void Preview(FixedDocument doc, string fileName, string title)
+    public static void Preview(FixedDocument doc, string fileName, string title, IReadOnlyList<(string Label, Func<FixedDocument> Build)>? variants = null)
     {
         var viewer = new DocumentViewer { Document = doc, Margin = new Thickness(8) };
+        var current = doc;
         string? savedPath = null;
 
         var saveButton = ToolButton("💾  Saqlash", "SuccessButton");
@@ -106,7 +107,7 @@ public static class ReportService
                 var dialog = new SaveFileDialog { Filter = "PDF fayllari (*.pdf)|*.pdf", FileName = $"{fileName}.pdf" };
                 if (dialog.ShowDialog() != true)
                     return;
-                SavePdf(doc, dialog.FileName);
+                SavePdf(current, dialog.FileName);
                 savedPath = dialog.FileName;
                 MessageBox.Show($"Hisobot saqlandi:\n{dialog.FileName}", "Saqlandi", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -118,7 +119,7 @@ public static class ReportService
         {
             try
             {
-                savedPath ??= SaveToDocuments(doc, fileName);
+                savedPath ??= SaveToDocuments(current, fileName);
                 Process.Start(new ProcessStartInfo(savedPath) { UseShellExecute = true });
             }
             catch (Exception ex) { MessageBox.Show($"Ochishda xatolik: {ex.Message}", title, MessageBoxButton.OK, MessageBoxImage.Error); }
@@ -129,13 +130,40 @@ public static class ReportService
         {
             try
             {
-                savedPath ??= SaveToDocuments(doc, fileName);
+                savedPath ??= SaveToDocuments(current, fileName);
                 ShareToTelegram(savedPath);
             }
             catch (Exception ex) { MessageBox.Show($"Ulashishda xatolik: {ex.Message}", title, MessageBoxButton.OK, MessageBoxImage.Error); }
         };
 
         var toolbar = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(10, 8, 10, 8) };
+
+        if (variants is { Count: > 1 })
+        {
+            var groupName = Guid.NewGuid().ToString("N");
+            for (int i = 0; i < variants.Count; i++)
+            {
+                var build = variants[i].Build;
+                var radio = new RadioButton
+                {
+                    Content = variants[i].Label,
+                    GroupName = groupName,
+                    IsChecked = i == 0,
+                    Margin = new Thickness(0, 0, 14, 0),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    FontWeight = FontWeights.SemiBold
+                };
+                radio.SetResourceReference(Control.ForegroundProperty, "TextPrimary");
+                radio.Checked += (_, _) =>
+                {
+                    current = build();
+                    viewer.Document = current;
+                    savedPath = null;
+                };
+                toolbar.Children.Add(radio);
+            }
+        }
+
         toolbar.Children.Add(saveButton);
         toolbar.Children.Add(openButton);
         toolbar.Children.Add(shareButton);
