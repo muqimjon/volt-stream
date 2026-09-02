@@ -1,0 +1,26 @@
+.rows {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-md);
+  min-height: var(--touch);
+  padding: var(--sp-md) var(--sp-lg);
+}
+
+.row + .row {
+  border-top: 1px solid var(--border);
+}
+
+.picker {
+  min-height: 38px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  padding: 0 var(--sp-sm);
+}

@@ -1,0 +1,34 @@
+<div class="page">
+  <app-page-header [title]="'Web.MySupplies' | t">
+    <button type="button" class="btn btn-ghost" [disabled]="loading()" (click)="load(1)">
+      <app-icon name="refresh" [size]="18" />
+    </button>
+  </app-page-header>
+
+  <app-date-field [label]="'Common.Date' | t" [value]="date()" (valueChange)="onDate($event)" />
+
+  @if (!supplies().length && !loading()) {
+    <app-empty-state [text]="'Common.NoData' | t" />
+  }
+
+  @for (item of supplies(); track item.id) {
+    <article class="card">
+      <div class="row-between">
+        <strong>{{ item.product?.name }}</strong>
+        <small class="muted">{{ fmtDateTime(item.date) }}</small>
+      </div>
+      <dl class="sums">
+        <div><dt>{{ 'Supplies.ProductTypeColumn' | t }}</dt><dd>{{ item.product?.category?.name }}</dd></div>
+        <div><dt>{{ 'Supplies.PerBundle' | t }}</dt><dd>{{ fmt(item.lengthPerRoll) }}</dd></div>
+        <div><dt>{{ 'Supplies.BundleCount' | t }}</dt><dd>{{ fmt(item.rollCount, 0) }}</dd></div>
+        <div><dt>{{ 'Common.Total' | t }}</dt><dd>{{ fmt(item.totalLength) }}</dd></div>
+      </dl>
+    </article>
+  }
+
+  @if (page() < totalPages()) {
+    <button type="button" class="btn btn-block" [disabled]="loading()" (click)="loadMore()">
+      {{ 'Web.LoadMore' | t }}
+    </button>
+  }
+</div>

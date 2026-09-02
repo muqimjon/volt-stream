@@ -1,0 +1,36 @@
+<div class="shell">
+  <header class="app-header">
+    <span class="brand">Volt Stream</span>
+    <app-branch-switcher />
+    <button type="button" class="icon-btn" [title]="'Web.Theme' | t" (click)="toggleTheme()">
+      <app-icon [name]="themeIcon()" />
+    </button>
+  </header>
+
+  <div class="banners">
+    @if (!pwa.online()) {
+      <div class="banner warn">{{ 'Web.Offline' | t }}</div>
+    }
+    @if (pwa.updateReady()) {
+      <div class="banner info">
+        <span>{{ 'Web.UpdateAvailable' | t }}</span>
+        <button type="button" class="btn btn-primary" (click)="pwa.applyUpdate()">
+          {{ 'Common.Refresh' | t }}
+        </button>
+      </div>
+    }
+  </div>
+
+  <nav class="tabs">
+    @for (item of items(); track item.path) {
+      <a [routerLink]="item.path" routerLinkActive="active">
+        <app-icon [name]="item.icon" [size]="22" />
+        <span>{{ item.key | t }}</span>
+      </a>
+    }
+  </nav>
+
+  <main>
+    <router-outlet />
+  </main>
+</div>

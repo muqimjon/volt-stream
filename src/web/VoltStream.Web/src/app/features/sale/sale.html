@@ -1,0 +1,210 @@
+<div class="page">
+  <app-page-header [title]="'Nav.Sales' | t">
+    <button type="button" class="btn btn-ghost" (click)="clearAll()">{{ 'Common.Clear' | t }}</button>
+  </app-page-header>
+
+  <section class="card stack">
+    <app-date-field
+      [label]="'Common.Date' | t"
+      [value]="store.draft().date"
+      (valueChange)="store.patch({ date: $event })"
+    />
+
+    <app-search-select
+      [label]="'Sales.Buyer' | t"
+      [placeholder]="'Common.Select' | t"
+      [items]="customers()"
+      [labelOf]="nameOf"
+      [subLabelOf]="customerHint"
+      [selected]="customer()"
+      [clearable]="true"
+      [allowCreate]="true"
+      (opened)="loadCustomers()"
+      (selectedChange)="pickCustomer($event)"
+      (create)="createCustomer($event)"
+    />
+
+    <div class="field">
+      <label for="note">{{ 'Common.Note' | t }}</label>
+      <input
+        id="note"
+        class="input"
+        type="text"
+        [value]="store.draft().description"
+        (input)="store.patch({ description: $any($event.target).value })"
+      />
+    </div>
+  </section>
+
+  <section class="card stack">
+    <app-search-select
+      [label]="'Sales.ProductType' | t"
+      [placeholder]="'Common.Select' | t"
+      [items]="categories()"
+      [labelOf]="nameOf"
+      [selected]="category()"
+      [clearable]="true"
+      (selectedChange)="onCategory($event)"
+    />
+
+    <app-search-select
+      [label]="'Sales.Product' | t"
+      [placeholder]="'Common.Select' | t"
+      [items]="products()"
+      [labelOf]="nameOf"
+      [selected]="product()"
+      (opened)="loadProducts()"
+      (selectedChange)="onProduct($event)"
+    />
+
+    <app-search-select
+      [label]="'Sales.RollLength' | t"
+      [placeholder]="'Common.Select' | t"
+      [items]="stocks()"
+      [labelOf]="stockLabel"
+      [subLabelOf]="stockHint"
+      [selected]="stock()"
+      [disabled]="!product()"
+      [hint]="stock() ? stockHint(stock()!) : ''"
+      (selectedChange)="onStock($event)"
+    />
+
+    <div class="grid-2">
+      <app-number-field
+        [label]="'Sales.RollCount' | t"
+        [value]="rollCount()"
+        [disabled]="!stock()"
+        (valueChange)="rollCount.set($event)"
+        (commit)="onRollCountCommit($event)"
+      />
+      <app-number-field
+        [label]="'Web.TotalLength' | t"
+        [value]="length()"
+        [disabled]="!stock()"
+        (valueChange)="length.set($event)"
+        (commit)="onLengthCommit($event)"
+      />
+    </div>
+
+    @if (canViewPrices()) {
+      <div class="grid-2">
+        <app-number-field
+          [label]="'Common.Price' | t"
+          [value]="unitPrice()"
+          [disabled]="!stock()"
+          (valueChange)="unitPrice.set($event)"
+        />
+        <app-number-field
+          [label]="'Sales.DiscountPercent' | t"
+          [value]="discountRate()"
+          [disabled]="!stock()"
+          (valueChange)="discountRate.set($event)"
+        />
+      </div>
+      <dl class="sums">
+        <div><dt>{{ 'Sales.TotalSum' | t }}</dt><dd>{{ fmt(totalAmount()) }}</dd></div>
+        <div><dt>{{ 'Sales.DiscountAmount' | t }}</dt><dd>{{ fmt(discountAmount()) }}</dd></div>
+        <div><dt>{{ 'Sales.GrandTotal' | t }}</dt><dd>{{ fmt(finalAmount()) }}</dd></div>
+      </dl>
+    }
+
+    @if (weight()) {
+      <p class="muted">{{ 'Web.Weight' | t }}: {{ fmt(weight(), 3) }}</p>
+    }
+
+    <button type="button" class="btn btn-primary btn-block" (click)="addItem()">
+      <app-icon name="plus" />
+      {{ 'Common.Add' | t }}
+    </button>
+  </section>
+
+  <section class="stack">
+    <h2 class="section-title">{{ 'Web.Items' | t }}</h2>
+    @if (!store.draft().items.length) {
+      <app-empty-state [text]="'Common.NoData' | t" />
+    }
+    @for (item of store.draft().items; track $index) {
+      <article class="card item">
+        <div class="item-head">
+          <div>
+            <strong>{{ item.productName }}</strong>
+            <small class="muted">{{ item.categoryName }}</small>
+          </div>
+          <button type="button" class="icon-btn danger" (click)="removeItem($index)">
+            <app-icon name="trash" [size]="18" />
+          </button>
+        </div>
+        <dl class="sums">
+          <div><dt>{{ 'Sales.PerRoll' | t }}</dt><dd>{{ fmt(item.lengthPerRoll) }}</dd></div>
+          <div><dt>{{ 'Sales.RollCount' | t }}</dt><dd>{{ fmt(item.rollCount, 0) }}</dd></div>
+          <div><dt>{{ 'Common.Quantity' | t }}</dt><dd>{{ fmt(item.totalLength) }}</dd></div>
+          @if (item.weight) {
+            <div><dt>{{ 'Web.Weight' | t }}</dt><dd>{{ fmt(item.weight, 3) }}</dd></div>
+          }
+          @if (canViewPrices()) {
+            <div><dt>{{ 'Common.Price' | t }}</dt><dd>{{ fmt(item.unitPrice) }}</dd></div>
+            <div><dt>{{ 'Sales.GrandTotal' | t }}</dt><dd>{{ fmt(item.finalAmount) }}</dd></div>
+          }
+        </dl>
+      </article>
+    }
+  </section>
+
+  <section class="card stack totals">
+    <dl class="sums">
+      <div><dt>{{ 'Web.TotalRolls' | t }}</dt><dd>{{ fmt(store.totals().rollCount, 0) }}</dd></div>
+      <div><dt>{{ 'Web.TotalLength' | t }}</dt><dd>{{ fmt(store.totals().length) }}</dd></div>
+      @if (hasWeight()) {
+        <div><dt>{{ 'Web.TotalWeight' | t }}</dt><dd>{{ fmt(store.totals().weight, 3) }}</dd></div>
+      }
+      @if (canViewPrices()) {
+        <div><dt>{{ 'Sales.TotalSum' | t }}</dt><dd>{{ fmt(store.totals().amount) }}</dd></div>
+        <div><dt>{{ 'Sales.DiscountLabel' | t }}</dt><dd>{{ fmt(store.totals().discount) }}</dd></div>
+        <div><dt>{{ 'Sales.GrandTotal' | t }}</dt><dd>{{ fmt(store.totals().final) }}</dd></div>
+      }
+    </dl>
+    <button
+      type="button"
+      class="btn btn-primary btn-block"
+      [disabled]="submitting() || !pwa.online() || !store.draft().items.length"
+      (click)="submit()"
+    >
+      {{ (submitting() ? 'Web.Submitting' : 'Sales.Submit') | t }}
+    </button>
+  </section>
+</div>
+
+@if (savedSaleId(); as saleId) {
+  <div class="overlay">
+    <div class="sheet card stack">
+      <h2>{{ 'Sales.SaveSuccess' | t }}</h2>
+      <p class="muted">{{ 'Web.SaleNumber' | t: saleId }}</p>
+      <p class="notice">{{ 'Web.SendCustomerToOffice' | t }}</p>
+
+      @if (printJob(); as job) {
+        <div class="print-row">
+          <app-status-badge [status]="job.status" />
+          @if (job.error) {
+            <small class="muted">{{ job.error }}</small>
+          }
+        </div>
+      }
+
+      @if (canPrint()) {
+        <button
+          type="button"
+          class="btn btn-block"
+          [disabled]="print.isBusy(saleId) || !pwa.online()"
+          (click)="requestPrint()"
+        >
+          <app-icon name="print" />
+          {{ 'Common.Print' | t }}
+        </button>
+      }
+
+      <button type="button" class="btn btn-primary btn-block" (click)="closeSuccess()">
+        {{ 'Web.NewSale' | t }}
+      </button>
+    </div>
+  </div>
+}

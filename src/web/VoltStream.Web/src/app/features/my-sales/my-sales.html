@@ -1,0 +1,52 @@
+<div class="page">
+  <app-page-header [title]="'Web.MySales' | t">
+    <button type="button" class="btn btn-ghost" [disabled]="loading()" (click)="load(1)">
+      <app-icon name="refresh" [size]="18" />
+    </button>
+  </app-page-header>
+
+  <app-date-field [label]="'Common.Date' | t" [value]="date()" (valueChange)="onDate($event)" />
+
+  @if (!sales().length && !loading()) {
+    <app-empty-state [text]="'Common.NoData' | t" />
+  }
+
+  @for (sale of sales(); track sale.id) {
+    <article class="card">
+      <div class="row-between">
+        <strong>{{ sale.customer?.name || ('Common.NoData' | t) }}</strong>
+        <small class="muted">{{ fmtDateTime(sale.date) }}</small>
+      </div>
+      <dl class="sums">
+        <div><dt>{{ 'Web.TotalRolls' | t }}</dt><dd>{{ fmt(sale.rollCount, 0) }}</dd></div>
+        <div><dt>{{ 'Web.TotalLength' | t }}</dt><dd>{{ fmt(sale.length) }}</dd></div>
+        <div *appHasPermission="'sales.view_prices'">
+          <dt>{{ 'Common.Amount' | t }}</dt>
+          <dd>{{ fmt(sale.amount) }}</dd>
+        </div>
+      </dl>
+      <div class="foot">
+        @if (statusOf(sale); as status) {
+          <app-status-badge [status]="status" />
+        }
+        @if (canPrint()) {
+          <button
+            type="button"
+            class="btn btn-ghost"
+            [disabled]="print.isBusy(sale.id) || !pwa.online()"
+            (click)="requestPrint(sale)"
+          >
+            <app-icon name="print" [size]="18" />
+            {{ 'Common.Print' | t }}
+          </button>
+        }
+      </div>
+    </article>
+  }
+
+  @if (page() < totalPages()) {
+    <button type="button" class="btn btn-block" [disabled]="loading()" (click)="loadMore()">
+      {{ 'Web.LoadMore' | t }}
+    </button>
+  }
+</div>

@@ -17,6 +17,7 @@ public static class WebApiHostBuilder
         app.UseOpenApiDocumentation();
 
         app.MapControllers();
+        app.MapFallbackToFile("{*path:regex(^(?!(api|hubs|scalar|openapi)(/|$)).*$)}", "index.html").AllowAnonymous();
 
         return app;
     }

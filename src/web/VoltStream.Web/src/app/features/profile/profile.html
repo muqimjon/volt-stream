@@ -1,0 +1,57 @@
+<div class="page">
+  <app-page-header [title]="'Web.Profile' | t" />
+
+  <section class="card rows">
+    <div class="row">
+      <span class="muted">{{ 'Web.User' | t }}</span>
+      <strong>{{ auth.session()?.username }}</strong>
+    </div>
+    <div class="row">
+      <span class="muted">{{ 'Web.Role' | t }}</span>
+      <strong>{{ auth.session()?.role }}</strong>
+    </div>
+    @if (auth.branchName()) {
+      <div class="row">
+        <span class="muted">{{ 'Web.Branch' | t }}</span>
+        <strong>{{ auth.branchName() }}</strong>
+      </div>
+    }
+  </section>
+
+  <section class="card rows">
+    <label class="row" for="lang">
+      <span>{{ 'Web.Language' | t }}</span>
+      <select id="lang" class="picker" [value]="translate.lang()" (change)="setLang($any($event.target).value)">
+        @for (lang of languages; track lang.code) {
+          <option [value]="lang.code">{{ lang.label }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="row" for="theme">
+      <span>{{ 'Web.Theme' | t }}</span>
+      <select id="theme" class="picker" [value]="theme.mode()" (change)="setTheme($any($event.target).value)">
+        @for (mode of themes; track mode) {
+          <option [value]="mode">{{ themeKey[mode] | t }}</option>
+        }
+      </select>
+    </label>
+
+    <div class="row">
+      <span class="muted">{{ 'Web.Version' | t }}</span>
+      <strong>{{ version }}</strong>
+    </div>
+  </section>
+
+  @if (pwa.canInstall()) {
+    <button type="button" class="btn btn-block" (click)="pwa.install()">
+      <app-icon name="download" />
+      {{ 'Web.Install' | t }}
+    </button>
+  }
+
+  <button type="button" class="btn btn-danger btn-block" (click)="logout()">
+    <app-icon name="logout" />
+    {{ 'Nav.Logout' | t }}
+  </button>
+</div>

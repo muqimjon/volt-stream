@@ -419,3 +419,9 @@ FodyWeavers.xsd
 /src/backend/VoltStream.WebApi/appsettings.Development.json
 /src/backend/VoltStream.WebApi/appsettings.Production.json
 /src/frontend/VoltStream.WPF/Commons/Services/DevKeyService.Secrets.cs
+
+# Web (Angular) build output and tooling
+src/backend/VoltStream.WebApi/wwwroot/
+src/web/VoltStream.Web/.angular/
+src/web/VoltStream.Web/dist/
+src/web/VoltStream.Web/node_modules/

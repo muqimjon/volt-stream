@@ -59,9 +59,20 @@ public static class DependencyInjection
         }
     }
 
+    private static readonly string[] NoCacheFiles =
+        ["index.html", "ngsw.json", "ngsw-worker.js", "manifest.webmanifest"];
+
     public static void UseVoltStreamPipeline(this WebApplication app)
     {
-        app.UseStaticFiles();
+        app.UseDefaultFiles();
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            OnPrepareResponse = ctx =>
+            {
+                if (NoCacheFiles.Contains(Path.GetFileName(ctx.File.Name)))
+                    ctx.Context.Response.Headers.CacheControl = "no-cache";
+            }
+        });
         app.UseCors(s => s.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
         app.UseAuthentication();
         app.UseAuthorization();

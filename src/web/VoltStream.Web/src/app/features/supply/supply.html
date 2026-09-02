@@ -1,0 +1,117 @@
+<div class="page">
+  <app-page-header [title]="'Web.Supply' | t">
+    <button type="button" class="btn btn-ghost" (click)="clearForm()">{{ 'Common.Clear' | t }}</button>
+  </app-page-header>
+
+  <section class="card stack">
+    <app-date-field
+      [label]="'Common.Date' | t"
+      [value]="date()"
+      (valueChange)="onDate($event)"
+    />
+
+    <app-search-select
+      [label]="'Settings.Category' | t"
+      [placeholder]="'Common.Select' | t"
+      [items]="categories()"
+      [labelOf]="nameOf"
+      [selected]="category()"
+      [clearable]="true"
+      [allowCreate]="true"
+      (selectedChange)="onCategory($event)"
+      (create)="createCategory($event)"
+    />
+
+    <app-search-select
+      [label]="'Supplies.ProductColumn' | t"
+      [placeholder]="'Common.Select' | t"
+      [items]="products()"
+      [labelOf]="nameOf"
+      [selected]="product()"
+      [allowCreate]="true"
+      (opened)="loadProducts()"
+      (selectedChange)="onProduct($event)"
+      (create)="createProduct($event)"
+    />
+
+    <div class="field">
+      <label for="unit">{{ 'Settings.UnitOfMeasure' | t }}</label>
+      <input
+        id="unit"
+        class="input"
+        type="text"
+        [value]="unit()"
+        (input)="unit.set($any($event.target).value)"
+      />
+    </div>
+
+    <app-search-select
+      [label]="'Supplies.PerBundle' | t"
+      [placeholder]="'Common.Select' | t"
+      [items]="stocks()"
+      [labelOf]="stockLabel"
+      [selected]="stock()"
+      [disabled]="!product()"
+      [allowCreate]="true"
+      (selectedChange)="onStock($event)"
+      (create)="createStock($event)"
+    />
+
+    <div class="grid-2">
+      <app-number-field
+        [label]="'Supplies.BundleCount' | t"
+        [value]="rollCount()"
+        (valueChange)="rollCount.set($event)"
+      />
+      <div class="field">
+        <label>{{ 'Supplies.TotalLabel' | t }}</label>
+        <div class="readout">{{ fmt(totalLength()) }}</div>
+      </div>
+    </div>
+
+    @if (canViewPrices()) {
+      <div class="grid-2">
+        <app-number-field
+          [label]="'Supplies.PriceLabel' | t"
+          [value]="unitPrice()"
+          (valueChange)="unitPrice.set($event)"
+        />
+        <app-number-field
+          [label]="'Supplies.DiscountLabel' | t"
+          [value]="discountRate()"
+          (commit)="onDiscount($event)"
+          (valueChange)="discountRate.set($event)"
+        />
+      </div>
+    }
+
+    <button
+      type="button"
+      class="btn btn-primary btn-block"
+      [disabled]="saving() || !pwa.online()"
+      (click)="save()"
+    >
+      {{ (saving() ? 'Web.Submitting' : 'Common.Save') | t }}
+    </button>
+  </section>
+
+  <section class="stack">
+    <h2 class="section-title">{{ 'Web.MySupplies' | t }}</h2>
+    @if (!supplies().length) {
+      <app-empty-state [text]="'Common.NoData' | t" />
+    }
+    @for (item of supplies(); track item.id) {
+      <article class="card">
+        <div class="row-between">
+          <strong>{{ item.product?.name }}</strong>
+          <small class="muted">{{ item.product?.category?.name }}</small>
+        </div>
+        <dl class="sums">
+          <div><dt>{{ 'Supplies.PerBundle' | t }}</dt><dd>{{ fmt(item.lengthPerRoll) }}</dd></div>
+          <div><dt>{{ 'Supplies.BundleCount' | t }}</dt><dd>{{ fmt(item.rollCount, 0) }}</dd></div>
+          <div><dt>{{ 'Common.Total' | t }}</dt><dd>{{ fmt(item.totalLength) }}</dd></div>
+        </dl>
+      </article>
+    }
+  </section>
+</div>

@@ -1,0 +1,42 @@
+.row-between {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-sm);
+}
+
+.sums {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: var(--sp-sm) var(--sp-md);
+  margin: 0;
+}
+
+.sums > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.sums dt {
+  font-size: var(--fs-caption);
+  color: var(--text-2);
+}
+
+.sums dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  margin-top: var(--sp-md);
+}
+
+.foot .btn {
+  min-height: var(--touch);
+  margin-inline-start: auto;
+}

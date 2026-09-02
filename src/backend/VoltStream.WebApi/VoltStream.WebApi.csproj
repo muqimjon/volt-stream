@@ -29,6 +29,23 @@
 		<ProjectReference Include="..\VoltStream.Infrastructure\VoltStream.Infrastructure.csproj" />
 	</ItemGroup>
 
+	<PropertyGroup>
+		<SpaRoot>..\..\web\VoltStream.Web\</SpaRoot>
+		<BuildWeb Condition="'$(BuildWeb)' == ''">true</BuildWeb>
+	</PropertyGroup>
+
+	<Target Name="BuildWeb" AfterTargets="ComputeFilesToPublish" Condition="'$(BuildWeb)' == 'true'">
+		<Exec WorkingDirectory="$(SpaRoot)" Command="npm ci" />
+		<Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
+		<ItemGroup>
+			<WebFiles Include="$(MSBuildProjectDirectory)\wwwroot\**" />
+			<ResolvedFileToPublish Include="@(WebFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+				<RelativePath>wwwroot\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+				<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			</ResolvedFileToPublish>
+		</ItemGroup>
+	</Target>
+
 	<ItemGroup>
 		<None Include="..\VoltStream.Infrastructure\SeedData\*.xlsx">
 			<Link>SeedData\%(RecursiveDir)%(FileName)%(Extension)</Link>

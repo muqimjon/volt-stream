@@ -1,0 +1,20 @@
+<div class="page">
+  <app-page-header [title]="'Web.Stats' | t" />
+
+  <div class="segmented">
+    @for (item of ranges; track item) {
+      <button type="button" [class.active]="range() === item" (click)="select(item)">
+        {{ rangeKey[item] | t }}
+      </button>
+    }
+  </div>
+
+  <div class="tiles">
+    @for (tile of tiles; track tile.field) {
+      <div class="card tile">
+        <span class="label">{{ tile.key | t }}</span>
+        <strong>{{ loading() ? '…' : fmt(valueOf(tile.field), tile.frac) }}</strong>
+      </div>
+    }
+  </div>
+</div>
