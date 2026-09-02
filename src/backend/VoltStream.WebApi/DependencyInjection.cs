@@ -78,6 +78,7 @@ public static class DependencyInjection
                     ctx.Context.Response.Headers.CacheControl = "no-cache";
             }
         });
+        app.UseRouting();
         app.UseCors(s => s.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
         app.UseAuthentication();
         app.UseAuthorization();

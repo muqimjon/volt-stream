@@ -19,7 +19,7 @@ public static class WebApiHostBuilder
 
         app.MapControllers();
         app.MapHub<PrintHub>("/hubs/print");
-        app.MapFallbackToFile("{*path:regex(^(?!(api|hubs|scalar|openapi)(/|$)).*$)}", "index.html").AllowAnonymous();
+        app.MapFallbackToFile("{*path:regex(^(?!(api|hubs|scalar|openapi)(/|$))[^.]*$)}", "index.html").AllowAnonymous();
 
         return app;
     }
