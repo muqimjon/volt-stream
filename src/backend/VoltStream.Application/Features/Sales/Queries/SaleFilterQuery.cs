@@ -24,10 +24,16 @@ public class SaleFilterQueryHandler(
 {
     public async Task<IReadOnlyCollection<SaleDto>> Handle(SaleFilterQuery request, CancellationToken cancellationToken)
     {
+        user.Sanitize(request);
+
         var branchId = await branches.ResolveFilterAsync(request.BranchId, true, cancellationToken);
-        var query = branchId is null
-            ? context.Sales
-            : context.Sales.Where(s => s.BranchId == branchId);
+        var query = context.Sales.AsQueryable();
+
+        if (branchId is not null)
+            query = query.Where(s => s.BranchId == branchId);
+
+        if (!user.Has(Permissions.SalesViewPrices))
+            query = query.Include(s => s.Customer).Include(s => s.Items);
 
         var sales = user.Apply(mapper.Map<IReadOnlyCollection<SaleDto>>(await query
             .ToPagedListAsync(request, writer, cancellationToken)));

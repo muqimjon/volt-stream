@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Security;
+using VoltStream.Application.Commons.Services;
 using VoltStream.Domain.Entities;
 using VoltStream.Domain.Enums;
 
@@ -12,7 +13,8 @@ using VoltStream.Domain.Enums;
 public record DeleteCustomerOperationCommand(long CustomerOperationId) : IRequest<bool>;
 
 public class DeleteCustomerOperationCommandHandler(
-    IAppDbContext context)
+    IAppDbContext context,
+    BranchContext branches)
     : IRequestHandler<DeleteCustomerOperationCommand, bool>
 {
     public async Task<bool> Handle(DeleteCustomerOperationCommand request, CancellationToken cancellationToken)
@@ -32,6 +34,9 @@ public class DeleteCustomerOperationCommandHandler(
 
             var account = customerOperation.Account
                 ?? throw new NotFoundException("Operatsiya bog'langan hisob topilmadi.");
+
+            if (customerOperation.Sale is not null)
+                branches.EnsureAccess(customerOperation.Sale.BranchId);
 
             switch (customerOperation.OperationType)
             {

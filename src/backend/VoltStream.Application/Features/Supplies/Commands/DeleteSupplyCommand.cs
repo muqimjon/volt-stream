@@ -5,13 +5,15 @@ using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Security;
+using VoltStream.Application.Commons.Services;
 using VoltStream.Domain.Entities;
 
 [RequirePermission(Permissions.SuppliesEdit)]
 public record DeleteSupplyCommand(long Id) : IRequest<bool>;
 
 public class DeleteSupplyCommandHandler(
-    IAppDbContext context)
+    IAppDbContext context,
+    BranchContext branches)
     : IRequestHandler<DeleteSupplyCommand, bool>
 {
     public async Task<bool> Handle(DeleteSupplyCommand request, CancellationToken cancellationToken)
@@ -19,6 +21,8 @@ public class DeleteSupplyCommandHandler(
         var supply = await context.Supplies
             .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(Supply), nameof(request.Id), request.Id);
+
+        branches.EnsureAccess(supply.BranchId);
 
         var stock = await context.WarehouseStocks
             .FirstOrDefaultAsync(ws => ws.ProductId == supply.ProductId &&

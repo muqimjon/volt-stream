@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using VoltStream.Application.Commons.Security;
+using VoltStream.Application.Commons.Services;
 using VoltStream.Domain.Entities;
 using VoltStream.Domain.Enums;
 using VoltStream.Infrastructure.Persistence.Configurations;
@@ -43,6 +44,8 @@ public class DatabaseInitializer(
 
                 var seeder = scope.ServiceProvider.GetRequiredService<ExcelDataSeeder>();
                 await seeder.SeedAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SeedData"));
+
+                AppReadiness.Ready = true;
                 return;
             }
             catch (Exception ex)

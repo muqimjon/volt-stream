@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Features.Cashes.Queries;
+namespace VoltStream.Application.Features.Cashes.Queries;
 
 using AutoMapper;
 using MediatR;
@@ -7,7 +7,9 @@ using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Features.Cashes.DTOs;
 using VoltStream.Domain.Entities;
+using VoltStream.Application.Commons.Security;
 
+[RequirePermission(Permissions.ReportsView)]
 public record GetCashByIdQuery(long Id) : IRequest<CashDto>;
 
 

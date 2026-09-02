@@ -1,11 +1,13 @@
-﻿namespace VoltStream.Application.Features.Cashes.Commands;
+namespace VoltStream.Application.Features.Cashes.Commands;
 
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Domain.Entities;
+using VoltStream.Application.Commons.Security;
 
+[RequirePermission(Permissions.PaymentsManage)]
 public record UpdateCashCommand(
     long Id,
     decimal Balance,

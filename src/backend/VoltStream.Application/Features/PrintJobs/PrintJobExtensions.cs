@@ -3,15 +3,27 @@ namespace VoltStream.Application.Features.PrintJobs;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Features.PrintJobs.DTOs;
 using VoltStream.Domain.Entities;
 using VoltStream.Domain.Enums;
 
 public static class PrintJobExtensions
 {
-    public static async Task<PrintJob> FindJobAsync(this IAppDbContext context, long id, CancellationToken cancellationToken)
-        => await context.PrintJobs.FirstOrDefaultAsync(job => job.Id == id, cancellationToken)
-           ?? throw new NotFoundException(nameof(PrintJob), nameof(PrintJob.Id), id);
+    public static async Task<PrintJob> FindJobAsync(this IAppDbContext context, long id, ICurrentUser user, CancellationToken cancellationToken)
+    {
+        var job = await context.PrintJobs.FirstOrDefaultAsync(job => job.Id == id, cancellationToken)
+            ?? throw new NotFoundException(nameof(PrintJob), nameof(PrintJob.Id), id);
+
+        return user.Has(Permissions.BranchesAll) || job.BranchId == user.BranchId
+            ? job
+            : throw new ForbiddenException("Boshqa filial chop etish so'rovi.");
+    }
+
+    public static PrintJob RequireAgent(this PrintJob job, ICurrentUser user)
+        => job.AgentUserId == user.UserId || user.IsAdmin
+            ? job
+            : throw new ForbiddenException("Faqat ishni olgan agent yakunlay oladi.");
 
     public static PrintJob Require(this PrintJob job, params PrintJobStatus[] statuses)
         => statuses.Contains(job.Status)

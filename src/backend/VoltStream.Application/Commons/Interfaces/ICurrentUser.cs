@@ -5,6 +5,7 @@ using VoltStream.Domain.Enums;
 public interface ICurrentUser
 {
     bool IsAuthenticated { get; }
+    bool HasHttpContext { get; }
     long? UserId { get; }
     string? Username { get; }
     long? BranchId { get; }

@@ -31,6 +31,9 @@ public class CreateUserCommandHandler(IAppDbContext context, IMapper mapper)
 {
     public async Task<long> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
+        if (request.Role != UserRole.Admin && request.BranchId is null)
+            throw new AppException("Admin bo'lmagan foydalanuvchiga filial biriktirilishi shart.");
+
         var user = mapper.Map<User>(request);
 
         var exitUser = await context.Users.AnyAsync(

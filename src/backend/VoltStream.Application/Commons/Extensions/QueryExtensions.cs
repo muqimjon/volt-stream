@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Commons.Extensions;
+namespace VoltStream.Application.Commons.Extensions;
 
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
@@ -7,6 +7,11 @@ using VoltStream.Application.Commons.Models;
 
 public static class QueryExtensions
 {
+    private static readonly string[] blockedColumns = ["Details"];
+
+    internal static bool IsBlocked(string name)
+        => name.Contains("Password", StringComparison.OrdinalIgnoreCase) || blockedColumns.Contains(name);
+
     #region Filtering
 
     public static IQueryable<T> AsFilterable<T>(this IQueryable<T> query, FilteringRequest request)
@@ -23,7 +28,7 @@ public static class QueryExtensions
                 continue;
 
             var prop = props.FirstOrDefault(p => string.Equals(p.Name, entry.Key, StringComparison.OrdinalIgnoreCase));
-            if (prop is null) continue;
+            if (prop is null || IsBlocked(prop.Name)) continue;
 
             var member = Expression.Property(param, prop.Name);
             var filterExpr = BuildCombinedCondition(member, entry.Value, prop.PropertyType, request.TimeZone);
@@ -232,7 +237,8 @@ public static class QueryExtensions
     {
         if (string.IsNullOrWhiteSpace(search)) return null;
 
-        var stringProps = typeof(T).GetProperties().Where(p => p.PropertyType == typeof(string));
+        var stringProps = typeof(T).GetProperties()
+            .Where(p => p.PropertyType == typeof(string) && !IsBlocked(p.Name));
         Expression? expr = null;
         var loweredSearch = search.ToLower();
 

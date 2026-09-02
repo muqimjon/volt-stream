@@ -77,13 +77,16 @@ public class AuditLogBehavior<TRequest, TResponse>(
     {
         Timestamp = DateTimeOffset.UtcNow,
         UserId = user.UserId,
-        Username = user.Username ?? usernameProperty?.GetValue(request) as string,
+        Username = Truncate(user.Username ?? usernameProperty?.GetValue(request) as string),
         BranchId = Property(request, branchProperty) ?? user.BranchId,
         Action = action,
         EntityName = entityName,
         Details = Details(request),
         Source = user.Source
     };
+
+    private static string? Truncate(string? value)
+        => value is { Length: > 64 } ? value[..64] : value;
 
     private static string? Details(TRequest request)
     {

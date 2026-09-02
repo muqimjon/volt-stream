@@ -22,19 +22,41 @@ public record UpdateUserCommand(
     PrintPolicy PrintPolicy)
     : IRequest<bool>;
 
-public class UpdateUserCommandHandler(IAppDbContext context)
+public class UpdateUserCommandHandler(IAppDbContext context, ICurrentUser current)
     : IRequestHandler<UpdateUserCommand, bool>
 {
     public async Task<bool> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
     {
+        if (request.Role != UserRole.Admin && request.BranchId is null)
+            throw new AppException("Admin bo'lmagan foydalanuvchiga filial biriktirilishi shart.");
+
         var user = await context.Users.FirstOrDefaultAsync(u => u.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(User), nameof(request.Id), request.Id);
+
+        var permissions = request.Permissions ?? RolePresets.For(request.Role);
+
+        if (!current.IsAdmin)
+        {
+            if (request.Role == UserRole.Admin || user.Role == UserRole.Admin)
+                throw new ForbiddenException("Admin foydalanuvchini faqat admin boshqara oladi.");
+
+            if (user.Id == current.UserId && (request.Role != user.Role
+                || request.IsActive != user.IsActive
+                || !permissions.ToHashSet().SetEquals(user.Permissions)))
+                throw new ForbiddenException("O'z rol va ruxsatlaringizni o'zgartira olmaysiz.");
+        }
+
+        if (user.Role == UserRole.Admin && user.IsActive
+            && (!request.IsActive || request.Role != UserRole.Admin)
+            && !await context.Users.AnyAsync(
+                u => u.Id != user.Id && u.Role == UserRole.Admin && u.IsActive, cancellationToken))
+            throw new AppException("Tizimdagi oxirgi faol adminni o'chirib bo'lmaydi.");
 
         user.Name = request.Name;
         user.NormalizedName = request.Name.ToNormalized();
         user.Role = request.Role;
         user.BranchId = request.BranchId;
-        user.Permissions = request.Permissions ?? RolePresets.For(request.Role);
+        user.Permissions = permissions;
         user.IsActive = request.IsActive;
         user.Phone = request.Phone;
         user.Email = request.Email;

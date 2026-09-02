@@ -28,12 +28,16 @@ public record CreateSupplyCommand(
 public class CreateSupplyCommandHandler(
     IAppDbContext context,
     BranchContext branches,
+    ICurrentUser user,
     IMapper mapper)
     : IRequestHandler<CreateSupplyCommand, long>
 {
     public async Task<long> Handle(CreateSupplyCommand request, CancellationToken cancellationToken)
     {
         var branchId = await branches.ResolveAsync(request.BranchId, cancellationToken);
+        var canSetPrice = user.Has(Permissions.SalesViewPrices);
+        var requestedPrice = canSetPrice ? request.UnitPrice : null;
+        var requestedDiscount = canSetPrice ? request.DiscountRate : null;
 
         var warehouse = await context.Warehouses
             .Include(w => w.Stocks)
@@ -85,8 +89,8 @@ public class CreateSupplyCommandHandler(
 
         if (warehouseItem is null)
         {
-            unitPrice = request.UnitPrice ?? 0;
-            discountRate = request.DiscountRate ?? 0;
+            unitPrice = requestedPrice ?? 0;
+            discountRate = requestedDiscount ?? 0;
 
             var stock = mapper.Map<WarehouseStock>(request);
             stock.ProductId = newProductId;
@@ -96,8 +100,8 @@ public class CreateSupplyCommandHandler(
         }
         else
         {
-            unitPrice = request.UnitPrice ?? warehouseItem.UnitPrice;
-            discountRate = request.DiscountRate ?? warehouseItem.DiscountRate;
+            unitPrice = requestedPrice ?? warehouseItem.UnitPrice;
+            discountRate = requestedDiscount ?? warehouseItem.DiscountRate;
 
             warehouseItem.RollCount += request.RollCount;
             warehouseItem.TotalLength += request.TotalLength;

@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Features.Warehouses.Commands;
+namespace VoltStream.Application.Features.Warehouses.Commands;
 
 using AutoMapper;
 using MediatR;
@@ -6,7 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Domain.Entities;
+using VoltStream.Application.Commons.Security;
 
+[RequirePermission(Permissions.SettingsBranches)]
 public record UpdateWarehouseCommand(
     long Id,
     string Name)

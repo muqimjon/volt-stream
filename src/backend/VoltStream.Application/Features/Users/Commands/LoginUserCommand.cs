@@ -6,7 +6,9 @@ using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Services;
 using VoltStream.Application.Features.Users.DTOs;
+using System.Net;
 
 public record LoginUserCommand(
     string Username,
@@ -17,6 +19,9 @@ public class LoginUserCommandHandler(IAppDbContext context, IJwtProvider jwtProv
 {
     public async Task<AuthResponse> Handle(LoginUserCommand request, CancellationToken cancellationToken)
     {
+        if (!AppReadiness.Ready)
+            throw new AppException("Server tayyorlanmoqda, birozdan so'ng urinib ko'ring", HttpStatusCode.ServiceUnavailable);
+
         var user = await context.Users
             .Include(u => u.Branch)
             .FirstOrDefaultAsync(u => u.NormalizedUsername == request.Username.ToNormalized(), cancellationToken)

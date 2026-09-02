@@ -4,6 +4,7 @@ using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Commons.Services;
 using VoltStream.Application.Features.Supplies.DTOs;
 
@@ -12,6 +13,7 @@ public record GetAllSuppliesQuery : IRequest<IReadOnlyCollection<SupplyDto>>;
 public class GetAllSuppliesQueryHandler(
     IAppDbContext context,
     BranchContext branches,
+    ICurrentUser user,
     IMapper mapper)
     : IRequestHandler<GetAllSuppliesQuery, IReadOnlyCollection<SupplyDto>>
 {
@@ -29,6 +31,6 @@ public class GetAllSuppliesQueryHandler(
         if (branchId is not null)
             query = query.Where(supply => supply.BranchId == branchId);
 
-        return mapper.Map<IReadOnlyCollection<SupplyDto>>(await query.ToListAsync(cancellationToken));
+        return user.ApplyToSupplies(mapper.Map<IReadOnlyCollection<SupplyDto>>(await query.ToListAsync(cancellationToken)));
     }
 }

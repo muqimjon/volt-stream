@@ -16,7 +16,7 @@ public class ClaimPrintJobCommandHandler(
 {
     public async Task<PrintJobDto> Handle(ClaimPrintJobCommand request, CancellationToken cancellationToken)
     {
-        var job = (await context.FindJobAsync(request.Id, cancellationToken)).Require(PrintJobStatus.Pending);
+        var job = (await context.FindJobAsync(request.Id, user, cancellationToken)).Require(PrintJobStatus.Pending);
 
         job.Status = PrintJobStatus.Printing;
         job.AgentUserId = user.UserId;

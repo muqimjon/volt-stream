@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Security;
+using VoltStream.Application.Commons.Services;
 using VoltStream.Application.Features.CustomerOperations.Commands;
 using VoltStream.Domain.Entities;
 
@@ -25,6 +26,7 @@ public record UpdateSaleCommand(
 
 public class UpdateSaleCommandHandler(
     IAppDbContext context,
+    BranchContext branches,
     IMediator mediator)
     : IRequestHandler<UpdateSaleCommand, bool>
 {
@@ -34,6 +36,8 @@ public class UpdateSaleCommandHandler(
             .Include(s => s.CustomerOperation)
             .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(Sale), nameof(request.Id), request.Id);
+
+        branches.EnsureAccess(oldSale.BranchId);
 
         if (oldSale.CustomerOperation is null)
             throw new ConflictException("Tahrirlash uchun Sale yozuviga bog'langan CustomerOperation topilmadi.");

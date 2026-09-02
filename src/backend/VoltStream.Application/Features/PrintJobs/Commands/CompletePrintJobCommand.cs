@@ -11,11 +11,14 @@ public record CompletePrintJobCommand(long Id) : IRequest<PrintJobDto>;
 
 public class CompletePrintJobCommandHandler(
     IAppDbContext context,
+    ICurrentUser user,
     IPrintJobNotifier notifier) : IRequestHandler<CompletePrintJobCommand, PrintJobDto>
 {
     public async Task<PrintJobDto> Handle(CompletePrintJobCommand request, CancellationToken cancellationToken)
     {
-        var job = (await context.FindJobAsync(request.Id, cancellationToken)).Require(PrintJobStatus.Printing);
+        var job = (await context.FindJobAsync(request.Id, user, cancellationToken))
+            .Require(PrintJobStatus.Printing)
+            .RequireAgent(user);
 
         job.Status = PrintJobStatus.Completed;
         job.Error = null;

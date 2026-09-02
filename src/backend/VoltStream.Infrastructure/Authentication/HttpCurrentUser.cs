@@ -11,6 +11,8 @@ public class HttpCurrentUser(IHttpContextAccessor accessor) : ICurrentUser
 
     public bool IsAuthenticated => Principal?.Identity?.IsAuthenticated == true;
 
+    public bool HasHttpContext => accessor.HttpContext is not null;
+
     public long? UserId => long.TryParse(Principal?.FindFirstValue("sub"), out var id) ? id : null;
 
     public string? Username => Principal?.FindFirstValue("unique_name");

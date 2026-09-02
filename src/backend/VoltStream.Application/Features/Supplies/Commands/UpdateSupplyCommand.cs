@@ -6,6 +6,7 @@ using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Security;
+using VoltStream.Application.Commons.Services;
 using VoltStream.Domain.Entities;
 
 [RequirePermission(Permissions.SuppliesEdit)]
@@ -25,11 +26,15 @@ public record UpdateSupplyCommand(
     : IRequest<bool>;
 
 public class UpdateSupplyCommandHandler(
-    IAppDbContext context)
+    IAppDbContext context,
+    BranchContext branches,
+    ICurrentUser user)
     : IRequestHandler<UpdateSupplyCommand, bool>
 {
     public async Task<bool> Handle(UpdateSupplyCommand request, CancellationToken cancellationToken)
     {
+        var canSetPrice = user.Has(Permissions.SalesViewPrices);
+
         await context.BeginTransactionAsync(cancellationToken);
 
         try
@@ -37,6 +42,8 @@ public class UpdateSupplyCommandHandler(
             var supply = await context.Supplies
                 .FirstOrDefaultAsync(s => s.Id == request.Id, cancellationToken)
                 ?? throw new NotFoundException(nameof(Supply), nameof(request.Id), request.Id);
+
+            branches.EnsureAccess(supply.BranchId);
 
             var oldStock = await context.WarehouseStocks
                 .FirstOrDefaultAsync(ws => ws.ProductId == supply.ProductId &&
@@ -96,6 +103,9 @@ public class UpdateSupplyCommandHandler(
                                            ws.WarehouseId == warehouseId,
                                        cancellationToken);
 
+            var unitPrice = canSetPrice ? request.UnitPrice : newStock?.UnitPrice ?? 0;
+            var discountRate = canSetPrice ? request.DiscountRate : newStock?.DiscountRate ?? 0;
+
             if (newStock is null)
             {
                 newStock = new WarehouseStock
@@ -105,8 +115,8 @@ public class UpdateSupplyCommandHandler(
                     RollCount = request.RollCount,
                     LengthPerRoll = request.LengthPerRoll,
                     TotalLength = request.TotalLength,
-                    UnitPrice = request.UnitPrice,
-                    DiscountRate = request.DiscountRate
+                    UnitPrice = unitPrice,
+                    DiscountRate = discountRate
                 };
                 context.WarehouseStocks.Add(newStock);
             }
@@ -114,8 +124,8 @@ public class UpdateSupplyCommandHandler(
             {
                 newStock.RollCount += request.RollCount;
                 newStock.TotalLength += request.TotalLength;
-                newStock.UnitPrice = request.UnitPrice;
-                newStock.DiscountRate = request.DiscountRate;
+                newStock.UnitPrice = unitPrice;
+                newStock.DiscountRate = discountRate;
             }
 
             supply.Date = request.Date.ToOffset(TimeSpan.Zero);
@@ -123,8 +133,8 @@ public class UpdateSupplyCommandHandler(
             supply.LengthPerRoll = request.LengthPerRoll;
             supply.TotalLength = request.TotalLength;
             supply.ProductId = product.Id;
-            supply.UnitPrice = request.UnitPrice;
-            supply.DiscountRate = request.DiscountRate;
+            supply.UnitPrice = unitPrice;
+            supply.DiscountRate = discountRate;
 
             await context.SaveAsync(cancellationToken);
             await context.CommitTransactionAsync(cancellationToken);

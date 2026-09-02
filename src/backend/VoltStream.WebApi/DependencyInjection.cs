@@ -1,9 +1,11 @@
 namespace VoltStream.WebApi;
 
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using VoltStream.Application;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Infrastructure;
@@ -17,6 +19,14 @@ public static class DependencyInjection
         services.AddApplicationServices();
         services.AddInfrastructureServices(conf);
         services.AddScoped<IPrintJobNotifier, PrintJobNotifier>();
+
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.AddPolicy("login", context => RateLimitPartition.GetFixedWindowLimiter(
+                context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1) }));
+        });
         services.AddSignalR()
                 .AddJsonProtocol(opt => opt.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
@@ -79,6 +89,7 @@ public static class DependencyInjection
             }
         });
         app.UseRouting();
+        app.UseRateLimiter();
         app.UseCors(s => s.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
         app.UseAuthentication();
         app.UseAuthorization();

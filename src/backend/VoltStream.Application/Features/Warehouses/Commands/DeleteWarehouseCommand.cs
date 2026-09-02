@@ -1,11 +1,13 @@
-﻿namespace VoltStream.Application.Features.Warehouses.Commands;
+namespace VoltStream.Application.Features.Warehouses.Commands;
 
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Domain.Entities;
+using VoltStream.Application.Commons.Security;
 
+[RequirePermission(Permissions.SettingsBranches)]
 public record DeleteWarehouseCommand(long Id) : IRequest<bool>;
 
 public class DeleteWarehouseCommandHandler(

@@ -1,9 +1,11 @@
-﻿namespace VoltStream.Application.Features.Supplies.Queries;
+namespace VoltStream.Application.Features.Supplies.Queries;
 
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Security;
+using VoltStream.Application.Commons.Services;
 using VoltStream.Application.Features.Supplies.DTOs;
 
 public record GetAllSuppliesByDateQuery(
@@ -11,25 +13,32 @@ public record GetAllSuppliesByDateQuery(
 
 public class GetAllSuppliesByDateQueryHandler(
     IAppDbContext context,
+    BranchContext branches,
+    ICurrentUser user,
     IMapper mapper)
     : IRequestHandler<GetAllSuppliesByDateQuery, IReadOnlyCollection<SupplyDto>>
 {
-
     public async Task<IReadOnlyCollection<SupplyDto>> Handle(GetAllSuppliesByDateQuery request, CancellationToken cancellationToken)
     {
-        var startLocal = request.OrerationDate.LocalDateTime.Date;   // 2025-09-15 00:00 (local)
+        var startLocal = request.OrerationDate.LocalDateTime.Date;
         var endLocal = startLocal.AddDays(1);
 
-        // PostgreSQL bilan ishlash uchun UTC ga aylantiramiz
         var startUtc = DateTime.SpecifyKind(startLocal, DateTimeKind.Local).ToUniversalTime();
         var endUtc = DateTime.SpecifyKind(endLocal, DateTimeKind.Local).ToUniversalTime();
 
-        var supplies = mapper.Map<IReadOnlyCollection<SupplyDto>>(await context.Supplies
+        var branchId = await branches.ResolveFilterAsync(null, true, cancellationToken);
+
+        var query = context.Supplies
             .Where(s => !s.IsDeleted)
             .Where(s => s.Date >= startUtc && s.Date < endUtc)
             .Include(s => s.Product)
                 .ThenInclude(p => p.Category)
-            .ToListAsync(cancellationToken));
-        return supplies;
+            .AsQueryable();
+
+        if (branchId is not null)
+            query = query.Where(s => s.BranchId == branchId);
+
+        return user.ApplyToSupplies(mapper.Map<IReadOnlyCollection<SupplyDto>>(
+            await query.ToListAsync(cancellationToken)));
     }
 }

@@ -15,8 +15,8 @@ public static class DependencyInjection
         services.AddAutoMapper(assembly);
         services.AddScoped<BranchContext>();
         services.AddScoped<AuditScope>();
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PermissionBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuditLogBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PermissionBehavior<,>));
 
         return services;
     }

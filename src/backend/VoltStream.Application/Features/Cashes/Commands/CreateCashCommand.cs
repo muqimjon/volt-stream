@@ -1,10 +1,12 @@
-﻿namespace VoltStream.Application.Features.Cashes.Commands;
+namespace VoltStream.Application.Features.Cashes.Commands;
 
 using AutoMapper;
 using MediatR;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Domain.Entities;
+using VoltStream.Application.Commons.Security;
 
+[RequirePermission(Permissions.PaymentsManage)]
 public record CreateCashCommand(
     decimal Balance,
     long CurrencyId)

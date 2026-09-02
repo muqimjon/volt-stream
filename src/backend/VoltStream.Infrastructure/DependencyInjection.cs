@@ -3,6 +3,7 @@ namespace VoltStream.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -18,6 +19,7 @@ public static class DependencyInjection
     public static void AddInfrastructureServices(this IServiceCollection services, IConfiguration conf)
     {
         services.AddHttpContextAccessor();
+        services.AddMemoryCache();
         services.AddScoped<ICurrentUser, HttpCurrentUser>();
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<ExcelDataSeeder>();
@@ -59,6 +61,31 @@ public static class DependencyInjection
                         if (!string.IsNullOrEmpty(token) && ctx.HttpContext.Request.Path.StartsWithSegments("/hubs"))
                             ctx.Token = token;
                         return Task.CompletedTask;
+                    },
+                    OnTokenValidated = async ctx =>
+                    {
+                        if (!long.TryParse(ctx.Principal?.FindFirstValue("sub"), out var userId))
+                        {
+                            ctx.Fail("Foydalanuvchi aniqlanmadi.");
+                            return;
+                        }
+
+                        var cache = ctx.HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
+
+                        var active = await cache.GetOrCreateAsync($"user-active-{userId}", async entry =>
+                        {
+                            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(60);
+
+                            return await ctx.HttpContext.RequestServices
+                                .GetRequiredService<IAppDbContext>().Users
+                                .AsNoTracking()
+                                .Where(user => user.Id == userId)
+                                .Select(user => (bool?)user.IsActive)
+                                .FirstOrDefaultAsync();
+                        });
+
+                        if (active != true)
+                            ctx.Fail("Foydalanuvchi faol emas.");
                     }
                 };
             });

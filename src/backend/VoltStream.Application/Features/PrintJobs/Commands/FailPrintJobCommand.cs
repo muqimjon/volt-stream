@@ -11,11 +11,14 @@ public record FailPrintJobCommand(long Id, string Error) : IRequest<PrintJobDto>
 
 public class FailPrintJobCommandHandler(
     IAppDbContext context,
+    ICurrentUser user,
     IPrintJobNotifier notifier) : IRequestHandler<FailPrintJobCommand, PrintJobDto>
 {
     public async Task<PrintJobDto> Handle(FailPrintJobCommand request, CancellationToken cancellationToken)
     {
-        var job = (await context.FindJobAsync(request.Id, cancellationToken)).Require(PrintJobStatus.Printing);
+        var job = (await context.FindJobAsync(request.Id, user, cancellationToken))
+            .Require(PrintJobStatus.Printing)
+            .RequireAgent(user);
 
         job.Status = PrintJobStatus.Failed;
         job.Error = request.Error;

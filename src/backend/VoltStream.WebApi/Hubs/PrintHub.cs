@@ -28,5 +28,9 @@ public class PrintHub : Hub
 
     private string? BranchId(ClaimsPrincipal? principal)
         => principal?.FindFirstValue("branch")
-        ?? Context.GetHttpContext()?.Request.Query["branchId"].FirstOrDefault();
+        ?? (HasAllBranches(principal) ? Context.GetHttpContext()?.Request.Query["branchId"].FirstOrDefault() : null);
+
+    private static bool HasAllBranches(ClaimsPrincipal? principal)
+        => principal?.IsInRole(nameof(UserRole.Admin)) == true
+        || principal?.FindAll("permission").Any(claim => claim.Value == Permissions.BranchesAll) == true;
 }

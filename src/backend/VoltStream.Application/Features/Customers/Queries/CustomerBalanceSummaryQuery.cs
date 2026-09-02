@@ -4,7 +4,9 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Features.Customers.DTOs;
+using VoltStream.Application.Commons.Security;
 
+[RequirePermission(Permissions.ReportsView)]
 public record CustomerBalanceSummaryQuery : IRequest<CustomerBalanceSummaryDto>
 {
     public long? CustomerId { get; set; }

@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Features.Monitoring.Queries;
+namespace VoltStream.Application.Features.Monitoring.Queries;
 
 using AutoMapper;
 using MediatR;
@@ -7,7 +7,9 @@ using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Features.Monitoring.DTOs;
 using VoltStream.Domain.Entities;
+using VoltStream.Application.Commons.Security;
 
+[RequirePermission(Permissions.SettingsUsers)]
 public record GetAllowedClientByIdQuery(long Id) : IRequest<AllowedClientDto>;
 
 public class GetAllowedClientByIdQueryHandler(

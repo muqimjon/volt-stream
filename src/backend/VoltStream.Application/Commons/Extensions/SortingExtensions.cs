@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Commons.Extensions;
+namespace VoltStream.Application.Commons.Extensions;
 
 using VoltStream.Application.Commons.Models;
 
@@ -12,7 +12,7 @@ public static class SortingExtensions
 
         var prop = typeof(T).GetProperties()
             .FirstOrDefault(p => string.Equals(p.Name, sortBy, StringComparison.OrdinalIgnoreCase));
-        if (prop is null)
+        if (prop is null || QueryExtensions.IsBlocked(prop.Name))
             return query;
 
         return request.Descending

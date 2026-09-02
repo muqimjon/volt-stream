@@ -11,11 +11,12 @@ public record RejectPrintJobCommand(long Id, string? Reason = null) : IRequest<P
 
 public class RejectPrintJobCommandHandler(
     IAppDbContext context,
+    ICurrentUser user,
     IPrintJobNotifier notifier) : IRequestHandler<RejectPrintJobCommand, PrintJobDto>
 {
     public async Task<PrintJobDto> Handle(RejectPrintJobCommand request, CancellationToken cancellationToken)
     {
-        var job = (await context.FindJobAsync(request.Id, cancellationToken))
+        var job = (await context.FindJobAsync(request.Id, user, cancellationToken))
             .Require(PrintJobStatus.Pending, PrintJobStatus.Printing);
 
         job.Status = PrintJobStatus.Rejected;

@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Features.Monitoring.Queries;
+namespace VoltStream.Application.Features.Monitoring.Queries;
 
 using AutoMapper;
 using MediatR;
@@ -6,7 +6,9 @@ using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Models;
 using VoltStream.Domain.Entities;
+using VoltStream.Application.Commons.Security;
 
+[RequirePermission(Permissions.SettingsUsers)]
 public record AllowedClientFilterQuery : FilteringRequest, IRequest<IReadOnlyCollection<AllowedClient>>;
 
 public class AllowedClientFilterQueryHandler(

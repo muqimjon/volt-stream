@@ -10,22 +10,31 @@ public class BranchContext(IAppDbContext context, ICurrentUser user)
 {
     public async Task<long> ResolveAsync(long? requested, CancellationToken cancellationToken = default)
     {
-        if (!user.Has(Permissions.BranchesAll) && user.BranchId is long own)
-            return own;
+        if (!user.Has(Permissions.BranchesAll))
+            return Own();
 
         return requested ?? await DefaultIdAsync(cancellationToken);
     }
 
     public async Task<long?> ResolveFilterAsync(long? requested, bool allowAll, CancellationToken cancellationToken = default)
     {
-        if (!user.Has(Permissions.BranchesAll) && user.BranchId is long own)
-            return own;
+        if (!user.Has(Permissions.BranchesAll))
+            return Own();
 
         if (requested is not null)
             return requested;
 
         return allowAll ? null : await DefaultIdAsync(cancellationToken);
     }
+
+    public void EnsureAccess(long branchId)
+    {
+        if (!user.Has(Permissions.BranchesAll) && branchId != Own())
+            throw new ForbiddenException("Boshqa filial ma'lumoti.");
+    }
+
+    private long Own()
+        => user.BranchId ?? throw new ForbiddenException("Filial biriktirilmagan");
 
     private async Task<long> DefaultIdAsync(CancellationToken cancellationToken)
     {

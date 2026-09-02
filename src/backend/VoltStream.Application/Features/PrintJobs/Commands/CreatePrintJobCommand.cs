@@ -31,6 +31,9 @@ public class CreatePrintJobCommandHandler(
         if (!user.Has(Permissions.BranchesAll) && sale.BranchId != user.BranchId)
             throw new ForbiddenException("Boshqa filial savdosini chop etib bo'lmaydi.");
 
+        if (request.Force && !user.Has(Permissions.SalesEdit))
+            throw new ForbiddenException("Qayta chop etishga ruxsat yo'q.");
+
         if (!request.Force && await context.PrintJobs.AnyAsync(job => job.SaleId == sale.Id
                 && (job.Status == PrintJobStatus.Pending || job.Status == PrintJobStatus.Printing), cancellationToken))
             throw new ConflictException("Bu savdo uchun faol chop etish so'rovi mavjud.");
@@ -41,7 +44,7 @@ public class CreatePrintJobCommandHandler(
             BranchId = sale.BranchId,
             RequestedByUserId = requester.Id,
             Status = PrintJobStatus.Pending,
-            Copies = request.Copies < 1 ? 1 : request.Copies
+            Copies = Math.Clamp(request.Copies, 1, 5)
         };
 
         context.PrintJobs.Add(job);

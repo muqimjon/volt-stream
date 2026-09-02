@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Features.Warehouses.Commands;
+namespace VoltStream.Application.Features.Warehouses.Commands;
 
 using AutoMapper;
 using MediatR;
@@ -7,7 +7,9 @@ using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Domain.Entities;
+using VoltStream.Application.Commons.Security;
 
+[RequirePermission(Permissions.SettingsBranches)]
 public record CreateWarehouseCommand(
     string Name)
     : IRequest<long>;

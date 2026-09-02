@@ -1,11 +1,13 @@
-﻿namespace VoltStream.Application.Features.Monitoring.Queries;
+namespace VoltStream.Application.Features.Monitoring.Queries;
 
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Features.Monitoring.DTOs;
+using VoltStream.Application.Commons.Security;
 
+[RequirePermission(Permissions.SettingsUsers)]
 public record GetAllAllowedClientsQuery() : IRequest<IReadOnlyCollection<AllowedClientDto>>;
 
 public class GetAllAllowedClientQueryHandler(

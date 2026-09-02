@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Models;
 using VoltStream.Application.Features.Customers.DTOs;
+using VoltStream.Application.Commons.Security;
 
+[RequirePermission(Permissions.ReportsView)]
 public record CustomerBalanceQuery : IRequest<IReadOnlyCollection<CustomerBalanceDto>>
 {
     public long? CustomerId { get; set; }
