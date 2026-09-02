@@ -31,6 +31,9 @@ public class CreateUserCommandHandler(IAppDbContext context, ICurrentUser curren
 {
     public async Task<long> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
+        if (!Enum.IsDefined(request.Role))
+            throw new AppException("Rol noto'g'ri");
+
         var permissions = request.Permissions ?? RolePresets.For(request.Role);
 
         if (!current.IsAdmin && (current.IsAuthenticated || current.HasHttpContext))

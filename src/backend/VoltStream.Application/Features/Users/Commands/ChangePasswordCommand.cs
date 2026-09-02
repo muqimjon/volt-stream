@@ -23,6 +23,9 @@ public class ChangePasswordCommandHandler(IAppDbContext context, ICurrentUser cu
         if (!current.IsAdmin && user.Role == UserRole.Admin)
             throw new ForbiddenException("Admin parolini faqat admin o'zgartira oladi.");
 
+        if (!current.IsAdmin && !current.Has(Permissions.BranchesAll) && user.BranchId != current.BranchId)
+            throw new ForbiddenException("Boshqa filial foydalanuvchisi.");
+
         user.PasswordHash = BCrypt.HashPassword(request.NewPassword, workFactor: 12);
 
         return await context.SaveAsync(cancellationToken) > 0;

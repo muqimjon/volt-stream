@@ -27,6 +27,9 @@ public class UpdateUserCommandHandler(IAppDbContext context, ICurrentUser curren
 {
     public async Task<bool> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
     {
+        if (!Enum.IsDefined(request.Role))
+            throw new AppException("Rol noto'g'ri");
+
         if (request.Role != UserRole.Admin && request.BranchId is null)
             throw new AppException("Admin bo'lmagan foydalanuvchiga filial biriktirilishi shart.");
 
@@ -61,6 +64,17 @@ public class UpdateUserCommandHandler(IAppDbContext context, ICurrentUser curren
             && !await context.Users.AnyAsync(
                 u => u.Id != user.Id && u.Role == UserRole.Admin && u.IsActive, cancellationToken))
             throw new AppException("Tizimdagi oxirgi faol adminni o'chirib bo'lmaydi.");
+
+        if (!string.IsNullOrEmpty(request.Email))
+        {
+            var normalizedEmail = request.Email.ToNormalized();
+            var exitEmail = await context.Users.AnyAsync(
+                u => u.Id != user.Id && u.NormalizedEmail == normalizedEmail,
+                cancellationToken);
+
+            if (exitEmail)
+                throw new AlreadyExistException(nameof(User), nameof(request.Email), request.Email);
+        }
 
         user.Name = request.Name;
         user.NormalizedName = request.Name.ToNormalized();

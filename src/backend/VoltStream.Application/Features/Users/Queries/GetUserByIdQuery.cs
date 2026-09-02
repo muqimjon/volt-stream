@@ -14,13 +14,21 @@ public record GetUserByIdQuery(long Id) : IRequest<UserDto>;
 
 public class GetUserByIdQueryHandler(
     IAppDbContext context,
+    ICurrentUser current,
     IMapper mapper)
     : IRequestHandler<GetUserByIdQuery, UserDto>
 {
     public async Task<UserDto> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
-        => mapper.Map<UserDto>(await context.Users
+    {
+        var user = await context.Users
             .AsNoTracking()
             .Include(u => u.Branch)
-            .FirstOrDefaultAsync(u => u.Id == request.Id, cancellationToken))
-        ?? throw new NotFoundException(nameof(User), nameof(request.Id), request.Id);
+            .FirstOrDefaultAsync(u => u.Id == request.Id, cancellationToken)
+            ?? throw new NotFoundException(nameof(User), nameof(request.Id), request.Id);
+
+        if (!current.IsAdmin && !current.Has(Permissions.BranchesAll) && user.BranchId != current.BranchId)
+            throw new ForbiddenException("Boshqa filial foydalanuvchisi.");
+
+        return mapper.Map<UserDto>(user);
+    }
 }
