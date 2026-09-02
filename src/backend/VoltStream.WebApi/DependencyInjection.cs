@@ -1,5 +1,6 @@
 namespace VoltStream.WebApi;
 
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.OpenApi.Models;
@@ -79,6 +80,7 @@ public static class DependencyInjection
 
     public static void UseVoltStreamPipeline(this WebApplication app)
     {
+        app.UseForwardedHeaders(new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto });
         app.UseDefaultFiles();
         app.UseStaticFiles(new StaticFileOptions
         {
