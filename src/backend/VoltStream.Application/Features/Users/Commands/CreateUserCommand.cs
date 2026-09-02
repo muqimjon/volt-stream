@@ -26,11 +26,28 @@ public record CreateUserCommand(
     PrintPolicy PrintPolicy = PrintPolicy.Auto)
     : IRequest<long>;
 
-public class CreateUserCommandHandler(IAppDbContext context, IMapper mapper)
+public class CreateUserCommandHandler(IAppDbContext context, ICurrentUser current, IMapper mapper)
     : IRequestHandler<CreateUserCommand, long>
 {
     public async Task<long> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
+        var permissions = request.Permissions ?? RolePresets.For(request.Role);
+
+        if (!current.IsAdmin && (current.IsAuthenticated || current.HasHttpContext))
+        {
+            if (request.Role == UserRole.Admin)
+                throw new ForbiddenException("Admin foydalanuvchini faqat admin yarata oladi.");
+
+            if (permissions.Any(permission => !current.Has(permission)))
+                throw new ForbiddenException("O'zingizda yo'q ruxsatni bera olmaysiz.");
+
+            if (!current.Has(Commons.Security.Permissions.BranchesAll))
+                request = request with
+                {
+                    BranchId = current.BranchId ?? throw new ForbiddenException("Filial biriktirilmagan")
+                };
+        }
+
         if (request.Role != UserRole.Admin && request.BranchId is null)
             throw new AppException("Admin bo'lmagan foydalanuvchiga filial biriktirilishi shart.");
 
@@ -53,7 +70,7 @@ public class CreateUserCommandHandler(IAppDbContext context, IMapper mapper)
                 throw new AlreadyExistException(nameof(User), nameof(request.Email), request.Email);
         }
 
-        user.Permissions = request.Permissions ?? RolePresets.For(request.Role);
+        user.Permissions = permissions;
         user.PasswordHash = BCrypt.HashPassword(request.Password, workFactor: 12);
 
         context.Users.Add(user);

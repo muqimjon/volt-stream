@@ -19,6 +19,9 @@ public class RejectPrintJobCommandHandler(
         var job = (await context.FindJobAsync(request.Id, user, cancellationToken))
             .Require(PrintJobStatus.Pending, PrintJobStatus.Printing);
 
+        if (job.Status == PrintJobStatus.Printing)
+            job.RequireAgent(user);
+
         job.Status = PrintJobStatus.Rejected;
         job.Error = request.Reason;
         job.FinishedAt = DateTimeOffset.UtcNow;

@@ -12,12 +12,13 @@ public record GetAllCustomerOperationsQuery : IRequest<IReadOnlyCollection<Custo
 
 public class GetAllCustomerOperationsQueryHandler(
     IAppDbContext context,
+    ICurrentUser user,
     IMapper mapper)
     : IRequestHandler<GetAllCustomerOperationsQuery, IReadOnlyCollection<CustomerOperationDto>>
 {
     public async Task<IReadOnlyCollection<CustomerOperationDto>> Handle(GetAllCustomerOperationsQuery request, CancellationToken cancellationToken)
-        => mapper.Map<IReadOnlyCollection<CustomerOperationDto>>(await context.CustomerOperations
+        => user.ApplyToOperations(mapper.Map<IReadOnlyCollection<CustomerOperationDto>>(await context.CustomerOperations
             .AsNoTracking()
             .Include(a => a.Account)
-            .ToListAsync(cancellationToken));
+            .ToListAsync(cancellationToken)));
 }

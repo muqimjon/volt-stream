@@ -44,6 +44,16 @@ public class UpdateUserCommandHandler(IAppDbContext context, ICurrentUser curren
                 || request.IsActive != user.IsActive
                 || !permissions.ToHashSet().SetEquals(user.Permissions)))
                 throw new ForbiddenException("O'z rol va ruxsatlaringizni o'zgartira olmaysiz.");
+
+            if (user.Id == current.UserId && request.BranchId != user.BranchId)
+                throw new ForbiddenException("O'z filialingizni o'zgartira olmaysiz.");
+
+            if (permissions.Any(permission => !current.Has(permission)))
+                throw new ForbiddenException("O'zingizda yo'q ruxsatni bera olmaysiz.");
+
+            if (!current.Has(Commons.Security.Permissions.BranchesAll)
+                && (request.BranchId != current.BranchId || user.BranchId != current.BranchId))
+                throw new ForbiddenException("Boshqa filial foydalanuvchisi.");
         }
 
         if (user.Role == UserRole.Admin && user.IsActive

@@ -14,11 +14,12 @@ public record GetCustomerOperationByIdQuery(long Id) : IRequest<CustomerOperatio
 
 public class GetCustomerOperationByIdQueryHandler(
     IAppDbContext context,
+    ICurrentUser user,
     IMapper mapper)
     : IRequestHandler<GetCustomerOperationByIdQuery, CustomerOperationDto>
 {
     public async Task<CustomerOperationDto> Handle(GetCustomerOperationByIdQuery request, CancellationToken cancellationToken)
-        => mapper.Map<CustomerOperationDto>(await context.CustomerOperations
+        => user.Apply(mapper.Map<CustomerOperationDto>(await context.CustomerOperations
             .Include(co => co.Account)
                 .ThenInclude(a => a.Customer)
             .Include(co => co.Account)
@@ -30,6 +31,6 @@ public class GetCustomerOperationByIdQueryHandler(
             .Include(co => co.Payment)
                 .ThenInclude(p => p!.Currency)
             .FirstOrDefaultAsync(co => co.Id == request.Id, cancellationToken))
-        ?? throw new NotFoundException(nameof(CustomerOperation), nameof(request.Id), request.Id);
+        ?? throw new NotFoundException(nameof(CustomerOperation), nameof(request.Id), request.Id));
 }
 

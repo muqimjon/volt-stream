@@ -13,10 +13,15 @@ public record CustomerOperationFilterQuery : FilteringRequest, IRequest<IReadOnl
 
 public class CustomerOperationFilterQueryHandler(
     IAppDbContext context,
+    ICurrentUser user,
     IPagingMetadataWriter writer,
     IMapper mapper) : IRequestHandler<CustomerOperationFilterQuery, IReadOnlyCollection<CustomerOperationDto>>
 {
     public async Task<IReadOnlyCollection<CustomerOperationDto>> Handle(CustomerOperationFilterQuery request, CancellationToken cancellationToken)
-        => mapper.Map<IReadOnlyCollection<CustomerOperationDto>>(await context.CustomerOperations
-            .ToPagedListAsync(request, writer, cancellationToken));
+    {
+        user.Sanitize(request);
+
+        return user.ApplyToOperations(mapper.Map<IReadOnlyCollection<CustomerOperationDto>>(await context.CustomerOperations
+            .ToPagedListAsync(request, writer, cancellationToken)));
+    }
 }

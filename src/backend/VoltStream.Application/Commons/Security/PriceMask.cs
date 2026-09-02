@@ -3,10 +3,12 @@ namespace VoltStream.Application.Commons.Security;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Models;
 using VoltStream.Application.Features.Categories.DTOs;
+using VoltStream.Application.Features.CustomerOperations.DTOs;
 using VoltStream.Application.Features.Customers.DTOs;
 using VoltStream.Application.Features.Products.DTOs;
 using VoltStream.Application.Features.Sales.DTOs;
 using VoltStream.Application.Features.Supplies.DTOs;
+using VoltStream.Application.Features.Warehouses.DTOs;
 using VoltStream.Application.Features.WarehouseStocks.DTOs;
 
 public static class PriceMask
@@ -58,6 +60,55 @@ public static class PriceMask
         return stocks;
     }
 
+    public static T ApplyToWarehouses<T>(this ICurrentUser user, T warehouses) where T : IEnumerable<WarehouseDto>
+    {
+        if (user.Has(Permissions.SalesViewPrices))
+            return warehouses;
+
+        foreach (var warehouse in warehouses)
+            user.ApplyToStocks(warehouse.Stocks ?? []);
+
+        return warehouses;
+    }
+
+    public static WarehouseDto Apply(this ICurrentUser user, WarehouseDto warehouse)
+    {
+        user.ApplyToStocks(warehouse.Stocks ?? []);
+
+        return warehouse;
+    }
+
+    public static T ApplyToOperations<T>(this ICurrentUser user, T operations) where T : IEnumerable<CustomerOperationDto>
+    {
+        if (user.Has(Permissions.SalesViewPrices))
+            return operations;
+
+        foreach (var operation in operations)
+            Hide(operation);
+
+        return operations;
+    }
+
+    public static CustomerOperationDto Apply(this ICurrentUser user, CustomerOperationDto operation)
+    {
+        if (!user.Has(Permissions.SalesViewPrices))
+            Hide(operation);
+
+        return operation;
+    }
+
+    public static CustomerOperationSummaryDto Apply(this ICurrentUser user, CustomerOperationSummaryDto summary)
+    {
+        if (user.Has(Permissions.SalesViewPrices))
+            return summary;
+
+        summary.BeginBalance = 0;
+        summary.EndBalance = 0;
+        user.ApplyToOperations(summary.Operations);
+
+        return summary;
+    }
+
     public static T ApplyToSupplies<T>(this ICurrentUser user, T supplies) where T : IEnumerable<SupplyDto>
     {
         if (user.Has(Permissions.SalesViewPrices))
@@ -105,7 +156,7 @@ public static class PriceMask
             return customers;
 
         foreach (var customer in customers)
-            customer.Accounts = null!;
+            HideReports(customer);
 
         return customers;
     }
@@ -113,7 +164,7 @@ public static class PriceMask
     public static CustomerDto Apply(this ICurrentUser user, CustomerDto customer)
     {
         if (!user.Has(Permissions.ReportsView))
-            customer.Accounts = null!;
+            HideReports(customer);
 
         return customer;
     }
@@ -126,11 +177,30 @@ public static class PriceMask
         foreach (var key in request.Filters?.Keys.Where(IsBlocked).ToList() ?? [])
             request.Filters!.Remove(key);
 
-        foreach (var entry in request.Filters ?? [])
-            entry.Value.RemoveAll(value => value.StartsWith("include", StringComparison.OrdinalIgnoreCase));
+        RemoveIncludes(request);
 
         if (IsBlocked(request.SortBy))
             request.SortBy = null;
+    }
+
+    public static void SanitizeReports(this ICurrentUser user, FilteringRequest request)
+    {
+        user.Sanitize(request);
+
+        if (!user.Has(Permissions.ReportsView))
+            RemoveIncludes(request);
+    }
+
+    private static void RemoveIncludes(FilteringRequest request)
+    {
+        foreach (var entry in request.Filters ?? [])
+            entry.Value.RemoveAll(value => value.StartsWith("include", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static void HideReports(CustomerDto customer)
+    {
+        customer.Accounts = null!;
+        customer.CustomerOperations = null!;
     }
 
     private static bool IsBlocked(string? name)
@@ -156,7 +226,33 @@ public static class PriceMask
             sale.CustomerOperation.Description = string.Empty;
         }
 
-        foreach (var item in sale.Items ?? [])
+        Hide(sale.Items);
+    }
+
+    private static void Hide(CustomerOperationDto operation)
+    {
+        operation.Amount = 0;
+        operation.Description = string.Empty;
+
+        if (operation.Sale is not null)
+        {
+            operation.Sale.Amount = 0;
+            operation.Sale.Discount = 0;
+            operation.Sale.Description = string.Empty;
+            Hide(operation.Sale.Items);
+        }
+
+        if (operation.Payment is not null)
+        {
+            operation.Payment.Amount = 0;
+            operation.Payment.NetAmount = 0;
+            operation.Payment.Description = string.Empty;
+        }
+    }
+
+    private static void Hide(IEnumerable<SaleItemDto>? items)
+    {
+        foreach (var item in items ?? [])
         {
             item.UnitPrice = 0;
             item.DiscountRate = 0;

@@ -17,6 +17,10 @@ public class CustomerFilterQueryHandler(
     IMapper mapper) : IRequestHandler<CustomerFilterQuery, IReadOnlyCollection<CustomerDto>>
 {
     public async Task<IReadOnlyCollection<CustomerDto>> Handle(CustomerFilterQuery request, CancellationToken cancellationToken)
-        => user.ApplyToCustomers(mapper.Map<IReadOnlyCollection<CustomerDto>>(await context.Customers
+    {
+        user.SanitizeReports(request);
+
+        return user.ApplyToCustomers(mapper.Map<IReadOnlyCollection<CustomerDto>>(await context.Customers
             .ToPagedListAsync(request, writer, cancellationToken)));
+    }
 }

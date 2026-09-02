@@ -17,6 +17,7 @@ public record GetCustomerOperationByCustomerIdQuery(
 
 public class GetCustomerOperationByCustomerIdQueryHandler(
     IAppDbContext _context,
+    ICurrentUser user,
     IMapper _mapper)
     : IRequestHandler<GetCustomerOperationByCustomerIdQuery, CustomerOperationSummaryDto>
 {
@@ -75,11 +76,11 @@ public class GetCustomerOperationByCustomerIdQueryHandler(
 
         var operationDtos = _mapper.Map<IReadOnlyCollection<CustomerOperationDto>>(operations);
 
-        return new CustomerOperationSummaryDto
+        return user.Apply(new CustomerOperationSummaryDto
         {
             BeginBalance = beginBalance,
             EndBalance = endBalance,
             Operations = operationDtos
-        };
+        });
     }
 }
