@@ -1,12 +1,14 @@
-﻿namespace VoltStream.Application.Features.Sales.Commands;
+namespace VoltStream.Application.Features.Sales.Commands;
 
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Features.CustomerOperations.Commands;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.SalesEdit)]
 public record UpdateSaleCommand(
     long Id,
     DateTimeOffset Date,
@@ -52,7 +54,8 @@ public class UpdateSaleCommandHandler(
                 request.IsDiscountApplied,
                 request.Discount,
                 request.Description,
-                request.Items), cancellationToken);
+                request.Items,
+                oldSale.BranchId), cancellationToken);
 
             return await context.CommitTransactionAsync(cancellationToken);
         }

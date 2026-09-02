@@ -23,6 +23,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<WarehouseStock> WarehouseStocks { get; set; }
     public DbSet<Warehouse> Warehouses { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Branch> Branches { get; set; }
 
     private IDbContextTransaction? currentTransaction;
     private int transactionDepth;

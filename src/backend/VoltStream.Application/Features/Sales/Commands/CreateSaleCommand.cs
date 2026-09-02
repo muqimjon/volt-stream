@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Features.Sales.Commands;
+namespace VoltStream.Application.Features.Sales.Commands;
 
 using AutoMapper;
 using MediatR;
@@ -6,9 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using System.Text;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Security;
+using VoltStream.Application.Commons.Services;
 using VoltStream.Domain.Entities;
 using VoltStream.Domain.Enums;
 
+[RequirePermission(Permissions.SalesCreate)]
 public record CreateSaleCommand(
     DateTimeOffset Date,
     long? CustomerId,
@@ -19,11 +22,14 @@ public record CreateSaleCommand(
     bool IsDiscountApplied,
     decimal Discount,
     string Description,
-    List<SaleItemCommand> Items)
+    List<SaleItemCommand> Items,
+    long? BranchId = null)
     : IRequest<long>;
 
 public class CreateSaleCommandHandler(
     IAppDbContext context,
+    BranchContext branches,
+    ICurrentUser user,
     IMapper mapper) : IRequestHandler<CreateSaleCommand, long>
 {
     public async Task<long> Handle(CreateSaleCommand request, CancellationToken cancellationToken)
@@ -32,13 +38,19 @@ public class CreateSaleCommandHandler(
 
         try
         {
-            var warehouse = await GetWarehouseAsync(cancellationToken);
+            var branchId = await branches.ResolveAsync(request.BranchId, cancellationToken);
+            var warehouse = await GetWarehouseAsync(branchId, cancellationToken);
             var customer = await GetCustomerAsync(request.CustomerId, cancellationToken);
 
             var descriptionBuilder = new StringBuilder();
+            var repriced = ApplyStockPrices(request.Items, warehouse);
 
             await ProcessSaleItemsAsync(request.Items, warehouse, descriptionBuilder, cancellationToken);
             var sale = mapper.Map<Sale>(request);
+            sale.BranchId = branchId;
+
+            if (repriced)
+                RecalculateTotals(sale, request.Items, request.IsDiscountApplied);
 
             if (customer is not null)
             {
@@ -66,12 +78,47 @@ public class CreateSaleCommandHandler(
         }
     }
 
-    private async Task<Warehouse> GetWarehouseAsync(CancellationToken cancellationToken)
+    private async Task<Warehouse> GetWarehouseAsync(long branchId, CancellationToken cancellationToken)
     {
         return await context.Warehouses
             .Include(w => w.Stocks)
-            .FirstOrDefaultAsync(cancellationToken)
+            .FirstOrDefaultAsync(w => w.BranchId == branchId, cancellationToken)
             ?? throw new NotFoundException(nameof(Warehouse));
+    }
+
+    private bool ApplyStockPrices(List<SaleItemCommand> items, Warehouse warehouse)
+    {
+        var canSeePrices = user.Has(Permissions.SalesViewPrices);
+        var repriced = false;
+
+        foreach (var item in items)
+        {
+            if (canSeePrices && item.UnitPrice != 0)
+                continue;
+
+            var stock = warehouse.Stocks
+                .FirstOrDefault(s => s.ProductId == item.ProductId && s.LengthPerRoll == item.LengthPerRoll);
+
+            if (stock is null)
+                continue;
+
+            item.UnitPrice = stock.UnitPrice;
+            item.DiscountRate = stock.DiscountRate;
+            item.TotalAmount = item.TotalLength * item.UnitPrice;
+            item.DiscountAmount = item.TotalAmount * item.DiscountRate / 100;
+            item.FinalAmount = item.TotalAmount - item.DiscountAmount;
+            repriced = true;
+        }
+
+        return repriced;
+    }
+
+    private static void RecalculateTotals(Sale sale, List<SaleItemCommand> items, bool isDiscountApplied)
+    {
+        sale.Discount = items.Sum(i => i.DiscountAmount);
+        sale.Amount = items.Sum(i => i.TotalAmount) - (isDiscountApplied ? sale.Discount : 0);
+        sale.Length = items.Sum(i => i.TotalLength);
+        sale.RollCount = items.Sum(i => i.RollCount);
     }
 
     private async Task<Customer?> GetCustomerAsync(long? customerId, CancellationToken cancellationToken)
@@ -107,6 +154,10 @@ public class CreateSaleCommandHandler(
             var product = await context.Products.FirstOrDefaultAsync(p => p.Id == item.ProductId, cancellationToken)
                 ?? throw new NotFoundException(nameof(Product), nameof(item.Id), item.ProductId);
 
+            item.Weight = product.IsWeightTracked && product.WeightPerUnit is decimal weight
+                ? item.TotalLength * weight
+                : 0;
+
             descriptionBuilder.Append($"{product.Name} - {item.TotalLength:N2} x {item.UnitPrice:N2} = {item.TotalAmount:N2}");
 
             if (item.DiscountAmount != 0)
@@ -123,7 +174,9 @@ public class CreateSaleCommandHandler(
         {
             var detail = item.LengthPerRoll * item.RollCount - item.TotalLength;
             var existStock = await context.WarehouseStocks
-                .FirstOrDefaultAsync(i => i.ProductId == item.ProductId && i.LengthPerRoll == detail, cancellationToken);
+                .FirstOrDefaultAsync(i => i.WarehouseId == warehouse.Id
+                                       && i.ProductId == item.ProductId
+                                       && i.LengthPerRoll == detail, cancellationToken);
 
             if (existStock is null)
                 context.WarehouseStocks.Add(new WarehouseStock

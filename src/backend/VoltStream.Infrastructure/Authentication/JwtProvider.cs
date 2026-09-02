@@ -23,12 +23,17 @@ public class JwtProvider(IConfiguration configuration) : IJwtProvider
 {
     public string Generate(User user)
     {
-        var claims = new Claim[]
+        var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.UniqueName, user.Username),
             new(ClaimTypes.Role, user.Role.ToString())
         };
+
+        if (user.BranchId is long branchId)
+            claims.Add(new Claim("branch", branchId.ToString()));
+
+        claims.AddRange(user.Permissions.Select(p => new Claim("permission", p)));
 
         var key = new SymmetricSecurityKey(JwtSecretResolver.Resolve(configuration));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

@@ -1,11 +1,13 @@
-﻿namespace VoltStream.Application.Features.Customers.Commands;
+namespace VoltStream.Application.Features.Customers.Commands;
 
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.CustomersManage)]
 public record DeleteCustomerCommand(long Id) : IRequest<bool>;
 
 public class DeleteCustomerCommandHandler(

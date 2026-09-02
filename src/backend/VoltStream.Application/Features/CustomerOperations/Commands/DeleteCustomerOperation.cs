@@ -90,7 +90,7 @@ public class DeleteCustomerOperationCommandHandler(
 
         var warehouse = await context.Warehouses
             .Include(w => w.Stocks)
-            .FirstOrDefaultAsync(cancellationToken)
+            .FirstOrDefaultAsync(w => w.BranchId == sale.BranchId, cancellationToken)
             ?? throw new NotFoundException(nameof(Warehouse));
 
         foreach (var item in sale.Items)

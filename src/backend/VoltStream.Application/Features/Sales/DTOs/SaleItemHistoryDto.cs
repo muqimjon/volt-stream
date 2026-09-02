@@ -11,4 +11,5 @@ public record SaleItemHistoryDto
     public decimal UnitPrice { get; set; }
     public string? Unit { get; set; }
     public decimal TotalLength { get; set; }
+    public decimal Weight { get; set; }
 }

@@ -1,11 +1,13 @@
-﻿namespace VoltStream.Application.Features.Supplies.Commands;
+namespace VoltStream.Application.Features.Supplies.Commands;
 
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.SuppliesEdit)]
 public record DeleteSupplyCommand(long Id) : IRequest<bool>;
 
 public class DeleteSupplyCommandHandler(
@@ -20,7 +22,8 @@ public class DeleteSupplyCommandHandler(
 
         var stock = await context.WarehouseStocks
             .FirstOrDefaultAsync(ws => ws.ProductId == supply.ProductId &&
-                                       ws.LengthPerRoll == supply.LengthPerRoll,
+                                       ws.LengthPerRoll == supply.LengthPerRoll &&
+                                       ws.Warehouse.BranchId == supply.BranchId,
                                    cancellationToken)
             ?? throw new NotFoundException(nameof(WarehouseStock), nameof(supply.Id), supply.Id);
 

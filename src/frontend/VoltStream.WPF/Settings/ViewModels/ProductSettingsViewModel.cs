@@ -32,6 +32,8 @@ public partial class ProductSettingsViewModel : ViewModelBase
     [ObservableProperty] private string name = string.Empty;
     [ObservableProperty] private string unit = string.Empty;
     [ObservableProperty] private bool isEditing;
+    [ObservableProperty] private bool isWeightTracked;
+    [ObservableProperty] private decimal? weightPerUnit;
 
     public async Task LoadData()
     {
@@ -75,7 +77,9 @@ public partial class ProductSettingsViewModel : ViewModelBase
                 Id = SelectedProduct.Id,
                 Name = Name,
                 Unit = Unit,
-                CategoryId = SelectedCategory.Id
+                CategoryId = SelectedCategory.Id,
+                IsWeightTracked = IsWeightTracked,
+                WeightPerUnit = IsWeightTracked ? WeightPerUnit : null
             };
 
             var response = await productsApi.UpdateAsync(request).Handle(isLoading => IsLoading = isLoading);
@@ -97,7 +101,9 @@ public partial class ProductSettingsViewModel : ViewModelBase
             {
                 Name = Name,
                 Unit = Unit,
-                CategoryId = SelectedCategory.Id
+                CategoryId = SelectedCategory.Id,
+                IsWeightTracked = IsWeightTracked,
+                WeightPerUnit = IsWeightTracked ? WeightPerUnit : null
             };
 
             var response = await productsApi.CreateAsync(request).Handle(isLoading => IsLoading = isLoading);
@@ -122,6 +128,8 @@ public partial class ProductSettingsViewModel : ViewModelBase
         Name = product.Name;
         Unit = product.Unit;
         SelectedCategory = Categories.FirstOrDefault(c => c.Id == product.CategoryId);
+        IsWeightTracked = product.IsWeightTracked;
+        WeightPerUnit = product.WeightPerUnit;
         IsEditing = true;
     }
 
@@ -151,6 +159,8 @@ public partial class ProductSettingsViewModel : ViewModelBase
         SelectedCategory = null;
         Name = string.Empty;
         Unit = string.Empty;
+        IsWeightTracked = false;
+        WeightPerUnit = null;
         IsEditing = false;
     }
 }

@@ -20,6 +20,7 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
 {
     private readonly IServiceProvider services;
     private readonly IMapper mapper;
+    private readonly BranchContext branchContext;
 
     public PaginationViewModel Pagination { get; }
 
@@ -29,6 +30,7 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
     {
         this.services = services;
         this.mapper = mapper;
+        branchContext = services.GetRequiredService<BranchContext>();
         Pagination = new PaginationViewModel(LoadPageAsync);
         _ = LoadInitialDataAsync();
     }
@@ -128,6 +130,7 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
     {
         BeginDate = BeginDate,
         EndDate = EndDate,
+        BranchId = branchContext.BranchId,
         CustomerId = SelectedCustomer?.Id > 0 ? SelectedCustomer.Id : null,
         CategoryId = SelectedCategory?.Id > 0 ? SelectedCategory.Id : null,
         ProductId = SelectedProduct?.Id > 0 ? SelectedProduct.Id : null,

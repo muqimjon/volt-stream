@@ -8,6 +8,7 @@ using VoltStream.WPF.Sales.ViewModels;
 public partial class SaleViewModel : ViewModelBase
 {
     public long Id { get; set; }
+    public long? BranchId { get; set; }
     public long CustomerOperationId { get; set; }
     public long DiscountOperationId { get; set; }
     public long CurrencyId { get; set; }

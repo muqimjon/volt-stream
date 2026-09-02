@@ -8,8 +8,8 @@ using VoltStream.WebApi.Models;
 public class DashboardController : BaseController
 {
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] DateTime? begin, [FromQuery] DateTime? end)
-        => Ok(new Response { Data = await Mediator.Send(new GetDashboardQuery(begin, end)) });
+    public async Task<IActionResult> Get([FromQuery] DateTime? begin, [FromQuery] DateTime? end, [FromQuery] long? branchId)
+        => Ok(new Response { Data = await Mediator.Send(new GetDashboardQuery(begin, end, branchId)) });
 
     [HttpGet("market")]
     public async Task<IActionResult> GetMarket()

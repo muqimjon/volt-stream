@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Domain.Entities;
+namespace VoltStream.Domain.Entities;
 
 using VoltStream.Domain.Enums;
 
@@ -25,4 +25,9 @@ public class User : Auditable
     public DateTimeOffset? LastLoginDate { get; set; }
     public int FailedLoginAttempts { get; set; }
     public string? PreferencesJson { get; set; }
+    public string[] Permissions { get; set; } = [];
+    public PrintPolicy PrintPolicy { get; set; }
+
+    public long? BranchId { get; set; }
+    public Branch? Branch { get; set; }
 }

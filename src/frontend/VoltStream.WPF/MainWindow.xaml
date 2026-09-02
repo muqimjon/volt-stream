@@ -262,15 +262,33 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <Border Grid.Row="0" Grid.Column="0">
+                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="20,0,0,0" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock
-                            Margin="20,0,0,0"
                             VerticalAlignment="Center"
                             FontSize="16"
                             FontWeight="SemiBold"
                             Foreground="{DynamicResource HeaderText}"
                             Text="{Binding CurrentPageTitle}" />
-                    </Border>
+                        <Border Margin="12,0,0,0" Padding="8,4" CornerRadius="6" Background="{DynamicResource BrandSubtle}" VerticalAlignment="Center" ToolTip="{loc:Loc Header.Branch}">
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconImage Icon="CodeBranch" Width="12" Height="12" Margin="0,0,6,0" VerticalAlignment="Center" Foreground="{DynamicResource Brand}" />
+                                <TextBlock Text="{Binding BranchContext.BranchName}"
+                                           VerticalAlignment="Center"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource Brand}"
+                                           Visibility="{Binding BranchContext.CanSelect, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+                                <ComboBox Style="{StaticResource DisplayCombo}"
+                                          Width="150"
+                                          Height="24"
+                                          FontSize="12"
+                                          ItemsSource="{Binding BranchContext.Branches}"
+                                          SelectedItem="{Binding BranchContext.Selected}"
+                                          DisplayMemberPath="Name"
+                                          Visibility="{Binding BranchContext.CanSelect, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
                     <Grid Grid.Row="0" Grid.Column="1">
                         <StackPanel
                             HorizontalAlignment="Center"

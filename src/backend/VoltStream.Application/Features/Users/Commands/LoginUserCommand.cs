@@ -18,6 +18,7 @@ public class LoginUserCommandHandler(IAppDbContext context, IJwtProvider jwtProv
     public async Task<AuthResponse> Handle(LoginUserCommand request, CancellationToken cancellationToken)
     {
         var user = await context.Users
+            .Include(u => u.Branch)
             .FirstOrDefaultAsync(u => u.NormalizedUsername == request.Username.ToNormalized(), cancellationToken)
             ?? throw new NotFoundException("Login yoki parol xato!");
 
@@ -31,6 +32,7 @@ public class LoginUserCommandHandler(IAppDbContext context, IJwtProvider jwtProv
         await context.SaveAsync(cancellationToken);
 
         var token = jwtProvider.Generate(user);
-        return new AuthResponse(user.Id, user.Username, token, user.Role);
+        return new AuthResponse(user.Id, user.Username, token, user.Role,
+            user.BranchId, user.Branch?.Name, user.Permissions, user.PrintPolicy);
     }
 }

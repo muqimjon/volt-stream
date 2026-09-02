@@ -15,6 +15,7 @@ using System.Windows;
 using VoltStream.WPF.Commons;
 using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
+using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.ViewModels;
 using VoltStream.WPF.Sales.ViewModels;
 
@@ -25,6 +26,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
     private readonly ISuppliesApi suppliesApi;
     private readonly IWarehouseStocksApi warehouseItemsApi;
     private readonly IMapper mapper;
+    private readonly BranchContext branchContext;
 
     public PaginationViewModel Pagination { get; }
 
@@ -35,6 +37,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
         suppliesApi = services.GetRequiredService<ISuppliesApi>();
         warehouseItemsApi = services.GetRequiredService<IWarehouseStocksApi>();
         mapper = services.GetRequiredService<IMapper>();
+        branchContext = services.GetRequiredService<BranchContext>();
 
         Pagination = new PaginationViewModel(LoadPageAsync);
 
@@ -196,15 +199,20 @@ public partial class SuppliesPageViewModel : ViewModelBase
         }
     }
 
-    private FilteringRequest BuildFilters() => new()
+    private FilteringRequest BuildFilters()
     {
-        Filters = new()
+        var request = new FilteringRequest
         {
-            ["date"] = [$"{SelectedDate:yyyy-MM-dd}"],
-            ["product"] = ["include:category"]
-        },
-        Descending = true
-    };
+            Filters = new()
+            {
+                ["date"] = [$"{SelectedDate:yyyy-MM-dd}"],
+                ["product"] = ["include:category"]
+            },
+            Descending = true
+        };
+        branchContext.ApplyTo(request);
+        return request;
+    }
 
     private async Task ReloadAsync()
     {
@@ -229,6 +237,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
     private async Task LoadWarehouseStocksAsync(long productId)
     {
         FilteringRequest request = new() { Filters = new() { ["productId"] = [productId.ToString()] } };
+        branchContext.ApplyTo(request);
         var response = await warehouseItemsApi.Filter(request).Handle(isLoading => IsLoading = isLoading);
         if (response.IsSuccess) WarehouseStocks = mapper.Map<ObservableCollection<WarehouseStockViewModel>>(response.Data);
         else Error = response.Message ?? TranslationSource.T("Supplies.LoadWarehouseStocksError");
@@ -259,10 +268,17 @@ public partial class SuppliesPageViewModel : ViewModelBase
             return;
         }
 
+        if (branchContext.CanSelect && branchContext.BranchId is null)
+        {
+            Warning = TranslationSource.T("Header.SelectBranch");
+            return;
+        }
+
         var request = new SupplyRequest
         {
             Id = IsEditing && EditingItemBackup is not null ? EditingItemBackup.Id : 0,
             Date = (SelectedDate.Date == DateTime.Today ? DateTime.Now : SelectedDate).ToUniversalTime(),
+            BranchId = branchContext.BranchId,
             CategoryId = SelectedCategory?.Id ?? 0,
             ProductId = SelectedProduct?.Id ?? 0,
             RollCount = RollCount ?? 0,

@@ -16,8 +16,4 @@ public class UserController : BaseController
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginUserCommand command)
         => Ok(new Response { Data = await Mediator.Send(command) });
-
-    [HttpPost("verify-admin")]
-    public async Task<IActionResult> VerifyAdmin([FromBody] VerifyAdminCommand command)
-        => Ok(new Response { Data = await Mediator.Send(command) });
 }

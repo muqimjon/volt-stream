@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Features.Products.Commands;
+namespace VoltStream.Application.Features.Products.Commands;
 
 using AutoMapper;
 using MediatR;
@@ -6,12 +6,16 @@ using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.SettingsProducts)]
 public record CreateProductCommand(
     string Name,
     string Unit,
-long CategoryId)
+    long CategoryId,
+    bool IsWeightTracked = false,
+    decimal? WeightPerUnit = null)
     : IRequest<long>;
 
 public class CreateProductCommandHandler(

@@ -141,6 +141,7 @@ public partial class App : Application
         services.AddSingleton<ConnectionRecovery>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<ISessionService, SessionService>();
+        services.AddSingleton<BranchContext>();
         services.AddSingleton<NamozTimeService>();
         ApiService.ConfigureServices(services);
     }

@@ -1,4 +1,4 @@
-﻿namespace VoltStream.WebApi.Controllers;
+namespace VoltStream.WebApi.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
 using VoltStream.Application.Features.WarehouseStocks.Queries;
@@ -9,12 +9,12 @@ public class WarehouseItemsController : BaseController
 {
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
-        => Ok(new Response { Data = await Mediator.Send(new GetAllWarehouseStockQuery()) });
+    public async Task<IActionResult> GetAll([FromQuery] long? branchId)
+        => Ok(new Response { Data = await Mediator.Send(new GetAllWarehouseStockQuery(branchId)) });
 
     [HttpGet("productId={Id:long}")]
-    public async Task<IActionResult> GetAllWarehouseItemByProductId(long Id)
-        => Ok(new Response { Data = await Mediator.Send(new GetProductDetailsFromWarehouse(Id)) });
+    public async Task<IActionResult> GetAllWarehouseItemByProductId(long Id, [FromQuery] long? branchId)
+        => Ok(new Response { Data = await Mediator.Send(new GetProductDetailsFromWarehouse(Id, branchId)) });
 
     [HttpPost("filter")]
     public async Task<IActionResult> GetFiltered(WarehouseStockFilterQuery query)

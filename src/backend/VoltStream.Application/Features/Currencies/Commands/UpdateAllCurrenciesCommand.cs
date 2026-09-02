@@ -1,11 +1,13 @@
-﻿namespace VoltStream.Application.Features.Currencies.Commands;
+namespace VoltStream.Application.Features.Currencies.Commands;
 
 using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.SettingsCurrencies)]
 public record UpdateAllCurrenciesCommand(List<CurrencyCommand> Items) : IRequest<bool>;
 
 public class UpdateAllCurrenciesCommandHandler(

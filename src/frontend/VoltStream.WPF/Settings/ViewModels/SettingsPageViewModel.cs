@@ -26,6 +26,8 @@ public partial class SettingsPageViewModel : ViewModelBase
         CategorySettings = services.GetRequiredService<CategorySettingsViewModel>();
         ProductSettings = services.GetRequiredService<ProductSettingsViewModel>();
         CustomerSettings = services.GetRequiredService<CustomerSettingsViewModel>();
+        BranchSettings = services.GetRequiredService<BranchSettingsViewModel>();
+        UserSettings = services.GetRequiredService<UserSettingsViewModel>();
 
         _ = LoadData();
     }
@@ -36,6 +38,8 @@ public partial class SettingsPageViewModel : ViewModelBase
     [ObservableProperty] private CategorySettingsViewModel categorySettings;
     [ObservableProperty] private ProductSettingsViewModel productSettings;
     [ObservableProperty] private CustomerSettingsViewModel customerSettings;
+    [ObservableProperty] private BranchSettingsViewModel branchSettings;
+    [ObservableProperty] private UserSettingsViewModel userSettings;
 
     #region Commands
 

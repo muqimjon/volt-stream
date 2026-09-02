@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Features.Sales.DTOs;
+namespace VoltStream.Application.Features.Sales.DTOs;
 
 using VoltStream.Application.Features.Products.DTOs;
 
@@ -13,6 +13,7 @@ public record SaleItemDto
     public decimal DiscountAmount { get; set; }
     public decimal TotalAmount { get; set; }
     public decimal FinalAmount { get; set; }
+    public decimal Weight { get; set; }
 
     public long ProductId { get; set; }
     public ProductDto Product { get; set; } = default!;

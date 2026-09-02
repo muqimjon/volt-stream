@@ -18,6 +18,7 @@ public partial class ProductPageViewModel : ViewModelBase
 {
     private readonly IServiceProvider services;
     private readonly IMapper mapper;
+    private readonly BranchContext branchContext;
 
     public PaginationViewModel Pagination { get; }
 
@@ -25,6 +26,7 @@ public partial class ProductPageViewModel : ViewModelBase
     {
         mapper = services.GetRequiredService<IMapper>();
         this.services = services;
+        branchContext = services.GetRequiredService<BranchContext>();
         Pagination = new PaginationViewModel(LoadPageAsync);
         _ = LoadInitialDataAsync();
     }
@@ -150,7 +152,9 @@ public partial class ProductPageViewModel : ViewModelBase
         else if (SelectedCategory is { Id: > 0 })
             filters["ProductId"] = [$"in:{string.Join(',', AllProducts.Where(p => p.CategoryId == SelectedCategory.Id).Select(p => p.Id))}"];
 
-        return new FilteringRequest { Filters = filters };
+        var request = new FilteringRequest { Filters = filters };
+        branchContext.ApplyTo(request);
+        return request;
     }
 
     private static ProductItemViewModel Map(WarehouseStockResponse item) => new()

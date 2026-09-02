@@ -11,5 +11,6 @@ public interface IDashboardApi
     [Get("/dashboard")]
     Task<Response<DashboardResponse>> GetAsync(
         [Query(Format = "yyyy-MM-dd")] DateTime? begin = null,
-        [Query(Format = "yyyy-MM-dd")] DateTime? end = null);
+        [Query(Format = "yyyy-MM-dd")] DateTime? end = null,
+        [Query] long? branchId = null);
 }

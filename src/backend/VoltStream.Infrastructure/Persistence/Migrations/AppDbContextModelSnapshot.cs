@@ -107,6 +107,54 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.ToTable("AllowedClients");
                 });
 
+            modelBuilder.Entity("VoltStream.Domain.Entities.Branch", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("CreatedByUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Branches", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            CreatedAt = new DateTimeOffset(new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "Asosiy filial",
+                            NormalizedName = "ASOSIY FILIAL",
+                            UpdatedAt = new DateTimeOffset(new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
+                        });
+                });
+
             modelBuilder.Entity("VoltStream.Domain.Entities.Cash", b =>
                 {
                     b.Property<long>("Id")
@@ -428,6 +476,9 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsWeightTracked")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -442,6 +493,9 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("WeightPerUnit")
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
@@ -460,6 +514,9 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
+
+                    b.Property<long>("BranchId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -502,6 +559,8 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
 
                     b.HasIndex("CurrencyId");
 
@@ -563,6 +622,9 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<decimal>("Weight")
+                        .HasColumnType("numeric");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductId");
@@ -579,6 +641,9 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                         .HasColumnType("bigint");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("BranchId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -615,6 +680,8 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BranchId");
+
                     b.HasIndex("ProductId");
 
                     b.ToTable("Supplies");
@@ -630,6 +697,9 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Address")
                         .HasColumnType("text");
+
+                    b.Property<long?>("BranchId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -683,11 +753,20 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
 
+                    b.PrimitiveCollection<string[]>("Permissions")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasDefaultValueSql("'{}'::text[]");
+
                     b.Property<string>("Phone")
                         .HasColumnType("text");
 
                     b.Property<string>("PreferencesJson")
                         .HasColumnType("text");
+
+                    b.Property<int>("PrintPolicy")
+                        .HasColumnType("integer");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer");
@@ -707,7 +786,9 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.HasIndex("BranchId");
+
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("VoltStream.Domain.Entities.Warehouse", b =>
@@ -717,6 +798,9 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                         .HasColumnType("bigint");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("BranchId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -739,6 +823,8 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
 
                     b.ToTable("Warehouses");
                 });
@@ -878,6 +964,12 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("VoltStream.Domain.Entities.Sale", b =>
                 {
+                    b.HasOne("VoltStream.Domain.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("VoltStream.Domain.Entities.Currency", "Currency")
                         .WithMany()
                         .HasForeignKey("CurrencyId")
@@ -893,6 +985,8 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                         .WithOne("Sale")
                         .HasForeignKey("VoltStream.Domain.Entities.Sale", "CustomerOperationId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Branch");
 
                     b.Navigation("Currency");
 
@@ -922,13 +1016,42 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("VoltStream.Domain.Entities.Supply", b =>
                 {
+                    b.HasOne("VoltStream.Domain.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("VoltStream.Domain.Entities.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Branch");
+
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("VoltStream.Domain.Entities.User", b =>
+                {
+                    b.HasOne("VoltStream.Domain.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Branch");
+                });
+
+            modelBuilder.Entity("VoltStream.Domain.Entities.Warehouse", b =>
+                {
+                    b.HasOne("VoltStream.Domain.Entities.Branch", "Branch")
+                        .WithMany("Warehouses")
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
                 });
 
             modelBuilder.Entity("VoltStream.Domain.Entities.WarehouseStock", b =>
@@ -948,6 +1071,11 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("VoltStream.Domain.Entities.Branch", b =>
+                {
+                    b.Navigation("Warehouses");
                 });
 
             modelBuilder.Entity("VoltStream.Domain.Entities.Category", b =>

@@ -26,6 +26,8 @@ public partial class MainViewModel : ViewModelBase
     private readonly IServiceProvider services;
     private readonly NamozTimeService namozService;
 
+    public BranchContext BranchContext { get; }
+
     [ObservableProperty] private ApiConnectionViewModel apiConnection;
     [ObservableProperty] private object? currentChildView;
     [ObservableProperty] private string currentPageTitle = string.Empty;
@@ -56,6 +58,8 @@ public partial class MainViewModel : ViewModelBase
         this.namozService = namozService;
 
         ApiConnection = services.GetRequiredService<ApiConnectionViewModel>();
+        BranchContext = services.GetRequiredService<BranchContext>();
+        _ = BranchContext.LoadAsync();
 
         if (this.navigationService is NavigationService navImpl)
         {

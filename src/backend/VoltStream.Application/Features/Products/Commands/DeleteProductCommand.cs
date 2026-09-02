@@ -1,11 +1,13 @@
-﻿namespace VoltStream.Application.Features.Products.Commands;
+namespace VoltStream.Application.Features.Products.Commands;
 
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.SettingsProducts)]
 public record DeleteProductCommand(long Id) : IRequest<bool>;
 
 public class DeleteProductCommandHandler(IAppDbContext context)

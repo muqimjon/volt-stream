@@ -11,7 +11,7 @@ public interface IWarehouseStocksApi
     Task<Response<List<WarehouseStockResponse>>> GetAllWarehouseItemsAsync();
 
     [Get("/warehouse-items/productId={id}")]
-    Task<Response<List<WarehouseStockResponse>>> GetProductDetailsFromWarehouseAsync(long id);
+    Task<Response<List<WarehouseStockResponse>>> GetProductDetailsFromWarehouseAsync(long id, [Query] long? branchId = null);
 
     [Post("/warehouse-items/filter")]
     Task<Response<List<WarehouseStockResponse>>> Filter(FilteringRequest filter);

@@ -18,5 +18,6 @@
     <converter:CountToEmptyVisibilityConverter x:Key="CountToEmptyVisibility" />
     <converter:EnumToBooleanConverter x:Key="EnumToBoolean" />
     <converter:StringEqualsToBoolConverter x:Key="StringEqualsToBool" />
+    <converter:LocalizedEnumConverter x:Key="LocalizedEnumConverter" />
 
 </ResourceDictionary>

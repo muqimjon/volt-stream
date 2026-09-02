@@ -27,6 +27,7 @@ public partial class SalesPage : Page
     private readonly ICustomersApi customersApi;
     private readonly ICurrenciesApi currenciesApi;
     private readonly ISaleApi salesApi;
+    private readonly BranchContext branchContext;
 
     private readonly SaleSession saleSession;
     public Sale sale;
@@ -46,6 +47,7 @@ public partial class SalesPage : Page
         customersApi = services.GetRequiredService<ICustomersApi>();
         salesApi = services.GetRequiredService<ISaleApi>();
         currenciesApi = services.GetRequiredService<ICurrenciesApi>();
+        branchContext = services.GetRequiredService<BranchContext>();
 
         CustomerName.GotFocus += CustomerName_GotFocus;
 
@@ -515,7 +517,7 @@ public partial class SalesPage : Page
             return;
         }
 
-        response = await warehouseItemsApi.GetProductDetailsFromWarehouseAsync(productId.Value).Handle();
+        response = await warehouseItemsApi.GetProductDetailsFromWarehouseAsync(productId.Value, branchContext.BranchId).Handle();
         if (response.IsSuccess)
         {
             var warehouseItems = response.Data;
@@ -747,12 +749,19 @@ public partial class SalesPage : Page
             return;
         }
 
+        if (branchContext.CanSelect && branchContext.BranchId is null)
+        {
+            sale.Warning = TranslationSource.T("Header.SelectBranch");
+            return;
+        }
+
         if (!Confirm(string.Format(TranslationSource.T("Sales.SubmitConfirm"), sale.OperationDate, sale.SaleItems.Select(si => si.ProductId).Distinct().Count())))
             return;
 
         var saleRequest = new SaleRequest
         {
             Date = sale.OperationDate,
+            BranchId = branchContext.BranchId,
             CustomerId = sale.CustomerId,
             Amount = sale.FinalSum ?? 0,
             Discount = sale.TotalDiscount ?? 0,

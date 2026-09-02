@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Features.Sales.Commands;
+namespace VoltStream.Application.Features.Sales.Commands;
 
 public record SaleItemCommand
 {
@@ -13,4 +13,5 @@ public record SaleItemCommand
     public decimal DiscountAmount { get; set; }
     public decimal TotalAmount { get; set; }
     public decimal FinalAmount { get; set; }
+    public decimal Weight { get; set; }
 }

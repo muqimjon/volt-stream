@@ -4,6 +4,7 @@ public record SaleItemHistoryRequest
 {
     public DateTimeOffset BeginDate { get; set; }
     public DateTimeOffset EndDate { get; set; }
+    public long? BranchId { get; set; }
     public long? CustomerId { get; set; }
     public long? CategoryId { get; set; }
     public long? ProductId { get; set; }

@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Features.Sales.DTOs;
+namespace VoltStream.Application.Features.Sales.DTOs;
 
 using VoltStream.Application.Features.Currencies.DTOs;
 using VoltStream.Application.Features.CustomerOperations.DTOs;
@@ -14,6 +14,8 @@ public record SaleDto
     public decimal Discount { get; set; }
     public string Description { get; set; } = string.Empty;
     public bool IsDiscountApplied { get; set; }
+
+    public long BranchId { get; set; }
 
     public long CustomerOperationId { get; set; }
     public CustomerOperationForSaleDto CustomerOperation { get; set; } = default!;

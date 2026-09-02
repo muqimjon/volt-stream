@@ -4,6 +4,8 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Models;
+using VoltStream.Application.Commons.Security;
+using VoltStream.Application.Commons.Services;
 using VoltStream.Application.Features.Sales.DTOs;
 
 public record SaleItemHistoryQuery : IRequest<IReadOnlyCollection<SaleItemHistoryDto>>
@@ -13,11 +15,12 @@ public record SaleItemHistoryQuery : IRequest<IReadOnlyCollection<SaleItemHistor
     public long? CustomerId { get; set; }
     public long? CategoryId { get; set; }
     public long? ProductId { get; set; }
+    public long? BranchId { get; set; }
     public int Page { get; set; }
     public int PageSize { get; set; }
 }
 
-public class SaleItemHistoryQueryHandler(IAppDbContext context, IPagingMetadataWriter writer)
+public class SaleItemHistoryQueryHandler(IAppDbContext context, BranchContext branches, ICurrentUser user, IPagingMetadataWriter writer)
     : IRequestHandler<SaleItemHistoryQuery, IReadOnlyCollection<SaleItemHistoryDto>>
 {
     public async Task<IReadOnlyCollection<SaleItemHistoryDto>> Handle(SaleItemHistoryQuery request, CancellationToken ct)
@@ -26,9 +29,12 @@ public class SaleItemHistoryQueryHandler(IAppDbContext context, IPagingMetadataW
         var begin = new DateTimeOffset(request.BeginDate.Date, offset).ToUniversalTime();
         var end = new DateTimeOffset(request.EndDate.Date, offset).AddDays(1).ToUniversalTime();
 
+        var branchId = await branches.ResolveFilterAsync(request.BranchId, true, ct);
+
         var query = context.SaleItems
             .Where(i => i.Sale.Date >= begin && i.Sale.Date < end);
 
+        if (branchId is not null) query = query.Where(i => i.Sale.BranchId == branchId);
         if (request.CustomerId is not null) query = query.Where(i => i.Sale.CustomerId == request.CustomerId);
         if (request.CategoryId is not null) query = query.Where(i => i.Product.CategoryId == request.CategoryId);
         if (request.ProductId is not null) query = query.Where(i => i.ProductId == request.ProductId);
@@ -46,13 +52,14 @@ public class SaleItemHistoryQueryHandler(IAppDbContext context, IPagingMetadataW
             UnitPrice = i.UnitPrice,
             Unit = i.Product.Unit,
             TotalLength = i.TotalLength,
+            Weight = i.Weight,
         });
 
         if (request.Page <= 0 || request.PageSize <= 0)
-            return await projected.ToListAsync(ct);
+            return user.ApplyToItems(await projected.ToListAsync(ct));
 
         var total = await projected.CountAsync(ct);
         writer.Write(new PagedListMetadata(total, request.Page, request.PageSize, (int)Math.Ceiling((double)total / request.PageSize)));
-        return await projected.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToListAsync(ct);
+        return user.ApplyToItems(await projected.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToListAsync(ct));
     }
 }

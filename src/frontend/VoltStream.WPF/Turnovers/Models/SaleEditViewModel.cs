@@ -256,6 +256,7 @@ public partial class SaleEditViewModel : ViewModelBase
         {
             Id = Sale.Id,
             Date = Sale.Date,
+            BranchId = Sale.BranchId,
             CustomerId = Sale.CustomerId,
             CurrencyId = Sale.CurrencyId,
             Amount = Sale.Amount,

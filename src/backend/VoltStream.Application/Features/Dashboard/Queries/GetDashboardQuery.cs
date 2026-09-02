@@ -3,11 +3,12 @@ namespace VoltStream.Application.Features.Dashboard.Queries;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Services;
 using VoltStream.Application.Features.Dashboard.DTOs;
 
-public record GetDashboardQuery(DateTime? Begin = null, DateTime? End = null) : IRequest<DashboardDto>;
+public record GetDashboardQuery(DateTime? Begin = null, DateTime? End = null, long? BranchId = null) : IRequest<DashboardDto>;
 
-public class GetDashboardQueryHandler(IAppDbContext context)
+public class GetDashboardQueryHandler(IAppDbContext context, BranchContext branches)
     : IRequestHandler<GetDashboardQuery, DashboardDto>
 {
     // O'zbekiston vaqti (UTC+5, yozgi vaqt o'zgarmaydi)
@@ -35,14 +36,22 @@ public class GetDashboardQueryHandler(IAppDbContext context)
         var periodStart = periodStartUz.ToUniversalTime();
         var periodEnd = periodEndUz.ToUniversalTime();
 
+        var branchId = await branches.ResolveFilterAsync(request.BranchId, true, cancellationToken);
+        var sales = branchId is null
+            ? context.Sales.AsNoTracking()
+            : context.Sales.AsNoTracking().Where(s => s.BranchId == branchId);
+        var saleItems = branchId is null
+            ? context.SaleItems.AsNoTracking()
+            : context.SaleItems.AsNoTracking().Where(si => si.Sale.BranchId == branchId);
+
         // --- Bugungi savdo ---
-        var todaySales = context.Sales.AsNoTracking().Where(s => s.Date >= todayStart && s.Date < todayEnd);
+        var todaySales = sales.Where(s => s.Date >= todayStart && s.Date < todayEnd);
         var todaySalesAmount = await todaySales.SumAsync(s => s.Amount, cancellationToken);
         var todaySalesCount = await todaySales.CountAsync(cancellationToken);
         var todaySalesLength = await todaySales.SumAsync(s => s.Length, cancellationToken);
 
         // --- Bu oylik savdo ---
-        var monthSales = context.Sales.AsNoTracking().Where(s => s.Date >= monthStart && s.Date < todayEnd);
+        var monthSales = sales.Where(s => s.Date >= monthStart && s.Date < todayEnd);
         var monthSalesAmount = await monthSales.SumAsync(s => s.Amount, cancellationToken);
         var monthSalesLength = await monthSales.SumAsync(s => s.Length, cancellationToken);
 
@@ -52,7 +61,7 @@ public class GetDashboardQueryHandler(IAppDbContext context)
         var todayPaymentsCount = await todayPayments.CountAsync(cancellationToken);
 
         // --- TOP 5 mijoz (savdo summasi bo'yicha) ---
-        var topCustomerRows = await context.Sales.AsNoTracking()
+        var topCustomerRows = await sales
             .Where(s => s.CustomerId != null && s.Date >= periodStart && s.Date < periodEnd)
             .GroupBy(s => s.CustomerId)
             .Select(g => new { CustomerId = g.Key, Amount = g.Sum(s => s.Amount) })
@@ -75,7 +84,7 @@ public class GetDashboardQueryHandler(IAppDbContext context)
             .ToList();
 
         // --- TOP 5 sotilayotgan mahsulot (sotilgan uzunlik bo'yicha) ---
-        var topProductRows = await context.SaleItems.AsNoTracking()
+        var topProductRows = await saleItems
             .Where(si => si.Sale.Date >= periodStart && si.Sale.Date < periodEnd)
             .GroupBy(si => si.ProductId)
             .Select(g => new { ProductId = g.Key, Length = g.Sum(si => si.TotalLength) })
@@ -98,7 +107,7 @@ public class GetDashboardQueryHandler(IAppDbContext context)
             .ToList();
 
         // --- Tanlangan davr bo'yicha kunlik savdo ---
-        var periodRows = await context.Sales.AsNoTracking()
+        var periodRows = await sales
             .Where(s => s.Date >= periodStart && s.Date < periodEnd)
             .Select(s => new { s.Date, s.Amount })
             .ToListAsync(cancellationToken);

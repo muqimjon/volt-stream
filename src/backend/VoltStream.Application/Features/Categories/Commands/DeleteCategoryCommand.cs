@@ -1,11 +1,13 @@
-﻿namespace VoltStream.Application.Features.Categories.Commands;
+namespace VoltStream.Application.Features.Categories.Commands;
 
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.SettingsCategories)]
 public record DeleteCategoryCommand(long Id) : IRequest<bool>;
 
 public class DeleteCategoryCommandHandler(IAppDbContext context)

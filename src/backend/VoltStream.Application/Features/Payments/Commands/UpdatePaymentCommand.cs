@@ -1,12 +1,14 @@
-﻿namespace VoltStream.Application.Features.Payments.Commands;
+namespace VoltStream.Application.Features.Payments.Commands;
 
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Features.CustomerOperations.Commands;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.PaymentsManage)]
 public record UpdatePaymentCommand(
     long Id,
     DateTimeOffset PaidAt,
