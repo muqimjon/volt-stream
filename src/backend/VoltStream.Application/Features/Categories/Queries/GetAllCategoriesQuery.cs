@@ -1,9 +1,9 @@
 ﻿namespace VoltStream.Application.Features.Categories.Queries;
 
 using MapsterMapper;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Features.Categories.DTOs;
 
 public record GetAllCategoriesQuery : IRequest<IReadOnlyCollection<CategoryDto>>;

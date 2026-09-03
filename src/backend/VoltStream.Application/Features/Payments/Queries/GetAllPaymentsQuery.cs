@@ -1,11 +1,11 @@
 ﻿namespace VoltStream.Application.Features.Payments.Queries;
 
 using MapsterMapper;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
-using VoltStream.Application.Features.Payments.DTOs;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Security;
+using VoltStream.Application.Features.Payments.DTOs;
 
 [RequirePermission(Permissions.ReportsView)]
 public record GetAllPaymentsQuery : IRequest<IReadOnlyCollection<PaymentDto>>;

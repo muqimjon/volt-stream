@@ -1,6 +1,6 @@
 namespace VoltStream.Application.Features.Users.Queries;
 
-using MediatR;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Features.Users.DTOs;
 

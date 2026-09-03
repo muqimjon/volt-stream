@@ -1,12 +1,12 @@
 ﻿namespace VoltStream.Application.Features.Monitoring.Queries;
 
 using MapsterMapper;
-using MediatR;
 using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Models;
-using VoltStream.Domain.Entities;
 using VoltStream.Application.Commons.Security;
+using VoltStream.Domain.Entities;
 
 [RequirePermission(Permissions.SettingsUsers)]
 public record AllowedClientFilterQuery : FilteringRequest, IRequest<IReadOnlyCollection<AllowedClient>>;

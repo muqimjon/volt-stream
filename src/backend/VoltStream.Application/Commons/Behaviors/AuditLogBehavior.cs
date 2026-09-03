@@ -1,11 +1,11 @@
 namespace VoltStream.Application.Commons.Behaviors;
 
-using MediatR;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Domain.Entities;
 
 public class AuditScope

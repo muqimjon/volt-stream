@@ -1,9 +1,9 @@
 namespace VoltStream.Application.Commons.Behaviors;
 
-using MediatR;
 using System.Reflection;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Security;
 
 public class PermissionBehavior<TRequest, TResponse>(ICurrentUser user, AuditScope scope)

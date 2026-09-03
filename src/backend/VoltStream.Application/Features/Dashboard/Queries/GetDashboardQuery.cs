@@ -1,11 +1,11 @@
 namespace VoltStream.Application.Features.Dashboard.Queries;
 
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Commons.Services;
 using VoltStream.Application.Features.Dashboard.DTOs;
-using VoltStream.Application.Commons.Security;
 
 [RequirePermission(Permissions.ReportsView)]
 public record GetDashboardQuery(DateTime? Begin = null, DateTime? End = null, long? BranchId = null) : IRequest<DashboardDto>;

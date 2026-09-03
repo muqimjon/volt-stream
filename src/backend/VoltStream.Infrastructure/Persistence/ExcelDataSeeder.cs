@@ -1,11 +1,11 @@
 namespace VoltStream.Infrastructure.Persistence;
 
 using ClosedXML.Excel;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Features.Currencies.Commands;
 using VoltStream.Application.Features.Users.Commands;
 using VoltStream.Domain.Enums;

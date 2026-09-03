@@ -1,11 +1,11 @@
 ﻿namespace VoltStream.Application.Features.CustomerOperations.Queries;
 
 using MapsterMapper;
-using MediatR;
 using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
-using VoltStream.Application.Commons.Security;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Models;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Features.CustomerOperations.DTOs;
 
 [RequirePermission(Permissions.ReportsView)]

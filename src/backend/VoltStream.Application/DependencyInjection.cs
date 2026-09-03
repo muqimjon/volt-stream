@@ -2,9 +2,9 @@
 
 using Mapster;
 using MapsterMapper;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using VoltStream.Application.Commons.Behaviors;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Services;
 
 public static class DependencyInjection
@@ -13,7 +13,7 @@ public static class DependencyInjection
     {
         var assembly = typeof(DependencyInjection).Assembly;
 
-        services.AddMediatR(assembly);
+        services.AddMediator(assembly);
 
         var mapperConfig = new TypeAdapterConfig();
         mapperConfig.Default.PreserveReference(true);

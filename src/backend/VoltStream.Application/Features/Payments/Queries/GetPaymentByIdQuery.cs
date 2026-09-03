@@ -1,13 +1,13 @@
 ﻿namespace VoltStream.Application.Features.Payments.Queries;
 
 using MapsterMapper;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Features.Payments.DTOs;
 using VoltStream.Domain.Entities;
-using VoltStream.Application.Commons.Security;
 
 [RequirePermission(Permissions.ReportsView)]
 public record GetPaymentByIdQuery(long Id) : IRequest<PaymentDto>;

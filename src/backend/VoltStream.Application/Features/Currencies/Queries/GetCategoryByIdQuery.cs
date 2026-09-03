@@ -1,10 +1,10 @@
 ﻿namespace VoltStream.Application.Features.Currencies.Queries;
 
 using MapsterMapper;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Features.Currencies.DTOs;
 using VoltStream.Domain.Entities;
 

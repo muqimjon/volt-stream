@@ -1,11 +1,11 @@
 ﻿namespace VoltStream.Application.Features.Cashes.Queries;
 
 using MapsterMapper;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
-using VoltStream.Application.Features.Cashes.DTOs;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Security;
+using VoltStream.Application.Features.Cashes.DTOs;
 
 [RequirePermission(Permissions.ReportsView)]
 public record GetAllCashesQuery : IRequest<IReadOnlyCollection<CashDto>>;

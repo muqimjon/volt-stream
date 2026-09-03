@@ -1,11 +1,11 @@
 ﻿namespace VoltStream.Application.Features.Sales.Commands;
 
 using MapsterMapper;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Commons.Services;
 using VoltStream.Domain.Entities;

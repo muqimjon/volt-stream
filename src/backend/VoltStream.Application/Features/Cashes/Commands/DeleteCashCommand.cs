@@ -1,11 +1,11 @@
 namespace VoltStream.Application.Features.Cashes.Commands;
 
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
-using VoltStream.Domain.Entities;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Security;
+using VoltStream.Domain.Entities;
 
 [RequirePermission(Permissions.PaymentsManage)]
 public record DeleteCashCommand(long Id) : IRequest<bool>;

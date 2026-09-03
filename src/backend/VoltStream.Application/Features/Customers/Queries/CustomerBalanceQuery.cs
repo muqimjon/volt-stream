@@ -1,11 +1,11 @@
 namespace VoltStream.Application.Features.Customers.Queries;
 
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Models;
-using VoltStream.Application.Features.Customers.DTOs;
 using VoltStream.Application.Commons.Security;
+using VoltStream.Application.Features.Customers.DTOs;
 
 [RequirePermission(Permissions.ReportsView)]
 public record CustomerBalanceQuery : IRequest<IReadOnlyCollection<CustomerBalanceDto>>

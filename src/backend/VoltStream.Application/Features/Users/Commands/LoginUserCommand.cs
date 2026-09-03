@@ -1,14 +1,14 @@
 namespace VoltStream.Application.Features.Users.Commands;
 
 using BCrypt.Net;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Services;
 using VoltStream.Application.Features.Users.DTOs;
-using System.Net;
 
 public record LoginUserCommand(
     string Username,

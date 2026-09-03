@@ -1,9 +1,9 @@
 ﻿namespace VoltStream.Application.Features.Products.Queries;
 
 using MapsterMapper;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Features.Products.DTOs;
 
 public record GetAllProductsQuery : IRequest<IReadOnlyCollection<ProductDto>>;

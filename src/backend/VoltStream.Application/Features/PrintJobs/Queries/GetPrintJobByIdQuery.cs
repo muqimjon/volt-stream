@@ -1,7 +1,7 @@
 namespace VoltStream.Application.Features.PrintJobs.Queries;
 
-using MediatR;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Features.PrintJobs.DTOs;
 
 public record GetPrintJobByIdQuery(long Id) : IRequest<PrintJobDto>;

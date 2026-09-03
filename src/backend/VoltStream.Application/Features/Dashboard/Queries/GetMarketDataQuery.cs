@@ -1,7 +1,7 @@
 namespace VoltStream.Application.Features.Dashboard.Queries;
 
-using MediatR;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Features.Dashboard.DTOs;
 
 public record GetMarketDataQuery : IRequest<MarketDataDto>;

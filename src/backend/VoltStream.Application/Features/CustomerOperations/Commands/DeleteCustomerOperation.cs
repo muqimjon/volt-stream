@@ -1,9 +1,9 @@
 namespace VoltStream.Application.Features.CustomerOperations.Commands;
 
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Commons.Services;
 using VoltStream.Domain.Entities;

@@ -1,7 +1,7 @@
 namespace VoltStream.Application.Features.PrintJobs.Commands;
 
-using MediatR;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Features.PrintJobs.DTOs;
 using VoltStream.Domain.Enums;
