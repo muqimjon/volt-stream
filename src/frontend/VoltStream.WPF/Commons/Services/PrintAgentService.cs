@@ -38,8 +38,11 @@ public partial class PrintAgentService(
     IServiceProvider services,
     ISessionService session,
     PrinterSettings settings,
-    ApiConnectionViewModel apiConnection) : ObservableObject
+    ApiConnectionViewModel apiConnection,
+    BranchContext branchContext) : ObservableObject
 {
+    private long? AgentBranchId => session.BranchId ?? branchContext.BranchId;
+
     private readonly SemaphoreSlim gate = new(1, 1);
     private HubConnection? connection;
     private bool stopping;
@@ -65,8 +68,11 @@ public partial class PrintAgentService(
         Status = AgentStatus.Connecting;
         stopping = false;
 
+        if (session.BranchId is null && branchContext.Branches.Count == 0)
+            await branchContext.LoadAsync();
+
         var hub = new HubConnectionBuilder()
-            .WithUrl($"{apiConnection.Url}hubs/print", options =>
+            .WithUrl($"{apiConnection.Url}hubs/print{(AgentBranchId is long id ? $"?branchId={id}" : string.Empty)}", options =>
             {
                 options.AccessTokenProvider = () => Task.FromResult(session.Token);
                 options.HttpMessageHandlerFactory = handler =>
@@ -170,7 +176,7 @@ public partial class PrintAgentService(
         if (!CanRun) return;
 
         var response = await services.GetRequiredService<IPrintJobsApi>()
-            .GetPendingAsync(session.BranchId).Handle();
+            .GetPendingAsync(AgentBranchId).Handle();
 
         if (!response.IsSuccess) return;
 

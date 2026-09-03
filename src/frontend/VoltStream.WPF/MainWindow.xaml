@@ -278,14 +278,19 @@
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource Brand}"
                                            Visibility="{Binding BranchContext.CanSelect, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
-                                <ComboBox Style="{StaticResource DisplayCombo}"
+                                <ComboBox Style="{StaticResource ModernCombo}"
                                           Width="150"
-                                          Height="24"
+                                          Height="26"
                                           FontSize="12"
                                           ItemsSource="{Binding BranchContext.Branches}"
                                           SelectedItem="{Binding BranchContext.Selected}"
-                                          DisplayMemberPath="Name"
-                                          Visibility="{Binding BranchContext.CanSelect, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                          Visibility="{Binding BranchContext.CanSelect, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
                             </StackPanel>
                         </Border>
                     </StackPanel>

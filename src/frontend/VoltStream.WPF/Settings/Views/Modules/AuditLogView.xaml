@@ -48,20 +48,30 @@
                         <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Logs.User}" />
                         <ComboBox
                             Width="150"
-                            DisplayMemberPath="Username"
                             ItemsSource="{Binding Users}"
                             SelectedItem="{Binding SelectedUser}"
-                            Style="{StaticResource ModernCombo}" />
+                            Style="{StaticResource ModernCombo}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Username}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
 
                     <StackPanel Margin="0,0,14,0" Visibility="{Binding CanSelectBranch, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Logs.Branch}" />
                         <ComboBox
                             Width="150"
-                            DisplayMemberPath="Name"
                             ItemsSource="{Binding Branches}"
                             SelectedItem="{Binding SelectedBranch}"
-                            Style="{StaticResource ModernCombo}" />
+                            Style="{StaticResource ModernCombo}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
 
                     <StackPanel Margin="0,0,14,0">

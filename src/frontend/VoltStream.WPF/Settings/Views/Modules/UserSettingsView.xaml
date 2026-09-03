@@ -113,9 +113,14 @@
 					<TextBlock Text="{loc:Loc Users.Branch}" Style="{StaticResource FieldLabel}" />
 					<ComboBox ItemsSource="{Binding Branches}"
                               SelectedItem="{Binding SelectedBranch}"
-                              DisplayMemberPath="Name"
                               Style="{StaticResource ModernCombo}"
-                              Margin="0,0,0,12" />
+                              Margin="0,0,0,12">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Name}" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
 
 					<TextBlock Text="{loc:Loc Users.PrintPolicy}" Style="{StaticResource FieldLabel}" />
 					<ComboBox ItemsSource="{Binding PrintPolicies}"
@@ -135,7 +140,7 @@
 					<StackPanel Visibility="{Binding IsEditing, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
 						<TextBlock Text="{loc:Loc Login.Password}" Style="{StaticResource FieldLabel}" />
 						<PasswordBox x:Name="PasswordBox"
-                                     Style="{StaticResource ModernTextBox}"
+                                     Style="{StaticResource ModernPasswordBox}"
                                      PasswordChanged="PasswordBox_PasswordChanged"
                                      Margin="0,0,0,12" />
 					</StackPanel>
@@ -150,7 +155,7 @@
 						<StackPanel Visibility="{Binding IsSettingPassword, Converter={StaticResource BooleanToVisibilityConverter}}">
 							<TextBlock Text="{loc:Loc Users.NewPassword}" Style="{StaticResource FieldLabel}" />
 							<PasswordBox x:Name="NewPasswordBox"
-                                         Style="{StaticResource ModernTextBox}"
+                                         Style="{StaticResource ModernPasswordBox}"
                                          PasswordChanged="NewPasswordBox_PasswordChanged"
                                          Margin="0,0,0,8" />
 							<Button Content="{loc:Loc Common.Save}"
