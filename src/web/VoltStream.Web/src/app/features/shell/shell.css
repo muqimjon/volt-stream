@@ -25,18 +25,6 @@
   margin-inline-end: auto;
 }
 
-.icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--touch);
-  height: var(--touch);
-  border: none;
-  border-radius: var(--r-pill);
-  background: transparent;
-  color: var(--text-2);
-}
-
 .banners {
   grid-area: banner;
 }
@@ -121,7 +109,7 @@ main {
   background: var(--nav-item-active-bg);
 }
 
-@media (min-width: 900px) {
+@media (min-width: 640px) {
   .shell {
     grid-template-areas: 'header header' 'nav banner' 'nav main';
     grid-template-columns: var(--rail-w) 1fr;
@@ -155,5 +143,42 @@ main {
 
   .tabs a:hover:not(.active) {
     background: var(--nav-item-hover-bg);
+  }
+}
+
+@media (min-width: 1024px) {
+  .shell {
+    grid-template-columns: var(--sidebar-w) 1fr;
+  }
+
+  .tabs {
+    padding: var(--sp-md) var(--sp-sm) calc(var(--sp-md) + var(--safe-b));
+    gap: 2px;
+  }
+
+  .tabs a {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--sp-md);
+    min-height: var(--touch);
+    padding: 0 var(--sp-md);
+    font-size: var(--fs-body);
+  }
+
+  .tabs a app-icon {
+    width: auto;
+    height: auto;
+    background: transparent;
+  }
+
+  .tabs a span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .content {
+    max-width: var(--content-max);
+    margin-inline: auto;
   }
 }

@@ -281,6 +281,8 @@
   "Products.UnitOfMeasure": "Ўлчов бирлиги",
   "Products.WeightPerUnit": "1 метр оғирлиги (кг)",
   "Products.WeightTracked": "Оғирлик ҳисобга олинсин",
+  "Profile.NoBranch": "Филиал бириктирилмаган",
+  "Profile.Title": "Профил",
   "Receipt.Amount": "Сумма",
   "Receipt.Discount": "Чегирма",
   "Receipt.LastSale": "Чек: {0}",

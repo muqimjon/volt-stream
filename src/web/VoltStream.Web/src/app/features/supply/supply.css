@@ -9,6 +9,21 @@
   font-weight: 700;
 }
 
+.split {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-lg);
+}
+
+@media (min-width: 1024px) {
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--sp-xl);
+  }
+}
+
 .row-between {
   display: flex;
   align-items: baseline;

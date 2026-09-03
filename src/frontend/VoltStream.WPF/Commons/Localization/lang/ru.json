@@ -281,6 +281,8 @@
   "Products.UnitOfMeasure": "Единица измерения",
   "Products.WeightPerUnit": "Вес 1 метра (кг)",
   "Products.WeightTracked": "Учитывать вес",
+  "Profile.NoBranch": "Филиал не назначен",
+  "Profile.Title": "Профиль",
   "Receipt.Amount": "Сумма",
   "Receipt.Discount": "Скидка",
   "Receipt.LastSale": "Чек: {0}",

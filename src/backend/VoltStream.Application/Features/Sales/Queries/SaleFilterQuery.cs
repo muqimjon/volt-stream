@@ -32,6 +32,9 @@ public class SaleFilterQueryHandler(
         if (branchId is not null)
             query = query.Where(s => s.BranchId == branchId);
 
+        if (!user.Has(Permissions.ReportsView))
+            query = query.Where(s => s.CreatedByUserId == user.UserId);
+
         if (!user.Has(Permissions.SalesViewPrices))
             query = query.Include(s => s.Customer).Include(s => s.Items);
 

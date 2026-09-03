@@ -9,38 +9,71 @@
 
   @if (!supplies().length && !loading()) {
     <app-empty-state [text]="'Common.NoData' | t" />
-  }
-
-  @for (item of supplies(); track item.id) {
-    <article class="card">
-      <div class="row-between">
-        <div>
-          <strong>{{ item.product?.name }}</strong>
-          @if (showBranch() && branches.nameOf(item.branchId); as branchName) {
-            <small class="muted block">{{ branchName }}</small>
+  } @else if (bp.desktop()) {
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>{{ 'Common.Date' | t }}</th>
+            <th>{{ 'Supplies.ProductColumn' | t }}</th>
+            <th>{{ 'Supplies.ProductTypeColumn' | t }}</th>
+            @if (showBranch()) {
+              <th>{{ 'Web.Branch' | t }}</th>
+            }
+            <th class="num">{{ 'Supplies.PerBundle' | t }}</th>
+            <th class="num">{{ 'Supplies.BundleCount' | t }}</th>
+            <th class="num">{{ 'Common.Total' | t }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of supplies(); track item.id) {
+            <tr>
+              <td>{{ fmtDateTime(item.date) }}</td>
+              <td>{{ item.product?.name }}</td>
+              <td class="muted">{{ item.product?.category?.name }}</td>
+              @if (showBranch()) {
+                <td class="muted">{{ branches.nameOf(item.branchId) }}</td>
+              }
+              <td class="num">{{ fmt(item.lengthPerRoll) }}</td>
+              <td class="num">{{ fmt(item.rollCount, 0) }}</td>
+              <td class="num">{{ fmt(item.totalLength) }}</td>
+            </tr>
           }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    @for (item of supplies(); track item.id) {
+      <article class="card">
+        <div class="row-between">
+          <div>
+            <strong>{{ item.product?.name }}</strong>
+            @if (showBranch() && branches.nameOf(item.branchId); as branchName) {
+              <small class="muted block">{{ branchName }}</small>
+            }
+          </div>
+          <small class="muted">{{ fmtDateTime(item.date) }}</small>
         </div>
-        <small class="muted">{{ fmtDateTime(item.date) }}</small>
-      </div>
-      <dl class="sums">
-        <div>
-          <dt>{{ 'Supplies.ProductTypeColumn' | t }}</dt>
-          <dd>{{ item.product?.category?.name }}</dd>
-        </div>
-        <div>
-          <dt>{{ 'Supplies.PerBundle' | t }}</dt>
-          <dd>{{ fmt(item.lengthPerRoll) }}</dd>
-        </div>
-        <div>
-          <dt>{{ 'Supplies.BundleCount' | t }}</dt>
-          <dd>{{ fmt(item.rollCount, 0) }}</dd>
-        </div>
-        <div>
-          <dt>{{ 'Common.Total' | t }}</dt>
-          <dd>{{ fmt(item.totalLength) }}</dd>
-        </div>
-      </dl>
-    </article>
+        <dl class="sums">
+          <div>
+            <dt>{{ 'Supplies.ProductTypeColumn' | t }}</dt>
+            <dd>{{ item.product?.category?.name }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'Supplies.PerBundle' | t }}</dt>
+            <dd>{{ fmt(item.lengthPerRoll) }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'Supplies.BundleCount' | t }}</dt>
+            <dd>{{ fmt(item.rollCount, 0) }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'Common.Total' | t }}</dt>
+            <dd>{{ fmt(item.totalLength) }}</dd>
+          </div>
+        </dl>
+      </article>
+    }
   }
 
   @if (page() < totalPages()) {

@@ -119,7 +119,7 @@ export interface SaleListItem {
   length: number;
   amount: number;
   customer?: { name: string } | null;
-  items?: { productId: number; totalLength: number; rollCount: number }[];
+  items?: { productId: number; totalLength: number; rollCount: number; weight?: number }[];
   branchId?: number | null;
   printJob?: PrintJob | null;
 }

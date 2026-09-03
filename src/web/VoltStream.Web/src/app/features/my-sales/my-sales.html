@@ -9,50 +9,109 @@
 
   @if (!sales().length && !loading()) {
     <app-empty-state [text]="'Common.NoData' | t" />
-  }
-
-  @for (sale of sales(); track sale.id) {
-    <article class="card">
-      <div class="row-between">
-        <div>
-          <strong>{{ sale.customer?.name || ('Common.NoData' | t) }}</strong>
-          @if (showBranch() && branches.nameOf(sale.branchId); as branchName) {
-            <small class="muted block">{{ branchName }}</small>
+  } @else if (bp.desktop()) {
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>{{ 'Common.Date' | t }}</th>
+            <th>{{ 'Sales.Buyer' | t }}</th>
+            @if (showBranch()) {
+              <th>{{ 'Web.Branch' | t }}</th>
+            }
+            <th class="num">{{ 'Web.TotalRolls' | t }}</th>
+            <th class="num">{{ 'Web.TotalLength' | t }}</th>
+            @if (showWeight()) {
+              <th class="num">{{ 'Web.Weight' | t }}</th>
+            }
+            <th class="num" *appHasPermission="'sales.view_prices'">{{ 'Common.Amount' | t }}</th>
+            <th>{{ 'Web.Status' | t }}</th>
+            @if (canPrint()) {
+              <th class="num">{{ 'Common.Actions' | t }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (sale of sales(); track sale.id) {
+            <tr>
+              <td>{{ fmtDateTime(sale.date) }}</td>
+              <td>{{ sale.customer?.name || ('Common.NoData' | t) }}</td>
+              @if (showBranch()) {
+                <td class="muted">{{ branches.nameOf(sale.branchId) }}</td>
+              }
+              <td class="num">{{ fmt(sale.rollCount, 0) }}</td>
+              <td class="num">{{ fmt(sale.length) }}</td>
+              @if (showWeight()) {
+                <td class="num">{{ fmt(weightOf(sale), 3) }}</td>
+              }
+              <td class="num" *appHasPermission="'sales.view_prices'">{{ fmt(sale.amount) }}</td>
+              <td>
+                @if (statusOf(sale); as status) {
+                  <app-status-badge [status]="status" />
+                }
+              </td>
+              @if (canPrint()) {
+                <td class="num">
+                  <button
+                    type="button"
+                    class="btn btn-ghost"
+                    [title]="'Common.Print' | t"
+                    [disabled]="print.isBusy(sale.id) || !pwa.online()"
+                    (click)="requestPrint(sale)"
+                  >
+                    <app-icon name="print" [size]="18" />
+                  </button>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    @for (sale of sales(); track sale.id) {
+      <article class="card">
+        <div class="row-between">
+          <div>
+            <strong>{{ sale.customer?.name || ('Common.NoData' | t) }}</strong>
+            @if (showBranch() && branches.nameOf(sale.branchId); as branchName) {
+              <small class="muted block">{{ branchName }}</small>
+            }
+          </div>
+          <small class="muted">{{ fmtDateTime(sale.date) }}</small>
+        </div>
+        <dl class="sums">
+          <div>
+            <dt>{{ 'Web.TotalRolls' | t }}</dt>
+            <dd>{{ fmt(sale.rollCount, 0) }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'Web.TotalLength' | t }}</dt>
+            <dd>{{ fmt(sale.length) }}</dd>
+          </div>
+          <div *appHasPermission="'sales.view_prices'">
+            <dt>{{ 'Common.Amount' | t }}</dt>
+            <dd>{{ fmt(sale.amount) }}</dd>
+          </div>
+        </dl>
+        <div class="foot">
+          @if (statusOf(sale); as status) {
+            <app-status-badge [status]="status" />
+          }
+          @if (canPrint()) {
+            <button
+              type="button"
+              class="btn btn-ghost"
+              [disabled]="print.isBusy(sale.id) || !pwa.online()"
+              (click)="requestPrint(sale)"
+            >
+              <app-icon name="print" [size]="18" />
+              {{ 'Common.Print' | t }}
+            </button>
           }
         </div>
-        <small class="muted">{{ fmtDateTime(sale.date) }}</small>
-      </div>
-      <dl class="sums">
-        <div>
-          <dt>{{ 'Web.TotalRolls' | t }}</dt>
-          <dd>{{ fmt(sale.rollCount, 0) }}</dd>
-        </div>
-        <div>
-          <dt>{{ 'Web.TotalLength' | t }}</dt>
-          <dd>{{ fmt(sale.length) }}</dd>
-        </div>
-        <div *appHasPermission="'sales.view_prices'">
-          <dt>{{ 'Common.Amount' | t }}</dt>
-          <dd>{{ fmt(sale.amount) }}</dd>
-        </div>
-      </dl>
-      <div class="foot">
-        @if (statusOf(sale); as status) {
-          <app-status-badge [status]="status" />
-        }
-        @if (canPrint()) {
-          <button
-            type="button"
-            class="btn btn-ghost"
-            [disabled]="print.isBusy(sale.id) || !pwa.online()"
-            (click)="requestPrint(sale)"
-          >
-            <app-icon name="print" [size]="18" />
-            {{ 'Common.Print' | t }}
-          </button>
-        }
-      </div>
-    </article>
+      </article>
+    }
   }
 
   @if (page() < totalPages()) {

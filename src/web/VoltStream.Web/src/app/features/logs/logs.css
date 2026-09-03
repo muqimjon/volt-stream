@@ -39,3 +39,32 @@
   word-break: break-word;
   overflow-x: auto;
 }
+
+.filters {
+  display: grid;
+  gap: var(--sp-md);
+}
+
+table.data td {
+  white-space: normal;
+}
+
+table.data tr.clickable {
+  cursor: pointer;
+}
+
+table.data td.fail {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+table.data td:has(.details) {
+  padding: 0;
+}
+
+@media (min-width: 1024px) {
+  .filters {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    align-items: end;
+  }
+}

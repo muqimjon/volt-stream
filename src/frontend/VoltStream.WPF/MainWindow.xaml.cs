@@ -35,7 +35,7 @@ public partial class MainWindow : Window
         UpdateThemeIcon();
     }
 
-    private void LanguageButton_Click(object sender, RoutedEventArgs e)
+    private void MenuButton_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button { ContextMenu: { } menu } button)
         {

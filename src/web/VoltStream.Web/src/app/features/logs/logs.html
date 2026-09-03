@@ -5,40 +5,80 @@
     </button>
   </app-page-header>
 
-  <app-date-field [label]="'Common.Date' | t" [value]="date()" (valueChange)="onDate($event)" />
+  <div class="filters">
+    <app-date-field [label]="'Common.Date' | t" [value]="date()" (valueChange)="onDate($event)" />
 
-  <div class="field">
-    <label for="q">{{ 'Common.Search' | t }}</label>
-    <input
-      id="q"
-      class="input"
-      type="search"
-      [value]="search()"
-      (input)="search.set($any($event.target).value)"
-      (change)="load(1)"
-    />
+    <div class="field">
+      <label for="q">{{ 'Common.Search' | t }}</label>
+      <input
+        id="q"
+        class="input"
+        type="search"
+        [value]="search()"
+        (input)="search.set($any($event.target).value)"
+        (change)="load(1)"
+      />
+    </div>
   </div>
 
   @if (!logs().length && !loading()) {
     <app-empty-state [text]="'Common.NoData' | t" />
-  }
-
-  @for (log of logs(); track log.id) {
-    <article class="card log" [class.failed]="!log.success">
-      <button type="button" class="log-head" (click)="toggle(log.id)">
-        <div>
-          <strong>{{ log.action }}</strong>
-          <small class="muted">{{ log.entityName }}{{ log.entityId ? ' #' + log.entityId : '' }}</small>
-        </div>
-        <div class="meta">
-          <span>{{ log.username }}</span>
-          <small class="muted">{{ fmtDateTime(log.timestamp) }}</small>
-        </div>
-      </button>
-      @if (expanded() === log.id) {
-        <pre class="details">{{ log.error || log.details || ('Common.NoData' | t) }}</pre>
-      }
-    </article>
+  } @else if (bp.desktop()) {
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>{{ 'Web.LogTime' | t }}</th>
+            <th>{{ 'Web.User' | t }}</th>
+            <th>{{ 'Web.LogAction' | t }}</th>
+            <th>{{ 'Web.LogEntity' | t }}</th>
+            <th>{{ 'Web.Status' | t }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (log of logs(); track log.id) {
+            <tr class="clickable" (click)="toggle(log.id)">
+              <td>{{ fmtDateTime(log.timestamp) }}</td>
+              <td>{{ log.username }}</td>
+              <td>{{ log.action }}</td>
+              <td class="muted">
+                {{ log.entityName }}{{ log.entityId ? ' #' + log.entityId : '' }}
+              </td>
+              <td [class.fail]="!log.success">
+                {{ (log.success ? 'Web.Success' : 'Web.Failed') | t }}
+              </td>
+            </tr>
+            @if (expanded() === log.id) {
+              <tr>
+                <td colspan="5">
+                  <pre class="details">{{ log.error || log.details || ('Common.NoData' | t) }}</pre>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    @for (log of logs(); track log.id) {
+      <article class="card log" [class.failed]="!log.success">
+        <button type="button" class="log-head" (click)="toggle(log.id)">
+          <div>
+            <strong>{{ log.action }}</strong>
+            <small class="muted"
+              >{{ log.entityName }}{{ log.entityId ? ' #' + log.entityId : '' }}</small
+            >
+          </div>
+          <div class="meta">
+            <span>{{ log.username }}</span>
+            <small class="muted">{{ fmtDateTime(log.timestamp) }}</small>
+          </div>
+        </button>
+        @if (expanded() === log.id) {
+          <pre class="details">{{ log.error || log.details || ('Common.NoData' | t) }}</pre>
+        }
+      </article>
+    }
   }
 
   @if (page() < totalPages()) {

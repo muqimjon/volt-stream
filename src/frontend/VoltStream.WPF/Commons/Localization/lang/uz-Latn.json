@@ -281,6 +281,8 @@
   "Products.UnitOfMeasure": "O'lchov birligi",
   "Products.WeightPerUnit": "1 metr og'irligi (kg)",
   "Products.WeightTracked": "Og'irlik hisobga olinsin",
+  "Profile.NoBranch": "Filial biriktirilmagan",
+  "Profile.Title": "Profil",
   "Receipt.Amount": "Summa",
   "Receipt.Discount": "Chegirma",
   "Receipt.LastSale": "Chek: {0}",

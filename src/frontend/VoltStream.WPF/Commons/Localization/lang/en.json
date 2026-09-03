@@ -281,6 +281,8 @@
   "Products.UnitOfMeasure": "Unit of measurement",
   "Products.WeightPerUnit": "Weight per meter (kg)",
   "Products.WeightTracked": "Track weight",
+  "Profile.NoBranch": "No branch assigned",
+  "Profile.Title": "Profile",
   "Receipt.Amount": "Amount",
   "Receipt.Discount": "Discount",
   "Receipt.LastSale": "Receipt: {0}",

@@ -61,6 +61,7 @@
                         Content="{loc:Loc Sales.CurrencyTypeLabel}"
                         FontSize="14" />
                     <Label
+                        x:Name="lblDiscountRow"
                         Grid.Row="3"
                         Margin="5,0,0,0"
                         VerticalAlignment="Center"
@@ -114,6 +115,7 @@
                             IsTabStop="False" />
 
                         <Label
+                            x:Name="lblTotalSum"
                             Grid.Column="1"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
@@ -131,7 +133,7 @@
                             FontSize="14"
                             Text="{Binding TotalSum}" />
                     </Grid>
-                    <Grid Grid.Row="3" Grid.Column="1">
+                    <Grid x:Name="discountPanel" Grid.Row="3" Grid.Column="1">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="90" />
@@ -290,11 +292,11 @@
                 <ColumnDefinition Width="0.9*" />
                 <ColumnDefinition Width="0.8*" />
                 <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="1.2*" />
-                <ColumnDefinition Width="0.75*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="1.1*" />
+                <ColumnDefinition x:Name="colPrice" Width="*" />
+                <ColumnDefinition x:Name="colSum" Width="1.2*" />
+                <ColumnDefinition x:Name="colPerDiscount" Width="0.75*" />
+                <ColumnDefinition x:Name="colDiscount" Width="*" />
+                <ColumnDefinition x:Name="colFinalSum" Width="1.1*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock
@@ -372,6 +374,7 @@
                 FontSize="14"
                 Text="{Binding Quantity}" />
             <TextBlock
+                x:Name="lbPrice"
                 Grid.Column="5"
                 Panel.ZIndex="1"
                 IsHitTestVisible="False"
@@ -387,6 +390,7 @@
                 FontSize="14"
                 Text="{Binding Price}" />
             <TextBlock
+                x:Name="lbSum"
                 Grid.Column="6"
                 Panel.ZIndex="1"
                 IsHitTestVisible="False"
@@ -402,6 +406,7 @@
                 FontSize="14"
                 Text="{Binding Sum}" />
             <TextBlock
+                x:Name="lbPerDiscount"
                 Grid.Column="7"
                 Panel.ZIndex="1"
                 IsHitTestVisible="False"
@@ -417,6 +422,7 @@
                 FontSize="14"
                 Text="{Binding PerDiscount}" />
             <TextBlock
+                x:Name="lbDiscount"
                 Grid.Column="8"
                 Panel.ZIndex="1"
                 IsHitTestVisible="False"
@@ -432,6 +438,7 @@
                 FontSize="14"
                 Text="{Binding Discount}" />
             <TextBlock
+                x:Name="lbFinalSum"
                 Grid.Column="9"
                 Panel.ZIndex="1"
                 IsHitTestVisible="False"
@@ -505,6 +512,15 @@
 
                             Header="{loc:Loc Common.Total}" />
                         <DataGridTextColumn
+                            x:Name="weightColumn"
+                            Width="*"
+                            Binding="{Binding Weight, StringFormat={}{0:N3}}"
+                            ElementStyle="{StaticResource RightCellText}"
+                            HeaderStyle="{StaticResource RightColumnHeader}"
+                            Header="{loc:Loc SalesJournal.Weight}"
+                            Visibility="Collapsed" />
+                        <DataGridTextColumn
+                            x:Name="priceColumn"
                             Width="*"
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding Price, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
@@ -512,6 +528,7 @@
                                     HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Common.Price}" />
                         <DataGridTextColumn
+                            x:Name="sumColumn"
                             Width="*"
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding Sum, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
@@ -519,12 +536,14 @@
                                     HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Sales.TotalSum}" />
                         <DataGridTextColumn
+                            x:Name="perDiscountColumn"
                             Width="*"
                             Binding="{Binding PerDiscount, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Sales.DiscountPercent}" />
                         <DataGridTextColumn
+                            x:Name="discountColumn"
                             Width="*"
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding Discount, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
@@ -532,6 +551,7 @@
                                     HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Sales.DiscountAmount}" />
                         <DataGridTextColumn
+                            x:Name="finalSumColumn"
                             Width="*"
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding FinalSumProduct, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"

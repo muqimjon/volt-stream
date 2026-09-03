@@ -26,6 +26,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly INavigationService navigationService;
     private readonly IServiceProvider services;
     private readonly NamozTimeService namozService;
+    private readonly ISessionService session;
 
     public BranchContext BranchContext { get; }
 
@@ -52,6 +53,11 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty] private string dateLabel = string.Empty;
     [ObservableProperty] private string regionName = string.Empty;
 
+    [ObservableProperty] private string userDisplayName = string.Empty;
+    [ObservableProperty] private string userLogin = string.Empty;
+    [ObservableProperty] private string userRoleName = string.Empty;
+    [ObservableProperty] private string userBranchName = string.Empty;
+
     public MainViewModel(IServiceProvider services, INavigationService navigationService, NamozTimeService namozService)
     {
         this.services = services;
@@ -60,6 +66,7 @@ public partial class MainViewModel : ViewModelBase
 
         ApiConnection = services.GetRequiredService<ApiConnectionViewModel>();
         BranchContext = services.GetRequiredService<BranchContext>();
+        session = services.GetRequiredService<ISessionService>();
         _ = BranchContext.LoadAsync();
 
         if (this.navigationService is NavigationService navImpl)
@@ -69,22 +76,43 @@ public partial class MainViewModel : ViewModelBase
 
         paletteItems =
         [
-            new("Nav.Dashboard", IconChar.Home, ShowDashboardView),
-            new("Nav.Production", IconChar.ProjectDiagram, ShowSuppliesView),
-            new("Nav.Sales", IconChar.ShoppingCart, ShowSalesView),
-            new("Nav.SalesJournal", IconChar.Receipt, ShowSalesJournalView),
-            new("Nav.Payment", IconChar.MoneyBillWave, ShowPaymentView),
-            new("Nav.Products", IconChar.Boxes, ShowProductView),
-            new("Nav.SalesAnalytics", IconChar.FileAlt, ShowSalesHistoryView),
-            new("Nav.Counterparties", IconChar.BalanceScale, ShowDebitorCreditor),
-            new("Nav.CustomerReport", IconChar.ArrowsRotate, ShowTurnoversPage),
-            new("Nav.Settings", IconChar.Sliders, ShowSettings),
+            .. new (string Key, string Permission, IconChar Icon, Action Show)[]
+            {
+                ("Nav.Dashboard", "reports.view", IconChar.Home, ShowDashboardView),
+                ("Nav.Production", "supplies.create", IconChar.ProjectDiagram, ShowSuppliesView),
+                ("Nav.Sales", "sales.create", IconChar.ShoppingCart, ShowSalesView),
+                ("Nav.SalesJournal", "sales.view", IconChar.Receipt, ShowSalesJournalView),
+                ("Nav.Payment", "payments.manage", IconChar.MoneyBillWave, ShowPaymentView),
+                ("Nav.Products", "stock.view", IconChar.Boxes, ShowProductView),
+                ("Nav.SalesAnalytics", "reports.view", IconChar.FileAlt, ShowSalesHistoryView),
+                ("Nav.Counterparties", "customers.manage", IconChar.BalanceScale, ShowDebitorCreditor),
+                ("Nav.CustomerReport", "reports.view", IconChar.ArrowsRotate, ShowTurnoversPage),
+                ("Nav.Settings", string.Empty, IconChar.Sliders, ShowSettings),
+            }
+            .Where(p => p.Permission.Length == 0 || session.Has(p.Permission))
+            .Select(p => new PaletteItem(p.Key, p.Icon, p.Show))
         ];
         FilterPalette();
 
-        LocalizationManager.LanguageChanged += _ => CurrentPageTitle = TranslationSource.T(currentTitleKey);
+        LocalizationManager.LanguageChanged += _ =>
+        {
+            CurrentPageTitle = TranslationSource.T(currentTitleKey);
+            UpdateProfile();
+        };
 
-        ShowDashboardView();
+        UpdateProfile();
+        (paletteItems.FirstOrDefault()?.Invoke ?? ShowDashboardView)();
+    }
+
+    private void UpdateProfile()
+    {
+        var user = session.CurrentUser;
+        UserLogin = user?.Username ?? string.Empty;
+        UserDisplayName = string.IsNullOrWhiteSpace(user?.Name) ? UserLogin : user!.Name!;
+        UserRoleName = user is null ? string.Empty : TranslationSource.T($"Users.Role.{user.Role}");
+        UserBranchName = string.IsNullOrWhiteSpace(session.BranchName)
+            ? TranslationSource.T("Profile.NoBranch")
+            : session.BranchName!;
     }
 
     [RelayCommand]

@@ -7,6 +7,7 @@
     xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:uc="clr-namespace:VoltStream.WPF.Commons.UserControls"
+    xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
     xmlns:vm="clr-namespace:VoltStream.WPF"
     Title="Volt Stream"
     Width="1350"
@@ -73,47 +74,7 @@
             </Grid.ColumnDefinitions>
 
             <Grid x:Name="Sidebar">
-                <DockPanel>
-                    <Button
-                        DockPanel.Dock="Bottom"
-                        Height="48"
-                        Margin="10,4,10,12"
-                        HorizontalContentAlignment="Left"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        Click="LogoutButton_Click"
-                        Cursor="Hand"
-                        ToolTip="{loc:Loc Nav.Logout}">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="8">
-                                    <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" />
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="bd" Property="Background" Value="{DynamicResource DangerSubtle}" />
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Button.Template>
-                        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
-                            <fa:IconImage
-                                Width="22"
-                                Height="22"
-                                Margin="35,0,20,0"
-                                Foreground="{DynamicResource Danger}"
-                                Icon="RightFromBracket" />
-                            <TextBlock
-                                VerticalAlignment="Center"
-                                FontFamily="Montserrat"
-                                FontSize="13.5"
-                                FontWeight="Medium"
-                                Foreground="{DynamicResource Danger}"
-                                Text="{loc:Loc Nav.Logout}" />
-                        </StackPanel>
-                    </Button>
-
-                    <StackPanel>
+                <StackPanel>
                     <ToggleButton
                         Width="250"
                         HorizontalContentAlignment="Left"
@@ -136,6 +97,7 @@
                     </ToggleButton>
 
                     <RadioButton
+                        utils:Permission.Require="reports.view"
                         Command="{Binding ShowDashboardViewCommand}"
                         GroupName="MenuGroup"
                         IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.Dashboard, Mode=OneWay}"
@@ -148,6 +110,7 @@
                     </RadioButton>
 
                     <RadioButton
+                        utils:Permission.Require="supplies.create"
                         Command="{Binding ShowSuppliesViewCommand}"
                         GroupName="MenuGroup"
                         IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.Production, Mode=OneWay}"
@@ -160,6 +123,7 @@
                     </RadioButton>
 
                     <RadioButton
+                        utils:Permission.Require="sales.create"
                         Command="{Binding ShowSalesViewCommand}"
                         GroupName="MenuGroup"
                         IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.Sales, Mode=OneWay}"
@@ -172,6 +136,7 @@
                     </RadioButton>
 
                     <RadioButton
+                        utils:Permission.Require="sales.view"
                         Command="{Binding ShowSalesJournalViewCommand}"
                         GroupName="MenuGroup"
                         IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.SalesJournal, Mode=OneWay}"
@@ -184,6 +149,7 @@
                     </RadioButton>
 
                     <RadioButton
+                        utils:Permission.Require="payments.manage"
                         Command="{Binding ShowPaymentViewCommand}"
                         GroupName="MenuGroup"
                         IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.Payment, Mode=OneWay}"
@@ -196,6 +162,7 @@
                     </RadioButton>
 
                     <RadioButton
+                        utils:Permission.Require="stock.view"
                         Command="{Binding ShowProductViewCommand}"
                         GroupName="MenuGroup"
                         IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.Products, Mode=OneWay}"
@@ -208,6 +175,7 @@
                     </RadioButton>
 
                     <RadioButton
+                        utils:Permission.Require="reports.view"
                         Command="{Binding ShowSalesHistoryViewCommand}"
                         GroupName="MenuGroup"
                         IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.SalesAnalytics, Mode=OneWay}"
@@ -220,6 +188,7 @@
                     </RadioButton>
 
                     <RadioButton
+                        utils:Permission.Require="customers.manage"
                         Command="{Binding ShowDebitorCreditorCommand}"
                         GroupName="MenuGroup"
                         IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.Counterparties, Mode=OneWay}"
@@ -232,6 +201,7 @@
                     </RadioButton>
 
                     <RadioButton
+                        utils:Permission.Require="reports.view"
                         Command="{Binding ShowTurnoversPageCommand}"
                         GroupName="MenuGroup"
                         IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.CustomerReport, Mode=OneWay}"
@@ -256,7 +226,6 @@
                     </RadioButton>
 
                 </StackPanel>
-                </DockPanel>
             </Grid>
 
             <Grid Grid.Column="1">
@@ -402,7 +371,117 @@
                                     </Setter.Value>
                                 </Setter>
                             </Style>
+
+                            <ControlTemplate x:Key="HeaderMenuTemplate" TargetType="ContextMenu">
+                                <Border
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="4">
+                                    <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
+                                </Border>
+                            </ControlTemplate>
+
+                            <Style x:Key="HeaderMenuItemStyle" TargetType="MenuItem">
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+                                <Setter Property="Padding" Value="16,8" />
+                                <Setter Property="Cursor" Value="Hand" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="MenuItem">
+                                            <Border x:Name="bd" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter ContentSource="Header" VerticalAlignment="Center" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsHighlighted" Value="True">
+                                                    <Setter TargetName="bd" Property="Background" Value="{DynamicResource BrandSubtle}" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
                         </StackPanel.Resources>
+
+                        <Button
+                            x:Name="ProfileButton"
+                            Width="Auto"
+                            Margin="0,0,10,0"
+                            Click="MenuButton_Click"
+                            Style="{StaticResource WindowControlButtonStyle}"
+                            ToolTip="{loc:Loc Profile.Title}">
+                            <StackPanel Orientation="Horizontal">
+                                <fa:IconImage
+                                    Width="14"
+                                    Height="14"
+                                    Margin="0,0,6,0"
+                                    VerticalAlignment="Center"
+                                    Foreground="{DynamicResource HeaderText}"
+                                    Icon="CircleUser" />
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    Foreground="{DynamicResource HeaderText}"
+                                    Text="{Binding UserDisplayName}" />
+                                <TextBlock
+                                    Margin="6,0,0,0"
+                                    VerticalAlignment="Center"
+                                    FontSize="11"
+                                    Opacity="0.7"
+                                    Foreground="{DynamicResource HeaderText}"
+                                    Text="{Binding UserRoleName}" />
+                            </StackPanel>
+                            <Button.ContextMenu>
+                                <ContextMenu
+                                    Background="{DynamicResource Surface}"
+                                    BorderBrush="{DynamicResource Border}"
+                                    Foreground="{DynamicResource TextPrimary}">
+                                    <ContextMenu.Template>
+                                        <ControlTemplate TargetType="ContextMenu">
+                                            <Border
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Padding="4">
+                                                <StackPanel MinWidth="200" KeyboardNavigation.DirectionalNavigation="Cycle">
+                                                    <StackPanel Margin="16,8">
+                                                        <TextBlock
+                                                            FontWeight="Bold"
+                                                            Foreground="{DynamicResource TextPrimary}"
+                                                            Text="{Binding UserDisplayName}" />
+                                                        <TextBlock
+                                                            FontSize="12"
+                                                            Foreground="{DynamicResource TextSecondary}"
+                                                            Text="{Binding UserLogin}" />
+                                                        <TextBlock
+                                                            Margin="0,6,0,0"
+                                                            FontSize="12"
+                                                            Foreground="{DynamicResource TextSecondary}"
+                                                            Text="{Binding UserRoleName}" />
+                                                        <TextBlock
+                                                            FontSize="12"
+                                                            Foreground="{DynamicResource TextSecondary}"
+                                                            Text="{Binding UserBranchName}" />
+                                                    </StackPanel>
+                                                    <Border
+                                                        Height="1"
+                                                        Margin="8,4"
+                                                        Background="{DynamicResource Border}" />
+                                                    <ItemsPresenter />
+                                                </StackPanel>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </ContextMenu.Template>
+                                    <ContextMenu.Resources>
+                                        <Style BasedOn="{StaticResource HeaderMenuItemStyle}" TargetType="MenuItem" />
+                                    </ContextMenu.Resources>
+                                    <MenuItem Click="LogoutButton_Click" Foreground="{DynamicResource Danger}" Header="{loc:Loc Nav.Logout}" />
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
 
                         <Button
                             Command="{Binding TogglePaletteCommand}"
@@ -417,7 +496,7 @@
 
                         <Button
                             x:Name="LanguageButton"
-                            Click="LanguageButton_Click"
+                            Click="MenuButton_Click"
                             Style="{StaticResource WindowControlButtonStyle}"
                             ToolTip="{loc:Loc Tooltip.Language}">
                             <fa:IconImage
@@ -429,39 +508,10 @@
                                 <ContextMenu
                                     Background="{DynamicResource Surface}"
                                     BorderBrush="{DynamicResource Border}"
-                                    Foreground="{DynamicResource TextPrimary}">
-                                    <ContextMenu.Template>
-                                        <ControlTemplate TargetType="ContextMenu">
-                                            <Border
-                                                Background="{TemplateBinding Background}"
-                                                BorderBrush="{TemplateBinding BorderBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="8"
-                                                Padding="4">
-                                                <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" />
-                                            </Border>
-                                        </ControlTemplate>
-                                    </ContextMenu.Template>
+                                    Foreground="{DynamicResource TextPrimary}"
+                                    Template="{StaticResource HeaderMenuTemplate}">
                                     <ContextMenu.Resources>
-                                        <Style TargetType="MenuItem">
-                                            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
-                                            <Setter Property="Padding" Value="16,8" />
-                                            <Setter Property="Cursor" Value="Hand" />
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="MenuItem">
-                                                        <Border x:Name="bd" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}">
-                                                            <ContentPresenter ContentSource="Header" VerticalAlignment="Center" />
-                                                        </Border>
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsHighlighted" Value="True">
-                                                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource BrandSubtle}" />
-                                                            </Trigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
+                                        <Style BasedOn="{StaticResource HeaderMenuItemStyle}" TargetType="MenuItem" />
                                     </ContextMenu.Resources>
                                     <MenuItem Header="O'zbekcha (lotin)" Click="Lang_UzLatn_Click" />
                                     <MenuItem Header="Ўзбекча (кирилл)" Click="Lang_UzCyrl_Click" />

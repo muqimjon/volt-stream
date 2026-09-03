@@ -3,6 +3,7 @@ import { ApiClient } from '../../core/api/api-client';
 import { AuthService } from '../../core/auth/auth';
 import { TranslatePipe } from '../../core/i18n/translate';
 import { AuditLog } from '../../core/models';
+import { BreakpointService } from '../../core/ui/breakpoint';
 import { fmtDateTime, toDateInput } from '../../core/utils/date';
 import { DateField } from '../../shared/date-field';
 import { EmptyState } from '../../shared/empty-state';
@@ -20,6 +21,7 @@ const PAGE_SIZE = 25;
 export class LogsPage {
   private readonly api = inject(ApiClient);
   private readonly auth = inject(AuthService);
+  protected readonly bp = inject(BreakpointService);
   protected readonly fmtDateTime = fmtDateTime;
 
   protected readonly date = signal(toDateInput(new Date()));
@@ -50,14 +52,18 @@ export class LogsPage {
     if (this.loading()) return;
     this.loading.set(true);
     try {
-      const result = await this.api.filter<AuditLog>('audit-logs/filter', {
-        filters: { timestamp: [this.date()] },
-        search: this.search().trim() || null,
-        page,
-        pageSize: PAGE_SIZE,
-        sortBy: 'Timestamp',
-        descending: true,
-      }, { branchScoped: true });
+      const result = await this.api.filter<AuditLog>(
+        'audit-logs/filter',
+        {
+          filters: { timestamp: [this.date()] },
+          search: this.search().trim() || null,
+          page,
+          pageSize: PAGE_SIZE,
+          sortBy: 'Timestamp',
+          descending: true,
+        },
+        { branchScoped: true },
+      );
       this.page.set(page);
       this.totalPages.set(result.paging?.totalPages ?? 1);
       this.logs.set(page === 1 ? result.items : [...this.logs(), ...result.items]);

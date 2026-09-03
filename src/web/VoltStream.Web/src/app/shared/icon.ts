@@ -16,6 +16,7 @@ export const ICONS: Record<string, string> = {
   refresh: 'M21 12a9 9 0 1 1-2.6-6.4 M21 3v6h-6',
   logout: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9',
   download: 'M12 3v12 M7 10l5 5 5-5 M4 21h16',
+  chevron: 'M6 9l6 6 6-6',
 };
 
 @Component({

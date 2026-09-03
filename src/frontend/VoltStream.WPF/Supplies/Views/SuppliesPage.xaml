@@ -1,4 +1,4 @@
-<Page x:Class="VoltStream.WPF.Supplies.Views.SuppliesPage"
+﻿<Page x:Class="VoltStream.WPF.Supplies.Views.SuppliesPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -211,14 +211,16 @@
                     </ComboBox>
 
                 </Grid>
-                <Grid Grid.Row="4"
+                <Grid x:Name="priceLabelCell"
+                      Grid.Row="4"
                       Grid.Column="0">
                     <Label Content="{loc:Loc Supplies.PriceLabel}"
                            VerticalAlignment="Center"
                            FontSize="14" />
                 </Grid>
 
-                <Grid Grid.Row="4"
+                <Grid x:Name="priceInputCell"
+                      Grid.Row="4"
                       Grid.Column="1">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />

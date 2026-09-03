@@ -30,6 +30,7 @@ public partial class SalesPage : Page
     private readonly BranchContext branchContext;
 
     private readonly SaleSession saleSession;
+    private readonly bool canViewPrices;
     public Sale sale;
     private long? loadedProductCategoryId;
     private bool productsLoaded;
@@ -78,6 +79,28 @@ public partial class SalesPage : Page
 
         CurrencyType.SelectionChanged += CurrencyType_SelectionChanged;
 
+        canViewPrices = Permission.Has("sales.view_prices");
+        if (!canViewPrices)
+            HidePriceFields();
+    }
+
+    private void HidePriceFields()
+    {
+        foreach (var element in new UIElement[]
+        {
+            lblTotalSum, TotalSum, lblDiscountRow, discountPanel,
+            lbPrice, txtPrice, lbSum, txtSum, lbPerDiscount, txtPerDiscount,
+            lbDiscount, txtDiscount, lbFinalSum, txtFinalSumProduct
+        })
+            element.Visibility = Visibility.Collapsed;
+
+        foreach (var column in new[] { colPrice, colSum, colPerDiscount, colDiscount, colFinalSum })
+            column.Width = new GridLength(0);
+
+        foreach (var column in new[] { priceColumn, sumColumn, perDiscountColumn, discountColumn, finalSumColumn })
+            column.Visibility = Visibility.Collapsed;
+
+        weightColumn.Visibility = Visibility.Visible;
     }
 
     private void CurrencyType_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -178,7 +201,7 @@ public partial class SalesPage : Page
         {
             var customer = response.Data!.First();
 
-            beginBalans.Text = GetAccountsSumInUzsString(customer);
+            beginBalans.Text = canViewPrices ? GetAccountsSumInUzsString(customer) : string.Empty;
             tel.Text = customer.Phone;
             CalcSaleSum();
         }
@@ -546,6 +569,7 @@ public partial class SalesPage : Page
             RollCount = int.TryParse(txtRollCount.Text, out int rollCount) ? rollCount : 0,
             WarehouseCountRoll = sale.WarehouseCountRoll,
             Quantity = decimal.TryParse(txtQuantity.Text, out decimal quantity) ? quantity : 0,
+            Weight = (cbxProductName.SelectedItem as ProductResponse)?.WeightPerUnit * quantity,
             NewQuantity = sale.NewQuantity,
             WarehouseQuantity = sale.WarehouseQuantity,
             Price = decimal.TryParse(txtPrice.Text, out decimal price) ? price : 0,
@@ -646,21 +670,21 @@ public partial class SalesPage : Page
             isSuccess = false;
         }
 
-        else if (!decimal.TryParse(txtPrice.Text, out decimal price) || price <= 0)
+        else if (canViewPrices && (!decimal.TryParse(txtPrice.Text, out decimal price) || price <= 0))
         {
             txtPrice.Focus();
             sale.Warning = TranslationSource.T("Sales.PriceRequired");
             isSuccess = false;
         }
 
-        else if (!decimal.TryParse(txtSum.Text, out decimal sum) || sum <= 0)
+        else if (canViewPrices && (!decimal.TryParse(txtSum.Text, out decimal sum) || sum <= 0))
         {
             sale.Warning = TranslationSource.T("Sales.TotalSumRequired");
             txtSum.Focus();
             isSuccess = false;
         }
 
-        else if (!decimal.TryParse(txtFinalSumProduct.Text, out decimal finalSumProduct) || finalSumProduct <= 0)
+        else if (canViewPrices && (!decimal.TryParse(txtFinalSumProduct.Text, out decimal finalSumProduct) || finalSumProduct <= 0))
         {
             sale.Warning = TranslationSource.T("Sales.GrandTotalRequired");
             txtFinalSumProduct.Focus();
@@ -713,7 +737,7 @@ public partial class SalesPage : Page
         var rate = (CurrencyType.SelectedItem as CurrencyResponse)?.ExchangeRate ?? 1m;
         if (rate == 0m) rate = 1m;
         decimal endSum = beginSum - finalSum * rate;
-        lastBalans.Text = endSum.ToString();
+        lastBalans.Text = canViewPrices ? endSum.ToString() : string.Empty;
 
     }
 
@@ -820,8 +844,7 @@ public partial class SalesPage : Page
             return;
         }
 
-        var session = services.GetRequiredService<ISessionService>();
-        ReceiptDocumentBuilder.Preview(response.Data, session.Has("sales.view_prices"), services);
+        ReceiptDocumentBuilder.Preview(response.Data, canViewPrices, services);
     }
 
     private async void Page_Loaded(object sender, RoutedEventArgs e)

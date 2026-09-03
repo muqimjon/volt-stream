@@ -15,6 +15,7 @@ public partial class SaleItem : ViewModelBase
     [ObservableProperty] private int? rollCount;
     [ObservableProperty] private decimal warehouseCountRoll;
     [ObservableProperty] private decimal? quantity;
+    [ObservableProperty] private decimal? weight;
     [ObservableProperty] private decimal newQuantity;
     [ObservableProperty] private decimal? price;
     [ObservableProperty] private decimal? sum;

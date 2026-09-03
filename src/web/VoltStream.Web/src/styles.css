@@ -158,3 +158,61 @@ textarea {
   flex-direction: column;
   gap: var(--sp-lg);
 }
+
+.table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+}
+
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+table.data th {
+  padding: var(--sp-md) var(--sp-lg);
+  text-align: start;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  color: var(--text-2);
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--border);
+}
+
+table.data td {
+  padding: var(--sp-md) var(--sp-lg);
+  border-bottom: 1px solid var(--border);
+}
+
+table.data tbody tr:last-child td {
+  border-bottom: none;
+}
+
+table.data tbody tr:hover {
+  background: var(--row-alt);
+}
+
+table.data .num {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+table.data .btn {
+  min-height: 32px;
+  padding: 0 var(--sp-sm);
+}
+
+@media (min-width: 1024px) {
+  .page {
+    padding: var(--sp-xl);
+    gap: var(--sp-xl);
+  }
+
+  .page > app-date-field {
+    display: block;
+    max-width: 260px;
+  }
+}

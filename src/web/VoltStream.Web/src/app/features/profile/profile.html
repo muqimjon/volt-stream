@@ -21,8 +21,13 @@
   <section class="card rows">
     <label class="row" for="lang">
       <span>{{ 'Web.Language' | t }}</span>
-      <select id="lang" class="picker" [value]="translate.lang()" (change)="setLang($any($event.target).value)">
-        @for (lang of languages; track lang.code) {
+      <select
+        id="lang"
+        class="picker"
+        [value]="actions.translate.lang()"
+        (change)="actions.setLang($any($event.target).value)"
+      >
+        @for (lang of actions.languages; track lang.code) {
           <option [value]="lang.code">{{ lang.label }}</option>
         }
       </select>
@@ -30,9 +35,14 @@
 
     <label class="row" for="theme">
       <span>{{ 'Web.Theme' | t }}</span>
-      <select id="theme" class="picker" [value]="theme.mode()" (change)="setTheme($any($event.target).value)">
-        @for (mode of themes; track mode) {
-          <option [value]="mode">{{ themeKey[mode] | t }}</option>
+      <select
+        id="theme"
+        class="picker"
+        [value]="actions.theme.mode()"
+        (change)="actions.setTheme($any($event.target).value)"
+      >
+        @for (mode of actions.themes; track mode) {
+          <option [value]="mode">{{ actions.themeKey[mode] | t }}</option>
         }
       </select>
     </label>
@@ -50,7 +60,7 @@
     </button>
   }
 
-  <button type="button" class="btn btn-danger btn-block" (click)="logout()">
+  <button type="button" class="btn btn-danger btn-block" (click)="actions.logout()">
     <app-icon name="logout" />
     {{ 'Nav.Logout' | t }}
   </button>

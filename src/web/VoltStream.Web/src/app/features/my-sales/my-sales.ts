@@ -8,6 +8,7 @@ import { HasPermissionDirective, PermissionService } from '../../core/permission
 import { PwaService } from '../../core/pwa/pwa';
 import { PrintService } from '../../core/realtime/print';
 import { PrintHubService } from '../../core/realtime/print-hub';
+import { BreakpointService } from '../../core/ui/breakpoint';
 import { fmtDateTime, toDateInput } from '../../core/utils/date';
 import { fmtNum } from '../../core/utils/number';
 import { DateField } from '../../shared/date-field';
@@ -18,6 +19,10 @@ import { StatusBadge } from '../../shared/status-badge';
 
 const REFRESH_MS = 30000;
 const PAGE_SIZE = 20;
+
+function weightOf(sale: SaleListItem): number {
+  return (sale.items ?? []).reduce((sum, i) => sum + (i.weight ?? 0), 0);
+}
 
 @Component({
   selector: 'app-my-sales',
@@ -42,6 +47,7 @@ export class MySalesPage {
 
   protected readonly print = inject(PrintService);
   protected readonly pwa = inject(PwaService);
+  protected readonly bp = inject(BreakpointService);
   protected readonly fmt = fmtNum;
   protected readonly fmtDateTime = fmtDateTime;
 
@@ -68,6 +74,10 @@ export class MySalesPage {
     const timer = setInterval(() => void this.load(1), REFRESH_MS);
     inject(DestroyRef).onDestroy(() => clearInterval(timer));
   }
+
+  protected readonly showWeight = computed(() => this.sales().some((s) => weightOf(s) > 0));
+
+  protected readonly weightOf = weightOf;
 
   protected statusOf(sale: SaleListItem): PrintJobStatus | null {
     return this.hub.jobFor(sale.id)?.status ?? sale.printJob?.status ?? null;

@@ -99,6 +99,7 @@
                     Header="{loc:Loc Debitors.Address}" />
 
                 <DataGridTextColumn
+                    x:Name="discountColumn"
                     Width="*"
                     Binding="{Binding Discount, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
@@ -113,6 +114,7 @@
                 </DataGridTextColumn>
 
                 <DataGridTextColumn
+                    x:Name="debitorColumn"
                     Width="*"
                     Binding="{Binding Debitor, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
@@ -127,6 +129,7 @@
                 </DataGridTextColumn>
 
                 <DataGridTextColumn
+                    x:Name="creditorColumn"
                     Width="*"
                     Binding="{Binding Creditor, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
@@ -153,6 +156,7 @@
             DataContext="{Binding Pagination}" />
 
         <Border
+            x:Name="totalsPanel"
             Grid.Row="3"
             Margin="0,12,0,0"
             Padding="16,12"

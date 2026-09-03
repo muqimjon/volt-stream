@@ -136,6 +136,7 @@
                     Header="{loc:Loc Products.UnitOfMeasure}" />
 
                 <DataGridTextColumn
+                    x:Name="priceColumn"
                     Width="*"
                     Binding="{Binding Price, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
@@ -150,6 +151,7 @@
                 </DataGridTextColumn>
 
                 <DataGridTextColumn
+                    x:Name="totalAmountColumn"
                     Width="1.5*"
                     Binding="{Binding TotalAmount, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"

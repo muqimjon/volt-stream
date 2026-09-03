@@ -60,33 +60,51 @@
   color: var(--danger);
 }
 
-.totals.pinned {
-  position: sticky;
-  bottom: 0;
-  gap: var(--sp-sm);
-  padding-block: var(--sp-md);
-  box-shadow: var(--shadow-card);
-}
-
-.totals.pinned .sums {
+.split,
+.col {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-xs) var(--sp-md);
+  flex-direction: column;
+  gap: var(--sp-lg);
 }
 
-.totals.pinned .sums > div {
-  flex-direction: row;
-  align-items: baseline;
-  gap: 6px;
+@media (max-width: 1023.98px) {
+  .totals.pinned {
+    position: sticky;
+    bottom: 0;
+    gap: var(--sp-sm);
+    padding-block: var(--sp-md);
+    box-shadow: var(--shadow-card);
+  }
+
+  .totals.pinned .sums {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-xs) var(--sp-md);
+  }
+
+  .totals.pinned .sums > div {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .totals.pinned .sums dt,
+  .totals.pinned .sums dd {
+    font-size: var(--fs-caption);
+  }
+
+  .page:has(.totals.pinned) {
+    padding-bottom: calc(var(--sp-lg) + 96px);
+  }
 }
 
-.totals.pinned .sums dt,
-.totals.pinned .sums dd {
-  font-size: var(--fs-caption);
-}
-
-.page:has(.totals.pinned) {
-  padding-bottom: calc(var(--sp-lg) + 96px);
+@media (min-width: 1024px) {
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--sp-xl);
+  }
 }
 
 .overlay {

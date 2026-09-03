@@ -1,8 +1,9 @@
-namespace VoltStream.Application.Features.Stats.Queries;
+﻿namespace VoltStream.Application.Features.Stats.Queries;
 
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Mediator;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Commons.Services;
 using VoltStream.Application.Features.Stats.DTOs;
 
@@ -12,7 +13,7 @@ public record GetBranchStatsQuery(
     long? BranchId = null,
     long? UserId = null) : IRequest<BranchStatsDto>;
 
-public class GetBranchStatsQueryHandler(IAppDbContext context, BranchContext branches)
+public class GetBranchStatsQueryHandler(IAppDbContext context, BranchContext branches, ICurrentUser user)
     : IRequestHandler<GetBranchStatsQuery, BranchStatsDto>
 {
     public async Task<BranchStatsDto> Handle(GetBranchStatsQuery request, CancellationToken cancellationToken)
@@ -31,10 +32,12 @@ public class GetBranchStatsQueryHandler(IAppDbContext context, BranchContext bra
             supplies = supplies.Where(s => s.BranchId == branchId);
         }
 
-        if (request.UserId is not null)
+        var userId = user.Has(Permissions.ReportsView) ? request.UserId : user.UserId;
+
+        if (userId is not null)
         {
-            sales = sales.Where(s => s.CreatedByUserId == request.UserId);
-            supplies = supplies.Where(s => s.CreatedByUserId == request.UserId);
+            sales = sales.Where(s => s.CreatedByUserId == userId);
+            supplies = supplies.Where(s => s.CreatedByUserId == userId);
         }
 
         return new BranchStatsDto

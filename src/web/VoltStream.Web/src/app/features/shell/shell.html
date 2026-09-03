@@ -2,9 +2,7 @@
   <header class="app-header">
     <span class="brand">Volt Stream</span>
     <app-branch-switcher />
-    <button type="button" class="icon-btn" [title]="'Web.Theme' | t" (click)="toggleTheme()">
-      <app-icon [name]="themeIcon()" />
-    </button>
+    <app-user-menu />
   </header>
 
   <div class="banners">
@@ -31,6 +29,8 @@
   </nav>
 
   <main>
-    <router-outlet />
+    <div class="content">
+      <router-outlet />
+    </div>
   </main>
 </div>

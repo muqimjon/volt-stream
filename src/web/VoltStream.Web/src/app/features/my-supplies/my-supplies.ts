@@ -4,6 +4,7 @@ import { AuthService } from '../../core/auth/auth';
 import { BranchStore } from '../../core/branches';
 import { TranslatePipe } from '../../core/i18n/translate';
 import { SupplyListItem } from '../../core/models';
+import { BreakpointService } from '../../core/ui/breakpoint';
 import { fmtDateTime, toDateInput } from '../../core/utils/date';
 import { fmtNum } from '../../core/utils/number';
 import { DateField } from '../../shared/date-field';
@@ -23,6 +24,7 @@ export class MySuppliesPage {
   private readonly api = inject(ApiClient);
   protected readonly auth = inject(AuthService);
   protected readonly branches = inject(BranchStore);
+  protected readonly bp = inject(BreakpointService);
 
   protected readonly fmt = fmtNum;
   protected readonly fmtDateTime = fmtDateTime;
