@@ -76,8 +76,17 @@ textarea {
   color: var(--on-brand);
 }
 
+.btn-primary:not(:disabled):hover {
+  background: var(--brand-hover);
+}
+
 .btn-primary:not(:disabled):active {
   background: var(--brand-pressed);
+}
+
+.btn-ghost:not(:disabled):hover {
+  background: var(--surface-alt);
+  border-color: var(--border-hover);
 }
 
 .btn-ghost {
