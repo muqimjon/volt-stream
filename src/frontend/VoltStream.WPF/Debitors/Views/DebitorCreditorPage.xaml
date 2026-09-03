@@ -102,6 +102,7 @@
                     Width="*"
                     Binding="{Binding Discount, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                     Header="{loc:Loc Debitors.Bonus}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
@@ -115,6 +116,7 @@
                     Width="*"
                     Binding="{Binding Debitor, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                     Header="{loc:Loc Debitors.Debitor}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
@@ -128,6 +130,7 @@
                     Width="*"
                     Binding="{Binding Creditor, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                     Header="{loc:Loc Debitors.Kreditor}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">

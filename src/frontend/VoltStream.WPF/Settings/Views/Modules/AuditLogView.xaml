@@ -140,6 +140,7 @@
                     Width="60"
                     Binding="{Binding EntityId}"
                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                     Header="Id" />
                 <DataGridTextColumn
                     Width="80"

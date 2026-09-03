@@ -354,14 +354,17 @@
                 <DataGridTextColumn Header="{loc:Loc Supplies.BundleCount}"
                                     Binding="{Binding RollCount, StringFormat=N2}"
                                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                                     Width="*" />
                 <DataGridTextColumn Header="{loc:Loc Supplies.PerBundle}"
                                     Binding="{Binding LengthPerRoll, StringFormat=N2}"
                                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                                     Width="*" />
                 <DataGridTextColumn Header="{loc:Loc Common.Total}"
                                     Binding="{Binding TotalLength, StringFormat=N2}"
                                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                                     Width="*" />
             </DataGrid.Columns>
         </DataGrid>

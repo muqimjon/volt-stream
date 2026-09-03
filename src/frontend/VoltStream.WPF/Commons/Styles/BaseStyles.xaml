@@ -245,7 +245,7 @@
     <Style x:Key="RightCellText" TargetType="TextBlock">
         <Setter Property="TextAlignment" Value="Right" />
         <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="Margin" Value="8,0" />
+        <Setter Property="Margin" Value="8,0,16,0" />
     </Style>
     <Style x:Key="CenterCellText" TargetType="TextBlock">
         <Setter Property="TextAlignment" Value="Center" />
@@ -272,11 +272,16 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         Padding="{TemplateBinding Padding}">
-                        <ContentPresenter VerticalAlignment="Center" />
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style x:Key="RightColumnHeader" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+        <Setter Property="HorizontalContentAlignment" Value="Right" />
+        <Setter Property="Padding" Value="10,0,16,0" />
     </Style>
 
     <Style TargetType="DataGridRowHeader">

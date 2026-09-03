@@ -489,16 +489,19 @@
                             Width="*"
                             Binding="{Binding PerRollCount, Mode=TwoWay}"
                             ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Sales.PerRoll}" />
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding RollCount, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Sales.RollCount}" />
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding Quantity, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
 
                             Header="{loc:Loc Common.Total}" />
                         <DataGridTextColumn
@@ -506,29 +509,34 @@
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding Price, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Common.Price}" />
                         <DataGridTextColumn
                             Width="*"
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding Sum, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Sales.TotalSum}" />
                         <DataGridTextColumn
                             Width="*"
                             Binding="{Binding PerDiscount, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Sales.DiscountPercent}" />
                         <DataGridTextColumn
                             Width="*"
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding Discount, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Sales.DiscountAmount}" />
                         <DataGridTextColumn
                             Width="*"
                             utils:NumericTextBox.IsNumeric="True"
                             Binding="{Binding FinalSumProduct, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Sales.GrandTotal}" />
                     </DataGrid.Columns>
                 </DataGrid>

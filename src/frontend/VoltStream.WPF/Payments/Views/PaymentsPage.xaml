@@ -328,6 +328,7 @@
 				<DataGridTextColumn Header="{loc:Loc Payments.NetAmount}"
                                     Binding="{Binding NetAmount, StringFormat=N2}"
                                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                                     Width="120" />
 
 				<DataGridTextColumn Header="{loc:Loc Payments.CurrencyType}"
@@ -338,11 +339,13 @@
 				<DataGridTextColumn Header="{loc:Loc Payments.Rate}"
                                     Binding="{Binding ExchangeRate, StringFormat=N2}"
                                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                                     Width="100" />
 
 				<DataGridTextColumn Header="{loc:Loc Common.Amount}"
                                     Binding="{Binding Amount, StringFormat=N2}"
                                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                                     Width="120" />
 
 				<DataGridTextColumn Header="{loc:Loc Common.Description}"

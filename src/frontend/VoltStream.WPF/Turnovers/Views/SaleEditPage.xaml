@@ -396,14 +396,22 @@
 					<DataGrid.Columns>
 						<DataGridTextColumn Width="1.5*" MinWidth="120" Binding="{Binding Product.Category.Name}" Header="{loc:Loc Turnovers.ProductType}" />
 						<DataGridTextColumn Width="1.8*" MinWidth="120" Binding="{Binding Product.Name}" Header="{loc:Loc Turnovers.ProductName}" />
-						<DataGridTextColumn Width="*" Binding="{Binding LengthPerRoll}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Turnovers.RollLength}" />
-						<DataGridTextColumn Width="*" Binding="{Binding RollCount}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Turnovers.RollCount}" />
-						<DataGridTextColumn Width="*" Binding="{Binding TotalLength, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Turnovers.TotalLength}" />
-						<DataGridTextColumn Width="*" Binding="{Binding UnitPrice, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Common.Price}" />
-						<DataGridTextColumn Width="*" Binding="{Binding TotalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Turnovers.TotalAmount}" />
-						<DataGridTextColumn Width="*" Binding="{Binding DiscountRate, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Turnovers.DiscountRate}" />
-						<DataGridTextColumn Width="*" Binding="{Binding DiscountAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Turnovers.DiscountAmount}" />
-						<DataGridTextColumn Width="*" Binding="{Binding FinalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}" Header="{loc:Loc Turnovers.FinalAmount}" />
+						<DataGridTextColumn Width="*" Binding="{Binding LengthPerRoll}" ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Turnovers.RollLength}" />
+						<DataGridTextColumn Width="*" Binding="{Binding RollCount}" ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Turnovers.RollCount}" />
+						<DataGridTextColumn Width="*" Binding="{Binding TotalLength, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Turnovers.TotalLength}" />
+						<DataGridTextColumn Width="*" Binding="{Binding UnitPrice, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Common.Price}" />
+						<DataGridTextColumn Width="*" Binding="{Binding TotalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Turnovers.TotalAmount}" />
+						<DataGridTextColumn Width="*" Binding="{Binding DiscountRate, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Turnovers.DiscountRate}" />
+						<DataGridTextColumn Width="*" Binding="{Binding DiscountAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Turnovers.DiscountAmount}" />
+						<DataGridTextColumn Width="*" Binding="{Binding FinalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Turnovers.FinalAmount}" />
 					</DataGrid.Columns>
 				</DataGrid>
 
