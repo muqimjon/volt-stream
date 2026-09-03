@@ -103,10 +103,22 @@ main {
   font-weight: 600;
 }
 
+.tabs a app-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 26px;
+  border-radius: var(--r-pill);
+  transition: background 0.12s ease;
+}
+
 .tabs a.active {
   color: var(--nav-item-active);
+}
+
+.tabs a.active app-icon {
   background: var(--nav-item-active-bg);
-  box-shadow: inset 0 3px 0 var(--brand);
 }
 
 @media (min-width: 900px) {
@@ -135,6 +147,10 @@ main {
   .tabs a.active {
     background: var(--nav-item-active-bg);
     box-shadow: inset 3px 0 0 var(--brand);
+  }
+
+  .tabs a.active app-icon {
+    background: transparent;
   }
 
   .tabs a:hover:not(.active) {
