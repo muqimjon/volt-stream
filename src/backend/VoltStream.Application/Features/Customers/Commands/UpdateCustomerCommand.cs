@@ -1,6 +1,6 @@
-namespace VoltStream.Application.Features.Customers.Commands;
+﻿namespace VoltStream.Application.Features.Customers.Commands;
 
-using AutoMapper;
+using MapsterMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;

@@ -1,15 +1,15 @@
 ﻿namespace VoltStream.Application.Features.Cashes.Mappers;
 
-using AutoMapper;
+using Mapster;
 using VoltStream.Application.Features.Cashes.Commands;
 using VoltStream.Application.Features.Cashes.DTOs;
 using VoltStream.Domain.Entities;
 
-public class CashMappingProfile : Profile
+public class CashMappingRegister : IRegister
 {
-    public CashMappingProfile()
+    public void Register(TypeAdapterConfig config)
     {
-        CreateMap<CreateCashCommand, Cash>();
-        CreateMap<Cash, CashDto>();
+        config.NewConfig<CreateCashCommand, Cash>();
+        config.NewConfig<Cash, CashDto>();
     }
 }

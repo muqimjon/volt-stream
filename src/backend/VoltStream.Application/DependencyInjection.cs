@@ -1,5 +1,7 @@
-namespace VoltStream.Application;
+﻿namespace VoltStream.Application;
 
+using Mapster;
+using MapsterMapper;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using VoltStream.Application.Commons.Behaviors;
@@ -12,7 +14,14 @@ public static class DependencyInjection
         var assembly = typeof(DependencyInjection).Assembly;
 
         services.AddMediatR(assembly);
-        services.AddAutoMapper(assembly);
+
+        var mapperConfig = new TypeAdapterConfig();
+        mapperConfig.Default.PreserveReference(true);
+        mapperConfig.Default.AddDestinationTransform(DestinationTransform.EmptyCollectionIfNull);
+        mapperConfig.Scan(assembly);
+        services.AddSingleton(mapperConfig);
+        services.AddScoped<IMapper, ServiceMapper>();
+
         services.AddScoped<BranchContext>();
         services.AddScoped<AuditScope>();
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuditLogBehavior<,>));

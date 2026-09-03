@@ -1,6 +1,6 @@
-namespace VoltStream.Application.Features.Sales.Commands;
+﻿namespace VoltStream.Application.Features.Sales.Commands;
 
-using AutoMapper;
+using MapsterMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Text;

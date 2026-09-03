@@ -1,6 +1,6 @@
-namespace VoltStream.Application.Features.Users.Queries;
+﻿namespace VoltStream.Application.Features.Users.Queries;
 
-using AutoMapper;
+using MapsterMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Extensions;

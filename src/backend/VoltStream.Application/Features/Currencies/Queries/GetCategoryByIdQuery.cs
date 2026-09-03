@@ -1,6 +1,6 @@
 ﻿namespace VoltStream.Application.Features.Currencies.Queries;
 
-using AutoMapper;
+using MapsterMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
@@ -16,7 +16,11 @@ public class GetCurrencyByIdQueryHandler(
     : IRequestHandler<GetCurrencyByIdQuery, CurrencyDto>
 {
     public async Task<CurrencyDto> Handle(GetCurrencyByIdQuery request, CancellationToken cancellationToken)
-        => mapper.Map<CurrencyDto>(await context.Currencies
-            .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken))
-        ?? throw new NotFoundException(nameof(Currency), nameof(request.Id), request.Id);
+    {
+        var currency = await context.Currencies
+            .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken)
+            ?? throw new NotFoundException(nameof(Currency), nameof(request.Id), request.Id);
+
+        return mapper.Map<CurrencyDto>(currency);
+    }
 }

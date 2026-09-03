@@ -1,6 +1,6 @@
-namespace VoltStream.Application.Features.Cashes.Queries;
+﻿namespace VoltStream.Application.Features.Cashes.Queries;
 
-using AutoMapper;
+using MapsterMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
@@ -18,7 +18,11 @@ public class GetCashByIdQueryHandler(
     IMapper mapper) : IRequestHandler<GetCashByIdQuery, CashDto>
 {
     public async Task<CashDto> Handle(GetCashByIdQuery request, CancellationToken cancellationToken)
-        => mapper.Map<CashDto>(await context.Cashes
-            .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken))
-        ?? throw new NotFoundException(nameof(Cash), nameof(request.Id), request.Id);
+    {
+        var cash = await context.Cashes
+            .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken)
+            ?? throw new NotFoundException(nameof(Cash), nameof(request.Id), request.Id);
+
+        return mapper.Map<CashDto>(cash);
+    }
 }

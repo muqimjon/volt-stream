@@ -1,6 +1,6 @@
 ﻿namespace VoltStream.Application.Features.Categories.Queries;
 
-using AutoMapper;
+using MapsterMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
@@ -16,7 +16,11 @@ public class GetCategoryByIdQueryHandler(
     : IRequestHandler<GetCategoryByIdQuery, CategoryDto>
 {
     public async Task<CategoryDto> Handle(GetCategoryByIdQuery request, CancellationToken cancellationToken)
-        => mapper.Map<CategoryDto>(await context.Categories
-            .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken))
-        ?? throw new NotFoundException(nameof(Category), nameof(request.Id), request.Id);
+    {
+        var category = await context.Categories
+            .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken)
+            ?? throw new NotFoundException(nameof(Category), nameof(request.Id), request.Id);
+
+        return mapper.Map<CategoryDto>(category);
+    }
 }

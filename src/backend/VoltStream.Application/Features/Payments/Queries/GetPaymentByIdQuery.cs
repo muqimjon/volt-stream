@@ -1,6 +1,6 @@
-namespace VoltStream.Application.Features.Payments.Queries;
+﻿namespace VoltStream.Application.Features.Payments.Queries;
 
-using AutoMapper;
+using MapsterMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
@@ -18,7 +18,11 @@ public class GetPaymentByIdQueryHandler(
     : IRequestHandler<GetPaymentByIdQuery, PaymentDto>
 {
     public async Task<PaymentDto> Handle(GetPaymentByIdQuery request, CancellationToken cancellationToken)
-        => mapper.Map<PaymentDto>(await context.Payments
-            .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken))
+    {
+        var payment = await context.Payments
+            .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(Payment), nameof(request.Id), request.Id);
+
+        return mapper.Map<PaymentDto>(payment);
+    }
 }

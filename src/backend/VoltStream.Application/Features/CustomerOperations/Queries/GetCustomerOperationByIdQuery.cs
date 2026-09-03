@@ -1,6 +1,6 @@
-namespace VoltStream.Application.Features.CustomerOperations.Queries;
+﻿namespace VoltStream.Application.Features.CustomerOperations.Queries;
 
-using AutoMapper;
+using MapsterMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
@@ -19,7 +19,8 @@ public class GetCustomerOperationByIdQueryHandler(
     : IRequestHandler<GetCustomerOperationByIdQuery, CustomerOperationDto>
 {
     public async Task<CustomerOperationDto> Handle(GetCustomerOperationByIdQuery request, CancellationToken cancellationToken)
-        => user.Apply(mapper.Map<CustomerOperationDto>(await context.CustomerOperations
+    {
+        var operation = await context.CustomerOperations
             .Include(co => co.Account)
                 .ThenInclude(a => a.Customer)
             .Include(co => co.Account)
@@ -30,7 +31,10 @@ public class GetCustomerOperationByIdQueryHandler(
                         .ThenInclude(p => p.Category)
             .Include(co => co.Payment)
                 .ThenInclude(p => p!.Currency)
-            .FirstOrDefaultAsync(co => co.Id == request.Id, cancellationToken))
-        ?? throw new NotFoundException(nameof(CustomerOperation), nameof(request.Id), request.Id));
+            .FirstOrDefaultAsync(co => co.Id == request.Id, cancellationToken)
+            ?? throw new NotFoundException(nameof(CustomerOperation), nameof(request.Id), request.Id);
+
+        return user.Apply(mapper.Map<CustomerOperationDto>(operation));
+    }
 }
 

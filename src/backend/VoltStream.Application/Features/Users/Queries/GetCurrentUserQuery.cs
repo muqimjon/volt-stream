@@ -1,6 +1,6 @@
-namespace VoltStream.Application.Features.Users.Queries;
+﻿namespace VoltStream.Application.Features.Users.Queries;
 
-using AutoMapper;
+using MapsterMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
@@ -17,9 +17,13 @@ public class GetCurrentUserQueryHandler(
     : IRequestHandler<GetCurrentUserQuery, UserDto>
 {
     public async Task<UserDto> Handle(GetCurrentUserQuery request, CancellationToken cancellationToken)
-        => mapper.Map<UserDto>(await context.Users
+    {
+        var user = await context.Users
             .AsNoTracking()
             .Include(u => u.Branch)
-            .FirstOrDefaultAsync(u => u.Id == currentUser.UserId, cancellationToken))
-        ?? throw new NotFoundException(nameof(User));
+            .FirstOrDefaultAsync(u => u.Id == currentUser.UserId, cancellationToken)
+            ?? throw new NotFoundException(nameof(User));
+
+        return mapper.Map<UserDto>(user);
+    }
 }

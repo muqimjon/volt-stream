@@ -1,6 +1,6 @@
-namespace VoltStream.Application.Features.Categories.Queries;
+﻿namespace VoltStream.Application.Features.Categories.Queries;
 
-using AutoMapper;
+using MapsterMapper;
 using MediatR;
 using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;

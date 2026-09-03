@@ -1,6 +1,6 @@
-namespace VoltStream.Application.Features.Users.Commands;
+﻿namespace VoltStream.Application.Features.Users.Commands;
 
-using AutoMapper;
+using MapsterMapper;
 using BCrypt.Net;
 using MediatR;
 using Microsoft.EntityFrameworkCore;

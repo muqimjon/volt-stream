@@ -1,6 +1,6 @@
-namespace VoltStream.Application.Features.Cashes.Commands;
+﻿namespace VoltStream.Application.Features.Cashes.Commands;
 
-using AutoMapper;
+using MapsterMapper;
 using MediatR;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Domain.Entities;
