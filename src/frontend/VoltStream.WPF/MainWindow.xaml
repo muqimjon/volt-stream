@@ -171,6 +171,17 @@
                         </StackPanel>
                     </RadioButton>
 
+                    <RadioButton
+                        Command="{Binding ShowSalesJournalViewCommand}"
+                        GroupName="MenuGroup"
+                        IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.SalesJournal, Mode=OneWay}"
+                        Style="{DynamicResource menuButton}"
+                        Tag="{DynamicResource color4}">
+                        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                            <fa:IconImage Icon="Receipt" Style="{StaticResource menuButtonIcon}" />
+                            <TextBlock Style="{StaticResource menuButtonText}" Text="{loc:Loc Nav.SalesJournal}" />
+                        </StackPanel>
+                    </RadioButton>
 
                     <RadioButton
                         Command="{Binding ShowPaymentViewCommand}"

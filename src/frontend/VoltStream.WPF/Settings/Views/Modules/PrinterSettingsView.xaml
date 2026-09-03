@@ -89,6 +89,17 @@
                     SelectedItem="{Binding Settings.Paper}"
                     Style="{StaticResource ModernCombo}" />
 
+                <TextBlock
+                    Style="{StaticResource FieldLabel}"
+                    Text="{loc:Loc Printer.Priority}"
+                    ToolTip="{loc:Loc Printer.PriorityHint}" />
+                <ComboBox
+                    Margin="0,0,0,15"
+                    ItemsSource="{Binding PriorityOptions}"
+                    SelectedItem="{Binding Settings.Priority}"
+                    Style="{StaticResource ModernCombo}"
+                    ToolTip="{loc:Loc Printer.PriorityHint}" />
+
                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                     <Button
                         Width="150"

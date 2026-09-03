@@ -1,7 +1,15 @@
 namespace VoltStream.WPF.Commons.Services;
 
+using ApiServices.Extensions;
+using ApiServices.Interfaces;
+using ApiServices.Models.Requests;
 using ApiServices.Models.Responses;
+using Microsoft.Extensions.DependencyInjection;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
+using VoltStream.WPF.Commons.Enums;
 using VoltStream.WPF.Commons.Localization;
 
 public enum ReceiptMode { Money, Weight }
@@ -11,7 +19,7 @@ public static class ReceiptDocumentBuilder
     public static FixedDocument Build(ReceiptResponse receipt, ReceiptMode mode)
         => ReportService.BuildFixedDocument(Define(receipt, mode));
 
-    public static void Preview(ReceiptResponse receipt, bool allowMoney)
+    public static void Preview(ReceiptResponse receipt, bool allowMoney, IServiceProvider services)
     {
         bool money = allowMoney && receipt.HasPrices;
 
@@ -23,8 +31,67 @@ public static class ReceiptDocumentBuilder
             ]
             : null;
 
+        IReadOnlyList<(string Label, Func<Button, Task> Run)>? actions =
+            services.GetRequiredService<ISessionService>().Has("print.request")
+                ? [(TranslationSource.T("Receipt.SendToBranch"), button => SendToBranchAsync(receipt, services, button))]
+                : null;
+
         var document = Build(receipt, money ? ReceiptMode.Money : ReceiptMode.Weight);
-        ReportService.Preview(document, FileName(receipt), Title(receipt), variants);
+        ReportService.Preview(document, FileName(receipt), Title(receipt), variants, actions);
+    }
+
+    private static async Task SendToBranchAsync(ReceiptResponse receipt, IServiceProvider services, Button button)
+    {
+        if (!services.GetRequiredService<ISessionService>().Has("branches.all"))
+        {
+            await SendAsync(receipt, services, null, button);
+            return;
+        }
+
+        var branchContext = services.GetRequiredService<BranchContext>();
+        if (branchContext.Branches.Count == 0)
+            await branchContext.LoadAsync();
+
+        var branches = branchContext.Branches.Where(b => b.Id > 0).ToList();
+        if (branches.Count == 0)
+        {
+            await SendAsync(receipt, services, null, button);
+            return;
+        }
+
+        var own = branches.FirstOrDefault(b => b.Name == receipt.Branch);
+        var menu = new ContextMenu { PlacementTarget = button, Placement = PlacementMode.Bottom };
+        menu.SetResourceReference(Control.BackgroundProperty, "Surface");
+        menu.SetResourceReference(Control.BorderBrushProperty, "Border");
+
+        foreach (var branch in own is null ? branches : [own, .. branches.Where(b => b != own)])
+        {
+            var entry = new MenuItem
+            {
+                Header = branch.Name,
+                FontWeight = branch == own ? FontWeights.Bold : FontWeights.Normal,
+                IsChecked = branch == own
+            };
+            entry.Click += async (_, _) => await SendAsync(receipt, services, branch.Id, button);
+            menu.Items.Add(entry);
+        }
+
+        menu.IsOpen = true;
+    }
+
+    private static async Task SendAsync(ReceiptResponse receipt, IServiceProvider services, long? branchId, Button button)
+    {
+        var response = await services.GetRequiredService<IPrintJobsApi>()
+            .CreateAsync(new PrintJobRequest { SaleId = receipt.SaleId, Copies = 1, BranchId = branchId }).Handle();
+
+        MessageBox.Show(
+            Window.GetWindow(button)!,
+            response.IsSuccess
+                ? TranslationSource.T("Receipt.SentToBranch")
+                : string.IsNullOrWhiteSpace(response.Message) ? TranslationSource.T("Receipt.SendFailed") : response.Message,
+            TranslationSource.T("Receipt.SendToBranch"),
+            MessageBoxButton.OK,
+            response.IsSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
     }
 
     public static string FileName(ReceiptResponse receipt) => $"Chek-{receipt.SaleId}";

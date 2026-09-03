@@ -792,6 +792,9 @@ public partial class SalesPage : Page
         {
             lastSaleId = response.Data;
             receiptButton.IsEnabled = true;
+            receiptButtonText.Text = string.IsNullOrWhiteSpace(sale.CustomerName)
+                ? TranslationSource.T("Receipt.Show")
+                : string.Format(TranslationSource.T("Receipt.LastSale"), sale.CustomerName);
             sale.Success = TranslationSource.T("Sales.SaveSuccess");
             saleSession.Reset();
             sale = saleSession.Current;
@@ -818,7 +821,7 @@ public partial class SalesPage : Page
         }
 
         var session = services.GetRequiredService<ISessionService>();
-        ReceiptDocumentBuilder.Preview(response.Data, session.Has("sales.view_prices"));
+        ReceiptDocumentBuilder.Preview(response.Data, session.Has("sales.view_prices"), services);
     }
 
     private async void Page_Loaded(object sender, RoutedEventArgs e)

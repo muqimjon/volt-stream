@@ -13,7 +13,7 @@ public class PrinterSettingsStore
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    private sealed record PrinterSettingsDto(bool Enabled, string? PrinterName, int Copies, string Paper);
+    private sealed record PrinterSettingsDto(bool Enabled, string? PrinterName, int Copies, string Paper, int Priority = 1);
 
     public PrinterSettings Load()
     {
@@ -31,7 +31,8 @@ public class PrinterSettingsStore
                 Enabled = dto.Enabled,
                 PrinterName = dto.PrinterName,
                 Copies = dto.Copies < 1 ? 1 : dto.Copies,
-                Paper = string.IsNullOrWhiteSpace(dto.Paper) ? "A4" : dto.Paper
+                Paper = string.IsNullOrWhiteSpace(dto.Paper) ? "A4" : dto.Paper,
+                Priority = dto.Priority < 1 ? 1 : Math.Min(dto.Priority, 5)
             };
         }
         catch
@@ -44,7 +45,7 @@ public class PrinterSettingsStore
     {
         try
         {
-            var dto = new PrinterSettingsDto(model.Enabled, model.PrinterName, model.Copies, model.Paper);
+            var dto = new PrinterSettingsDto(model.Enabled, model.PrinterName, model.Copies, model.Paper, model.Priority);
             Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath)!);
             File.WriteAllText(ConfigPath, JsonSerializer.Serialize(dto, jsonOptions));
         }

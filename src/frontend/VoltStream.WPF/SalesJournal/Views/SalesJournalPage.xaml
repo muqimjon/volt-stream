@@ -1,0 +1,146 @@
+﻿<Page
+    x:Class="VoltStream.WPF.SalesJournal.Views.SalesJournalPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:VoltStream.WPF.Commons.UserControls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+    xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
+    Title="{loc:Loc SalesJournal.Title}"
+    d:DesignHeight="450"
+    d:DesignWidth="900"
+    mc:Ignorable="d">
+
+    <Grid Margin="10" Background="{DynamicResource Canvas}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <controls:FilterBar
+            Margin="0,0,0,12"
+            ActionsEnabled="{Binding Pagination.TotalCount, Converter={StaticResource CountToBool}}"
+            ClearCommand="{Binding ClearFilterCommand}"
+            ExcelCommand="{Binding ExportToExcelCommand}"
+            PreviewCommand="{Binding PreviewCommand}"
+            PrintCommand="{Binding PrintCommand}">
+            <controls:FilterBar.Filters>
+                <WrapPanel Orientation="Horizontal">
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc SalesJournal.BeginDate}" />
+                        <controls:UserCalendar
+                            Width="130"
+                            utils:EnterKeyTab.IsEnabled="True"
+                            SelectedDate="{Binding BeginDate, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc SalesJournal.EndDate}" />
+                        <controls:UserCalendar
+                            Width="130"
+                            utils:EnterKeyTab.IsEnabled="True"
+                            SelectedDate="{Binding EndDate, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,14,0">
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc SalesJournal.SelectCustomer}" />
+                        <ComboBox
+                            Width="240"
+                            DisplayMemberPath="Name"
+                            IsEditable="True"
+                            ItemsSource="{Binding Customers}"
+                            SelectedItem="{Binding SelectedCustomer}"
+                            Style="{StaticResource ModernCombo}" />
+                    </StackPanel>
+                </WrapPanel>
+            </controls:FilterBar.Filters>
+        </controls:FilterBar>
+
+        <DataGrid
+            Grid.Row="1"
+            CanUserAddRows="False"
+            CanUserDeleteRows="False"
+            HeadersVisibility="Column, Row"
+            IsReadOnly="True"
+            ItemsSource="{Binding PagedSales}"
+            RowHeaderWidth="48"
+            SelectionMode="Single"
+            utils:DataGridRowNumbering.IsEnabled="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn
+                    Width="1.3*"
+                    Binding="{Binding Date, StringFormat={}{0:dd.MM.yyyy HH:mm}}"
+                    ElementStyle="{StaticResource CenterCellText}"
+                    Header="{loc:Loc Common.Date}" />
+                <DataGridTextColumn
+                    Width="2*"
+                    Binding="{Binding Customer}"
+                    Header="{loc:Loc SalesJournal.Customer}" />
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding RollCount, StringFormat={}{0:N0}}"
+                    ElementStyle="{StaticResource RightCellText}"
+                    Header="{loc:Loc SalesJournal.RollCount}" />
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding Length, StringFormat={}{0:N0}}"
+                    ElementStyle="{StaticResource RightCellText}"
+                    Header="{loc:Loc SalesJournal.TotalLength}" />
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding Weight, StringFormat={}{0:N3}}"
+                    ElementStyle="{StaticResource RightCellText}"
+                    Header="{loc:Loc SalesJournal.Weight}" />
+                <DataGridTextColumn
+                    x:Name="amountColumn"
+                    Width="1.3*"
+                    Binding="{Binding Amount, StringFormat={}{0:N0}}"
+                    ElementStyle="{StaticResource RightCellText}"
+                    Header="{loc:Loc SalesJournal.Amount}" />
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding PrintStatus}"
+                    ElementStyle="{StaticResource CenterCellText}"
+                    Header="{loc:Loc SalesJournal.PrintStatus}" />
+                <DataGridTemplateColumn Width="70" Header="{loc:Loc Common.Actions}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Command="{Binding DataContext.ReceiptCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                CommandParameter="{Binding}"
+                                Style="{StaticResource EditActionButton}"
+                                ToolTip="{loc:Loc Receipt.Show}">
+                                <fa:IconImage
+                                    Width="16"
+                                    Height="16"
+                                    Foreground="{DynamicResource Brand}"
+                                    Icon="Receipt" />
+                            </Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <controls:EmptyState
+            Grid.Row="1"
+            Message="{loc:Loc SalesJournal.NotFound}"
+            Visibility="{Binding Pagination.TotalCount, Converter={StaticResource CountToEmptyVisibility}}" />
+
+        <controls:Pager
+            Grid.Row="2"
+            Margin="0,12,0,0"
+            DataContext="{Binding Pagination}" />
+
+        <controls:BusyOverlay
+            Grid.Row="0"
+            Grid.RowSpan="3"
+            IsBusy="{Binding IsLoading}"
+            Message="{loc:Loc Common.Loading}" />
+    </Grid>
+</Page>

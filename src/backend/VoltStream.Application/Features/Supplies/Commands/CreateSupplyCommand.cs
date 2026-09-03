@@ -22,7 +22,9 @@ public record CreateSupplyCommand(
     decimal TotalLength,
     decimal? UnitPrice,
     decimal? DiscountRate,
-    long? BranchId = null)
+    long? BranchId = null,
+    bool IsWeightTracked = false,
+    decimal? WeightPerUnit = null)
     : IRequest<long>;
 
 public class CreateSupplyCommandHandler(
@@ -72,7 +74,9 @@ public class CreateSupplyCommandHandler(
                 Name = request.ProductName.Trim(),
                 NormalizedName = request.ProductName.Trim().ToUpper(),
                 CategoryId = newCategoryId,
-                Unit = request.Unit
+                Unit = request.Unit,
+                IsWeightTracked = request.IsWeightTracked,
+                WeightPerUnit = request.IsWeightTracked ? request.WeightPerUnit : null
             };
 
             context.Products.Add(product);

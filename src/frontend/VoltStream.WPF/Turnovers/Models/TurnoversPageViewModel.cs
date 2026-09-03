@@ -317,7 +317,7 @@ public partial class TurnoversPageViewModel : ViewModelBase
             return;
         }
 
-        ReceiptDocumentBuilder.Preview(receipt.Data, session.Has("sales.view_prices"));
+        ReceiptDocumentBuilder.Preview(receipt.Data, session.Has("sales.view_prices"), services);
     }
 
     [RelayCommand]

@@ -8,4 +8,5 @@ public partial class PrinterSettings : ObservableObject
     [ObservableProperty] private string? printerName;
     [ObservableProperty] private int copies = 1;
     [ObservableProperty] private string paper = "A4";
+    [ObservableProperty] private int priority = 1;
 }

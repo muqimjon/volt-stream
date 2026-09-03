@@ -4,6 +4,7 @@ public record PrintJobRequest
 {
     public long SaleId { get; set; }
     public int Copies { get; set; } = 1;
+    public long? BranchId { get; set; }
 }
 
 public record PrintJobClaimRequest

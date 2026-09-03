@@ -53,8 +53,10 @@ public partial class SuppliesPageViewModel : ViewModelBase
     [ObservableProperty] private string categoryText = string.Empty;
 
     [ObservableProperty] private ObservableCollection<ProductViewModel> products = [];
-    [ObservableProperty] private ProductViewModel? selectedProduct;
-    [ObservableProperty] private string productText = string.Empty;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsNewProduct))] private ProductViewModel? selectedProduct;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsNewProduct))] private string productText = string.Empty;
+    [ObservableProperty] private bool isWeightTracked;
+    [ObservableProperty] private decimal? weightPerUnit;
 
     [ObservableProperty] private ObservableCollection<WarehouseStockViewModel> warehouseStocks = [];
     [ObservableProperty] private WarehouseStockViewModel? selectedWarehouseStock;
@@ -72,6 +74,8 @@ public partial class SuppliesPageViewModel : ViewModelBase
     private bool _isFilingForm;
 
     public decimal? TotalQuantity => WarehouseStockValue * RollCount;
+
+    public bool IsNewProduct => !string.IsNullOrWhiteSpace(ProductText) && (SelectedProduct?.Id ?? 0) <= 0;
 
     #region Property Change Handlers
 
@@ -105,6 +109,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
         if (_isFilingForm || value == null) return;
         ProductText = value.Name;
         Unit = value.Unit ?? "metr";
+        if (value.Id > 0) { IsWeightTracked = false; WeightPerUnit = null; }
         _ = LoadWarehouseStocksAsync(value.Id);
     }
 
@@ -268,6 +273,12 @@ public partial class SuppliesPageViewModel : ViewModelBase
             return;
         }
 
+        if (IsNewProduct && IsWeightTracked && WeightPerUnit is not > 0)
+        {
+            Warning = TranslationSource.T("Supplies.WeightRequired");
+            return;
+        }
+
         if (branchContext.CanSelect && branchContext.BranchId is null)
         {
             Warning = TranslationSource.T("Header.SelectBranch");
@@ -288,7 +299,9 @@ public partial class SuppliesPageViewModel : ViewModelBase
             ProductName = ProductText,
             CategoryName = CategoryText,
             UnitPrice = UnitPrice ?? 0,
-            DiscountRate = DiscountRate ?? 0
+            DiscountRate = DiscountRate ?? 0,
+            IsWeightTracked = IsNewProduct && IsWeightTracked,
+            WeightPerUnit = IsNewProduct && IsWeightTracked ? WeightPerUnit : null
         };
 
         var isSuccess = false;
@@ -415,6 +428,8 @@ public partial class SuppliesPageViewModel : ViewModelBase
         UnitPrice = null;
         DiscountRate = null;
         Unit = null!;
+        IsWeightTracked = false;
+        WeightPerUnit = null;
         OnPropertyChanged(nameof(TotalQuantity));
     }
 

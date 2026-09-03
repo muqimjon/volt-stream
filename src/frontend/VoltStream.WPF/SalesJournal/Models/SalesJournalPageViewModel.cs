@@ -18,6 +18,7 @@ public partial class SalesJournalPageViewModel : ViewModelBase
     private readonly IServiceProvider services;
     private readonly BranchContext branchContext;
     private readonly ISessionService session;
+    private bool suppressReload = true;
 
     public PaginationViewModel Pagination { get; }
 
@@ -43,6 +44,8 @@ public partial class SalesJournalPageViewModel : ViewModelBase
     private async Task LoadInitialDataAsync()
     {
         await LoadCustomersAsync();
+        SelectedCustomer = Customers.FirstOrDefault();
+        suppressReload = false;
         await LoadPageAsync();
     }
 
@@ -57,8 +60,6 @@ public partial class SalesJournalPageViewModel : ViewModelBase
 
         Customers = new ObservableCollection<CustomerResponse>(response.Data!);
         Customers.Insert(0, new CustomerResponse { Name = TranslationSource.T("Common.All") });
-        selectedCustomer = Customers[0];
-        OnPropertyChanged(nameof(SelectedCustomer));
     }
 
     public async Task ReloadAsync()
@@ -142,15 +143,17 @@ public partial class SalesJournalPageViewModel : ViewModelBase
             return;
         }
 
-        ReceiptDocumentBuilder.Preview(response.Data, CanViewPrices);
+        ReceiptDocumentBuilder.Preview(response.Data, CanViewPrices, services);
     }
 
     [RelayCommand]
     private async Task ClearFilter()
     {
+        suppressReload = true;
         BeginDate = DateTime.Today.AddDays(-7);
         EndDate = DateTime.Today;
         SelectedCustomer = Customers.FirstOrDefault();
+        suppressReload = false;
         await ReloadAsync();
     }
 
@@ -209,7 +212,12 @@ public partial class SalesJournalPageViewModel : ViewModelBase
 
     #endregion Commands
 
-    partial void OnBeginDateChanged(DateTime value) => _ = ReloadAsync();
-    partial void OnEndDateChanged(DateTime value) => _ = ReloadAsync();
-    partial void OnSelectedCustomerChanged(CustomerResponse? value) => _ = ReloadAsync();
+    partial void OnBeginDateChanged(DateTime value) => Refresh();
+    partial void OnEndDateChanged(DateTime value) => Refresh();
+    partial void OnSelectedCustomerChanged(CustomerResponse? value) => Refresh();
+
+    private void Refresh()
+    {
+        if (!suppressReload) _ = ReloadAsync();
+    }
 }

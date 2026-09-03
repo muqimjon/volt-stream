@@ -93,7 +93,12 @@ public static class ReportService
     public static void Preview<T>(ReportDefinition<T> def)
         => Preview(BuildFixedDocument(def), def.FileName, def.Title);
 
-    public static void Preview(FixedDocument doc, string fileName, string title, IReadOnlyList<(string Label, Func<FixedDocument> Build)>? variants = null)
+    public static void Preview(
+        FixedDocument doc,
+        string fileName,
+        string title,
+        IReadOnlyList<(string Label, Func<FixedDocument> Build)>? variants = null,
+        IReadOnlyList<(string Label, Func<Button, Task> Run)>? actions = null)
     {
         var viewer = new DocumentViewer { Document = doc, Margin = new Thickness(8) };
         var current = doc;
@@ -162,6 +167,19 @@ public static class ReportService
                 };
                 toolbar.Children.Add(radio);
             }
+        }
+
+        foreach (var (label, run) in actions ?? [])
+        {
+            var actionButton = ToolButton(label, "SecondaryButton");
+            actionButton.Click += async (_, _) =>
+            {
+                actionButton.IsEnabled = false;
+                try { await run(actionButton); }
+                catch (Exception ex) { MessageBox.Show(ex.Message, title, MessageBoxButton.OK, MessageBoxImage.Error); }
+                finally { actionButton.IsEnabled = true; }
+            };
+            toolbar.Children.Add(actionButton);
         }
 
         toolbar.Children.Add(saveButton);

@@ -15,6 +15,7 @@ using VoltStream.WPF.Home.Views;
 using VoltStream.WPF.Payments.Views;
 using VoltStream.WPF.Products.Views;
 using VoltStream.WPF.Sales.Views;
+using VoltStream.WPF.SalesJournal.Views;
 using VoltStream.WPF.Sales_history.Views;
 using VoltStream.WPF.Settings.Views;
 using VoltStream.WPF.Supplies.Views;
@@ -71,6 +72,7 @@ public partial class MainViewModel : ViewModelBase
             new("Nav.Dashboard", IconChar.Home, ShowDashboardView),
             new("Nav.Production", IconChar.ProjectDiagram, ShowSuppliesView),
             new("Nav.Sales", IconChar.ShoppingCart, ShowSalesView),
+            new("Nav.SalesJournal", IconChar.Receipt, ShowSalesJournalView),
             new("Nav.Payment", IconChar.MoneyBillWave, ShowPaymentView),
             new("Nav.Products", IconChar.Boxes, ShowProductView),
             new("Nav.SalesAnalytics", IconChar.FileAlt, ShowSalesHistoryView),
@@ -152,6 +154,7 @@ public partial class MainViewModel : ViewModelBase
 
     [RelayCommand] private void ShowDashboardView() => NavigateTo<DashboardPage>("Nav.Dashboard");
     [RelayCommand] private void ShowSalesView() => NavigateTo<SalesPage>("Nav.Sales");
+    [RelayCommand] private void ShowSalesJournalView() => NavigateTo<SalesJournalPage>("Nav.SalesJournal");
     [RelayCommand] private void ShowSuppliesView() => NavigateTo<SuppliesPage>("Nav.Production");
     [RelayCommand] private void ShowPaymentView() => NavigateTo<PaymentsPage>("Nav.Payment");
     [RelayCommand] private void ShowProductView() => NavigateTo<ProductsPage>("Nav.Products");

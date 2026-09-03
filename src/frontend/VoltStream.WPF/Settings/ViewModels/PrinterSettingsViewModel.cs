@@ -25,6 +25,7 @@ public partial class PrinterSettingsViewModel : ViewModelBase
 
     public IReadOnlyList<int> CopyOptions { get; } = [1, 2, 3];
     public IReadOnlyList<string> PaperOptions { get; } = ["A4", "A5"];
+    public IReadOnlyList<int> PriorityOptions { get; } = [1, 2, 3, 4, 5];
 
     public bool HasAgentPermission => session.Has("print.agent");
 

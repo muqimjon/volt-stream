@@ -43,9 +43,12 @@ public partial class PrintAgentService(
 {
     private long? AgentBranchId => session.BranchId ?? branchContext.BranchId;
 
+    private static readonly TimeSpan PrintTimeout = TimeSpan.FromMinutes(2);
+
     private readonly SemaphoreSlim gate = new(1, 1);
     private HubConnection? connection;
     private bool stopping;
+    private long lastFailedJobId;
 
     [ObservableProperty] private AgentStatus status;
 
@@ -194,6 +197,8 @@ public partial class PrintAgentService(
         await gate.WaitAsync();
         try
         {
+            await Task.Delay(ClaimDelay(job));
+
             var claim = await printJobs.ClaimAsync(job.Id, new PrintJobClaimRequest { PrinterName = printer }).Handle();
             if (!claim.IsSuccess) return;
 
@@ -210,19 +215,27 @@ public partial class PrintAgentService(
             if (!receipt.IsSuccess)
                 throw new InvalidOperationException(receipt.Message ?? TranslationSource.T("Receipt.LoadError"));
 
-            await Application.Current.Dispatcher.InvokeAsync(() => PrintService.Print(
-                ReceiptDocumentBuilder.Build(receipt.Data, ReceiptMode.Weight),
-                printer,
-                Math.Max(1, settings.Copies) * Math.Max(1, claimed.Copies),
-                ReceiptDocumentBuilder.Title(receipt.Data)));
+            await PrintAsync(receipt.Data, printer, Math.Max(1, settings.Copies) * Math.Max(1, claimed.Copies));
 
-            await printJobs.CompleteAsync(claimed.Id).Handle();
+            if ((await printJobs.CompleteAsync(claimed.Id).Handle()).StatusCode == 409)
+            {
+                Notify(TranslationSource.T("Printer.JobNoLongerActive"), NotificationType.Info);
+                return;
+            }
+
             Track(claimed with { Status = PrintJobStatus.Completed });
             Notify(string.Format(TranslationSource.T("Printer.Printed"), claimed.SaleId), NotificationType.Success);
         }
         catch (Exception ex)
         {
-            try { await printJobs.FailAsync(job.Id, new PrintJobFailRequest { Error = ex.Message }).Handle(); } catch { }
+            lastFailedJobId = job.Id;
+
+            if ((await printJobs.FailAsync(job.Id, new PrintJobFailRequest { Error = ex.Message }).Handle()).StatusCode == 409)
+            {
+                Notify(TranslationSource.T("Printer.JobNoLongerActive"), NotificationType.Info);
+                return;
+            }
+
             Track(job with { Status = PrintJobStatus.Failed, Error = ex.Message });
             Notify(string.Format(TranslationSource.T("Printer.Failed"), job.SaleId, ex.Message), NotificationType.Error);
         }
@@ -230,6 +243,31 @@ public partial class PrintAgentService(
         {
             gate.Release();
         }
+    }
+
+    private TimeSpan ClaimDelay(PrintJobResponse job)
+    {
+        int ms = (Math.Clamp(settings.Priority, 1, 5) - 1) * 700;
+        if (job.Attempts > 0)
+            ms += lastFailedJobId == job.Id ? 8000 : 3000;
+        return TimeSpan.FromMilliseconds(ms);
+    }
+
+    private static async Task PrintAsync(ReceiptResponse receipt, string printer, int copies)
+    {
+        var operation = Application.Current.Dispatcher.InvokeAsync(() => PrintService.Print(
+            ReceiptDocumentBuilder.Build(receipt, ReceiptMode.Weight),
+            printer,
+            copies,
+            ReceiptDocumentBuilder.Title(receipt)));
+
+        if (await Task.WhenAny(operation.Task, Task.Delay(PrintTimeout)) != operation.Task)
+        {
+            operation.Abort();
+            throw new TimeoutException(TranslationSource.T("Printer.TimeoutError"));
+        }
+
+        await operation.Task;
     }
 
     private static Task<bool> AskAsync(PrintJobResponse job)

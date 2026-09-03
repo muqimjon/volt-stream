@@ -23,4 +23,5 @@ public record SaleResponse
 
     public ICollection<SaleItemResponse> Items { get; set; } = default!;
 
+    public PrintJobResponse? PrintJob { get; set; }
 }
