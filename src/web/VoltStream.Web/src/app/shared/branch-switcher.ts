@@ -1,17 +1,20 @@
-import { Component, inject, signal } from '@angular/core';
-import { ApiClient } from '../core/api/api-client';
+import { Component, inject } from '@angular/core';
 import { AuthService } from '../core/auth/auth';
+import { BranchStore } from '../core/branches';
 import { TranslatePipe } from '../core/i18n/translate';
-import { Branch } from '../core/models';
 
 @Component({
   selector: 'app-branch-switcher',
   imports: [TranslatePipe],
   template: `
     @if (auth.isAdmin()) {
-      <select class="pill" [value]="auth.selectedBranchId() ?? ''" (change)="pick($any($event.target).value)">
+      <select
+        class="pill"
+        [value]="auth.selectedBranchId() ?? ''"
+        (change)="pick($any($event.target).value)"
+      >
         <option value="">{{ 'Web.AllBranches' | t }}</option>
-        @for (branch of branches(); track branch.id) {
+        @for (branch of store.branches(); track branch.id) {
           <option [value]="branch.id">{{ branch.name }}</option>
         }
       </select>
@@ -40,15 +43,10 @@ import { Branch } from '../core/models';
 })
 export class BranchSwitcher {
   protected readonly auth = inject(AuthService);
-  private readonly api = inject(ApiClient);
-  protected readonly branches = signal<Branch[]>([]);
+  protected readonly store = inject(BranchStore);
 
   constructor() {
-    if (this.auth.isAdmin())
-      this.api
-        .get<Branch[]>('branches', undefined, true)
-        .then((list) => this.branches.set(list.filter((b) => b.isActive)))
-        .catch(() => undefined);
+    void this.store.load();
   }
 
   protected pick(value: string): void {

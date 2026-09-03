@@ -85,7 +85,9 @@ export class SalePage {
   protected readonly discountAmount = computed(() =>
     round(this.totalAmount() * ((this.discountRate() ?? 0) / 100)),
   );
-  protected readonly finalAmount = computed(() => round(this.totalAmount() - this.discountAmount()));
+  protected readonly finalAmount = computed(() =>
+    round(this.totalAmount() - this.discountAmount()),
+  );
   protected readonly weight = computed(() => {
     const p = this.product();
     return p?.isWeightTracked ? round((this.length() ?? 0) * (p.weightPerUnit ?? 0), 3) : 0;
@@ -315,6 +317,9 @@ export class SalePage {
 
   protected async submit(): Promise<void> {
     if (this.submitting()) return;
+
+    if (this.auth.isAdmin() && this.auth.branchId() === null)
+      return this.warn('Header.SelectBranch');
 
     if (!this.customer()) return this.warn('Sales.CustomerRequired');
 

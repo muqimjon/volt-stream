@@ -60,9 +60,6 @@ export class TranslateService {
 function readStoredLang(): LangCode {
   const stored = localStorage.getItem(STORAGE_KEY) as LangCode | null;
   if (stored && LANGUAGES.some((l) => l.code === stored)) return stored;
-  const nav = navigator.language.toLowerCase();
-  if (nav.startsWith('ru')) return 'ru';
-  if (nav.startsWith('en')) return 'en';
   return FALLBACK;
 }
 

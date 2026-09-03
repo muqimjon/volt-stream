@@ -17,7 +17,7 @@ import { ToastService } from '../core/ui/toast';
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
-      bottom: calc(var(--tabbar-h) + var(--safe-b) + var(--sp-md));
+      top: calc(var(--header-h) + var(--safe-t) + var(--sp-md));
       z-index: 60;
       display: flex;
       flex-direction: column;

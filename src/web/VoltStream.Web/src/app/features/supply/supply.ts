@@ -7,12 +7,7 @@ import { PermissionService } from '../../core/permissions/permission';
 import { PwaService } from '../../core/pwa/pwa';
 import { DialogService } from '../../core/ui/dialog';
 import { ToastService } from '../../core/ui/toast';
-import {
-  fromDateInput,
-  operationMoment,
-  toDateInput,
-  toIsoOffset,
-} from '../../core/utils/date';
+import { fromDateInput, operationMoment, toDateInput, toIsoOffset } from '../../core/utils/date';
 import { fmtNum, round } from '../../core/utils/number';
 import { DateField } from '../../shared/date-field';
 import { EmptyState } from '../../shared/empty-state';
@@ -82,12 +77,16 @@ export class SupplyPage {
 
   protected async loadSupplies(): Promise<void> {
     const page = await this.api
-      .filter<SupplyListItem>('supplies/filter', {
-        filters: { date: [this.date()], product: ['include:category'] },
-        page: 1,
-        pageSize: 50,
-        descending: true,
-      }, { branchScoped: true })
+      .filter<SupplyListItem>(
+        'supplies/filter',
+        {
+          filters: { date: [this.date()], product: ['include:category'] },
+          page: 1,
+          pageSize: 50,
+          descending: true,
+        },
+        { branchScoped: true },
+      )
       .catch(() => ({ items: [], paging: null }));
     this.supplies.set(page.items);
   }
@@ -194,6 +193,9 @@ export class SupplyPage {
     const product = this.product();
     const stock = this.stock();
     const rollCount = this.rollCount();
+
+    if (this.auth.isAdmin() && this.auth.branchId() === null)
+      return this.toast.warn(this.translate.t('Header.SelectBranch'));
 
     if (!category?.name || !product?.name)
       return this.toast.error(this.translate.t('Supplies.CategoryProductRequired'));

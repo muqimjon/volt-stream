@@ -14,12 +14,23 @@
   @for (sale of sales(); track sale.id) {
     <article class="card">
       <div class="row-between">
-        <strong>{{ sale.customer?.name || ('Common.NoData' | t) }}</strong>
+        <div>
+          <strong>{{ sale.customer?.name || ('Common.NoData' | t) }}</strong>
+          @if (showBranch() && branches.nameOf(sale.branchId); as branchName) {
+            <small class="muted block">{{ branchName }}</small>
+          }
+        </div>
         <small class="muted">{{ fmtDateTime(sale.date) }}</small>
       </div>
       <dl class="sums">
-        <div><dt>{{ 'Web.TotalRolls' | t }}</dt><dd>{{ fmt(sale.rollCount, 0) }}</dd></div>
-        <div><dt>{{ 'Web.TotalLength' | t }}</dt><dd>{{ fmt(sale.length) }}</dd></div>
+        <div>
+          <dt>{{ 'Web.TotalRolls' | t }}</dt>
+          <dd>{{ fmt(sale.rollCount, 0) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'Web.TotalLength' | t }}</dt>
+          <dd>{{ fmt(sale.length) }}</dd>
+        </div>
         <div *appHasPermission="'sales.view_prices'">
           <dt>{{ 'Common.Amount' | t }}</dt>
           <dd>{{ fmt(sale.amount) }}</dd>

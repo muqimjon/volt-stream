@@ -14,14 +14,31 @@
   @for (item of supplies(); track item.id) {
     <article class="card">
       <div class="row-between">
-        <strong>{{ item.product?.name }}</strong>
+        <div>
+          <strong>{{ item.product?.name }}</strong>
+          @if (showBranch() && branches.nameOf(item.branchId); as branchName) {
+            <small class="muted block">{{ branchName }}</small>
+          }
+        </div>
         <small class="muted">{{ fmtDateTime(item.date) }}</small>
       </div>
       <dl class="sums">
-        <div><dt>{{ 'Supplies.ProductTypeColumn' | t }}</dt><dd>{{ item.product?.category?.name }}</dd></div>
-        <div><dt>{{ 'Supplies.PerBundle' | t }}</dt><dd>{{ fmt(item.lengthPerRoll) }}</dd></div>
-        <div><dt>{{ 'Supplies.BundleCount' | t }}</dt><dd>{{ fmt(item.rollCount, 0) }}</dd></div>
-        <div><dt>{{ 'Common.Total' | t }}</dt><dd>{{ fmt(item.totalLength) }}</dd></div>
+        <div>
+          <dt>{{ 'Supplies.ProductTypeColumn' | t }}</dt>
+          <dd>{{ item.product?.category?.name }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'Supplies.PerBundle' | t }}</dt>
+          <dd>{{ fmt(item.lengthPerRoll) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'Supplies.BundleCount' | t }}</dt>
+          <dd>{{ fmt(item.rollCount, 0) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'Common.Total' | t }}</dt>
+          <dd>{{ fmt(item.totalLength) }}</dd>
+        </div>
       </dl>
     </article>
   }

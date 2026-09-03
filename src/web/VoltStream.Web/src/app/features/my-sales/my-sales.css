@@ -40,3 +40,7 @@
   min-height: var(--touch);
   margin-inline-start: auto;
 }
+
+.block {
+  display: block;
+}

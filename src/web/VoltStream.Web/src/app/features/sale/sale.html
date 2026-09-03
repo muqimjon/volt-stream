@@ -1,6 +1,8 @@
 <div class="page">
   <app-page-header [title]="'Nav.Sales' | t">
-    <button type="button" class="btn btn-ghost" (click)="clearAll()">{{ 'Common.Clear' | t }}</button>
+    <button type="button" class="btn btn-ghost" (click)="clearAll()">
+      {{ 'Common.Clear' | t }}
+    </button>
   </app-page-header>
 
   <section class="card stack">
@@ -102,9 +104,18 @@
         />
       </div>
       <dl class="sums">
-        <div><dt>{{ 'Sales.TotalSum' | t }}</dt><dd>{{ fmt(totalAmount()) }}</dd></div>
-        <div><dt>{{ 'Sales.DiscountAmount' | t }}</dt><dd>{{ fmt(discountAmount()) }}</dd></div>
-        <div><dt>{{ 'Sales.GrandTotal' | t }}</dt><dd>{{ fmt(finalAmount()) }}</dd></div>
+        <div>
+          <dt>{{ 'Sales.TotalSum' | t }}</dt>
+          <dd>{{ fmt(totalAmount()) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'Sales.DiscountAmount' | t }}</dt>
+          <dd>{{ fmt(discountAmount()) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'Sales.GrandTotal' | t }}</dt>
+          <dd>{{ fmt(finalAmount()) }}</dd>
+        </div>
       </dl>
     }
 
@@ -135,32 +146,68 @@
           </button>
         </div>
         <dl class="sums">
-          <div><dt>{{ 'Sales.PerRoll' | t }}</dt><dd>{{ fmt(item.lengthPerRoll) }}</dd></div>
-          <div><dt>{{ 'Sales.RollCount' | t }}</dt><dd>{{ fmt(item.rollCount, 0) }}</dd></div>
-          <div><dt>{{ 'Common.Quantity' | t }}</dt><dd>{{ fmt(item.totalLength) }}</dd></div>
+          <div>
+            <dt>{{ 'Sales.PerRoll' | t }}</dt>
+            <dd>{{ fmt(item.lengthPerRoll) }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'Sales.RollCount' | t }}</dt>
+            <dd>{{ fmt(item.rollCount, 0) }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'Common.Quantity' | t }}</dt>
+            <dd>{{ fmt(item.totalLength) }}</dd>
+          </div>
           @if (item.weight) {
-            <div><dt>{{ 'Web.Weight' | t }}</dt><dd>{{ fmt(item.weight, 3) }}</dd></div>
+            <div>
+              <dt>{{ 'Web.Weight' | t }}</dt>
+              <dd>{{ fmt(item.weight, 3) }}</dd>
+            </div>
           }
           @if (canViewPrices()) {
-            <div><dt>{{ 'Common.Price' | t }}</dt><dd>{{ fmt(item.unitPrice) }}</dd></div>
-            <div><dt>{{ 'Sales.GrandTotal' | t }}</dt><dd>{{ fmt(item.finalAmount) }}</dd></div>
+            <div>
+              <dt>{{ 'Common.Price' | t }}</dt>
+              <dd>{{ fmt(item.unitPrice) }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'Sales.GrandTotal' | t }}</dt>
+              <dd>{{ fmt(item.finalAmount) }}</dd>
+            </div>
           }
         </dl>
       </article>
     }
   </section>
 
-  <section class="card stack totals">
+  <section class="card stack totals" [class.pinned]="!!store.draft().items.length">
     <dl class="sums">
-      <div><dt>{{ 'Web.TotalRolls' | t }}</dt><dd>{{ fmt(store.totals().rollCount, 0) }}</dd></div>
-      <div><dt>{{ 'Web.TotalLength' | t }}</dt><dd>{{ fmt(store.totals().length) }}</dd></div>
+      <div>
+        <dt>{{ 'Web.TotalRolls' | t }}</dt>
+        <dd>{{ fmt(store.totals().rollCount, 0) }}</dd>
+      </div>
+      <div>
+        <dt>{{ 'Web.TotalLength' | t }}</dt>
+        <dd>{{ fmt(store.totals().length) }}</dd>
+      </div>
       @if (hasWeight()) {
-        <div><dt>{{ 'Web.TotalWeight' | t }}</dt><dd>{{ fmt(store.totals().weight, 3) }}</dd></div>
+        <div>
+          <dt>{{ 'Web.TotalWeight' | t }}</dt>
+          <dd>{{ fmt(store.totals().weight, 3) }}</dd>
+        </div>
       }
       @if (canViewPrices()) {
-        <div><dt>{{ 'Sales.TotalSum' | t }}</dt><dd>{{ fmt(store.totals().amount) }}</dd></div>
-        <div><dt>{{ 'Sales.DiscountLabel' | t }}</dt><dd>{{ fmt(store.totals().discount) }}</dd></div>
-        <div><dt>{{ 'Sales.GrandTotal' | t }}</dt><dd>{{ fmt(store.totals().final) }}</dd></div>
+        <div>
+          <dt>{{ 'Sales.TotalSum' | t }}</dt>
+          <dd>{{ fmt(store.totals().amount) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'Sales.DiscountLabel' | t }}</dt>
+          <dd>{{ fmt(store.totals().discount) }}</dd>
+        </div>
+        <div>
+          <dt>{{ 'Sales.GrandTotal' | t }}</dt>
+          <dd>{{ fmt(store.totals().final) }}</dd>
+        </div>
       }
     </dl>
     <button

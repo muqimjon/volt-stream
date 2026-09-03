@@ -131,6 +131,7 @@ export interface SupplyListItem {
   lengthPerRoll: number;
   totalLength: number;
   product?: { name: string; category?: { name: string } | null } | null;
+  branchId?: number | null;
 }
 
 export interface BranchStats {

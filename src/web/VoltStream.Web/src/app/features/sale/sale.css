@@ -60,10 +60,33 @@
   color: var(--danger);
 }
 
-.totals {
+.totals.pinned {
   position: sticky;
   bottom: 0;
+  gap: var(--sp-sm);
+  padding-block: var(--sp-md);
   box-shadow: var(--shadow-card);
+}
+
+.totals.pinned .sums {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-xs) var(--sp-md);
+}
+
+.totals.pinned .sums > div {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.totals.pinned .sums dt,
+.totals.pinned .sums dd {
+  font-size: var(--fs-caption);
+}
+
+.page:has(.totals.pinned) {
+  padding-bottom: calc(var(--sp-lg) + 96px);
 }
 
 .overlay {
