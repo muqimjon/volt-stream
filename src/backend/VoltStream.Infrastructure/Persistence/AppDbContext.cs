@@ -1,4 +1,4 @@
-namespace VoltStream.Infrastructure.Persistence;
+﻿namespace VoltStream.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -33,6 +33,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
         base.OnModelCreating(modelBuilder);
     }
 

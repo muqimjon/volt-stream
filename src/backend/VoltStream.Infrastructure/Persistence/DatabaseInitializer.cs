@@ -1,33 +1,17 @@
-namespace VoltStream.Infrastructure.Persistence;
+﻿namespace VoltStream.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Commons.Services;
 using VoltStream.Domain.Entities;
-using VoltStream.Domain.Enums;
 using VoltStream.Infrastructure.Persistence.Configurations;
 
 public class DatabaseInitializer(
     IServiceProvider services,
     ILogger<DatabaseInitializer> logger) : BackgroundService
 {
-    private static readonly Dictionary<string, string> dataMigrations = new()
-    {
-        ["20260902114838_AddCreatedByUserId"] = """UPDATE "Users" SET "IsActive" = true;""",
-        ["20260902120211_AddBranches"] = """UPDATE "Users" SET "BranchId" = (SELECT MIN("Id") FROM "Branches") WHERE "Role" <> 0 AND "BranchId" IS NULL;""",
-        ["20260902121445_AddUserPermissions"] = PermissionPresetSql()
-    };
-
-    private static string PermissionPresetSql()
-        => string.Join('\n', Enum.GetValues<UserRole>().Select(role =>
-            $"""UPDATE "Users" SET "Permissions" = {PgArray(RolePresets.For(role))} WHERE "Role" = {(int)role} AND cardinality("Permissions") = 0;"""));
-
-    private static string PgArray(string[] values)
-        => $"ARRAY[{string.Join(',', values.Select(v => $"'{v}'"))}]::text[]";
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         for (var attempt = 1; attempt <= 5 && !stoppingToken.IsCancellationRequested; attempt++)
@@ -38,7 +22,6 @@ public class DatabaseInitializer(
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
                 await context.Database.MigrateAsync(stoppingToken);
-                await ApplyDataMigrationsAsync(context, stoppingToken);
                 await EnsureDefaultBranchAsync(context, stoppingToken);
                 await EnsurePerformanceIndexesAsync(context, stoppingToken);
 
@@ -53,27 +36,6 @@ public class DatabaseInitializer(
                 logger.LogError(ex, "Ma'lumotlar bazasini tayyorlashda xatolik (urinish {Attempt}/5)", attempt);
                 await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
             }
-        }
-    }
-
-    private static async Task ApplyDataMigrationsAsync(AppDbContext context, CancellationToken ct)
-    {
-        await context.Database.ExecuteSqlRawAsync(
-            """CREATE TABLE IF NOT EXISTS "__DataMigrationsHistory" ("MigrationId" text PRIMARY KEY);""", ct);
-
-        var done = await context.Database
-            .SqlQueryRaw<string>("""SELECT "MigrationId" AS "Value" FROM "__DataMigrationsHistory";""")
-            .ToListAsync(ct);
-
-        var applied = await context.Database.GetAppliedMigrationsAsync(ct);
-
-        foreach (var id in applied.Where(dataMigrations.ContainsKey).Except(done))
-        {
-            await using var transaction = await context.Database.BeginTransactionAsync(ct);
-            await context.Database.ExecuteSqlRawAsync(dataMigrations[id], ct);
-            await context.Database.ExecuteSqlRawAsync(
-                """INSERT INTO "__DataMigrationsHistory" ("MigrationId") VALUES ({0});""", [id], ct);
-            await transaction.CommitAsync(ct);
         }
     }
 

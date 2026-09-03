@@ -33,10 +33,11 @@ WebApi seeding'dan OLDIN tinglay boshlaydi (migratsiya/seeding `DatabaseInitiali
 
 `Jwt:Secret` (kamida 32 belgi) MAJBURIY — yo'q bo'lsa server ishga tushmaydi. Dev qiymati `appsettings.Development.json` da (gitignored); production'da `appsettings.Production.json` (gitignored) yoki `Jwt__Secret` env. Kalit o'zgarsa barcha tokenlar bekor bo'ladi (WPF qayta login qiladi).
 
-## Migratsiyalar va ma'lumot backfill
+## Migratsiyalar
 
-- EF migratsiyalari `src/backend/VoltStream.Infrastructure/Persistence/Migrations` da, gitda saqlanadi. Yaratish (WebApi papkasidan): `ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations add <Name> --project ../VoltStream.Infrastructure --startup-project . --output-dir Persistence/Migrations` (`dotnet-ef` 10.0.11 lokal manifestda).
-- **Generatsiya fayllariga (migratsiya, snapshot) qo'l bilan tegilmaydi.** Kerakli natija model/konfiguratsiya orqali olinadi: default satr → `HasData`, ustun defaulti → `HasDefaultValue` (keyin olib tashlab ikkinchi migratsiya), shartli `UPDATE` → `DatabaseInitializer.dataMigrations` (migratsiya ID'siga bog'langan SQL, `__DataMigrationsHistory` jadvali orqali bir marta va qayta uriniladigan).
+- Bitta `InitialMigration` — butun sxema shundan quriladi. Yaratish (WebApi papkasidan): `ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations add <Name> --project ../VoltStream.Infrastructure --startup-project . --output-dir Persistence/Migrations` (`dotnet-ef` 10.0.11 lokal manifestda).
+- **Generatsiya fayllariga (migratsiya, snapshot) qo'l bilan tegilmaydi.** Kerakli natija model/konfiguratsiya orqali olinadi: default satr → `HasData`, ustun defaulti → `HasDefaultValue`.
+- Ma'lumot backfill mexanizmi (`dataMigrations`, `__DataMigrationsHistory`) YO'Q — kerak emas: baza toza holatdan quriladi va `ExcelDataSeeder` foydalanuvchini `CreateUserCommand` orqali yaratgani uchun u darrov faol bo'ladi, filialga biriktiriladi va roliga qarab ruxsat oladi. `DatabaseInitializer` faqat migratsiya, default filial+ombor va indekslar bilan shug'ullanadi.
 
 ## Filiallar, ruxsatlar, audit
 
