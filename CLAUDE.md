@@ -4,7 +4,7 @@ Kabel zavodi uchun hisob-kitob (savdo, ta'minot, to'lovlar, debitor/kreditor, om
 
 ## Arxitektura
 
-`.NET 9`. Yechim uch qismdan iborat (`VoltStream.sln` + `src/web`):
+`.NET 10` (LTS). Yechim uch qismdan iborat (`VoltStream.sln` + `src/web`):
 
 **Backend** (`src/backend`) — Clean Architecture + CQRS:
 - `VoltStream.Domain` — entitilar, enumlar.
@@ -16,7 +16,7 @@ Kabel zavodi uchun hisob-kitob (savdo, ta'minot, to'lovlar, debitor/kreditor, om
 - `VoltStream.WPF` — oynalar/sahifalar/ViewModel'lar, DI uchun generic `Host`.
 - `ApiServices` — Refit klient interfeyslari (`I*Api`) va modellar.
 
-**Web** (`src/web/VoltStream.Web`) — Angular 22 + PWA (planshet/telefon uchun: savdo, kirim, sotilganlar, statistika, loglar, profil). Standalone komponentlar, signal'lar, UI kutubxonasiz. Build natijasi `src/backend/VoltStream.WebApi/wwwroot` ga tushadi (gitignored) va WebApi'ning o'zi SPA sifatida xizmat qiladi (`MapFallbackToFile`, `/api`, `/hubs`, `/scalar` bundan mustasno). `dotnet publish` `BuildWeb` target orqali `npm ci && npm run build` ni ishga tushiradi (`-p:BuildWeb=false` bilan o'tkazib yuboriladi). Dev: `npm start` (proxy `/api`, `/hubs` → `https://localhost:7285`). Node 24 LTS (`.node-version`).
+**Web** (`src/web/VoltStream.Web`) — Angular 22 + PWA (planshet/telefon uchun: savdo, kirim, sotilganlar, statistika, loglar, profil). Standalone komponentlar, signal'lar, UI kutubxonasiz. Build natijasi `src/backend/VoltStream.WebApi/wwwroot` ga tushadi (gitignored) va WebApi'ning o'zi SPA sifatida xizmat qiladi (`MapFallbackToFile`, `/api`, `/hubs`, `/scalar` bundan mustasno). `dotnet publish` `BuildWeb` target orqali `npm ci && npm run build` ni ishga tushiradi; oddiy Build esa `wwwroot/index.html` yo'q bo'lsa web'ni bir marta quradi (ikkalasi ham `-p:BuildWeb=false` bilan o'tkazib yuboriladi). Web kodi o'zgarsa `npm run build` yetarli — API'ni qayta ishga tushirish shart emas. Dev: `npm start` (proxy `/api`, `/hubs` → `https://localhost:7285`). Node 24 LTS (`.node-version`).
 
 ## Ishga tushirish
 
@@ -26,7 +26,7 @@ Kabel zavodi uchun hisob-kitob (savdo, ta'minot, to'lovlar, debitor/kreditor, om
    ```
    dotnet build VoltStream.sln
    dotnet run --project src/backend/VoltStream.WebApi   # https://localhost:7285 + http://localhost:5123
-   src/frontend/VoltStream.WPF/bin/Debug/net9.0-windows/VoltStream.WPF.exe
+   src/frontend/VoltStream.WPF/bin/Debug/net10.0-windows/VoltStream.WPF.exe
    ```
 
 WebApi seeding'dan OLDIN tinglay boshlaydi (migratsiya/seeding `DatabaseInitializer` da fonda). Shuning uchun klient va server bir vaqtda ishga tushsa ham klient muzlab qolmaydi.
@@ -35,7 +35,7 @@ WebApi seeding'dan OLDIN tinglay boshlaydi (migratsiya/seeding `DatabaseInitiali
 
 ## Migratsiyalar va ma'lumot backfill
 
-- EF migratsiyalari `src/backend/VoltStream.Infrastructure/Persistence/Migrations` da, gitda saqlanadi. Yaratish (WebApi papkasidan): `ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations add <Name> --project ../VoltStream.Infrastructure --startup-project . --output-dir Persistence/Migrations` (`dotnet-ef` 9.0.10 lokal manifestda; 10.x net9 bilan ishlamaydi).
+- EF migratsiyalari `src/backend/VoltStream.Infrastructure/Persistence/Migrations` da, gitda saqlanadi. Yaratish (WebApi papkasidan): `ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations add <Name> --project ../VoltStream.Infrastructure --startup-project . --output-dir Persistence/Migrations` (`dotnet-ef` 10.0.11 lokal manifestda).
 - **Generatsiya fayllariga (migratsiya, snapshot) qo'l bilan tegilmaydi.** Kerakli natija model/konfiguratsiya orqali olinadi: default satr → `HasData`, ustun defaulti → `HasDefaultValue` (keyin olib tashlab ikkinchi migratsiya), shartli `UPDATE` → `DatabaseInitializer.dataMigrations` (migratsiya ID'siga bog'langan SQL, `__DataMigrationsHistory` jadvali orqali bir marta va qayta uriniladigan).
 
 ## Filiallar, ruxsatlar, audit

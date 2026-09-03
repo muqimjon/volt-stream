@@ -1,9 +1,9 @@
-namespace VoltStream.WebApi;
+﻿namespace VoltStream.WebApi;
 
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
@@ -48,11 +48,13 @@ public static class DependencyInjection
                     Description = "JWT tokenni kiriting (masalan: Bearer {token})"
                 };
                 document.Components ??= new OpenApiComponents();
+                document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
                 document.Components.SecuritySchemes.Add("Bearer", securityScheme);
 
-                document.SecurityRequirements.Add(new OpenApiSecurityRequirement
+                document.Security ??= [];
+                document.Security.Add(new OpenApiSecurityRequirement
                 {
-                    [new OpenApiSecurityScheme { Reference = new OpenApiReference { Id = "Bearer", Type = ReferenceType.SecurityScheme } }] = Array.Empty<string>()
+                    [new OpenApiSecuritySchemeReference("Bearer", document)] = []
                 });
 
                 return Task.CompletedTask;
