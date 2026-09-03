@@ -12,6 +12,7 @@ using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Infrastructure.Authentication;
 using VoltStream.Infrastructure.Persistence;
 using VoltStream.Infrastructure.Persistence.Interceptors;
+using VoltStream.Infrastructure.Printing;
 using VoltStream.Infrastructure.Web;
 
 public static class DependencyInjection
@@ -25,6 +26,7 @@ public static class DependencyInjection
         services.AddScoped<ExcelDataSeeder>();
         services.AddScoped<IAuditLogWriter, AuditLogWriter>();
         services.AddHostedService<DatabaseInitializer>();
+        services.AddHostedService<PrintJobWatchdog>();
         services.AddSingleton<IMarketDataService, Web.MarketDataService>();
 
         services.AddDbContext<IAppDbContext, AppDbContext>((sp, opt) =>

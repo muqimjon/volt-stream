@@ -20,10 +20,6 @@ public class FailPrintJobCommandHandler(
             .Require(PrintJobStatus.Printing)
             .RequireAgent(user);
 
-        job.Status = PrintJobStatus.Failed;
-        job.Error = request.Error;
-        job.FinishedAt = DateTimeOffset.UtcNow;
-
-        return await job.SaveAndNotifyAsync(context, notifier, cancellationToken);
+        return await job.RequeueOrFailAsync(request.Error, context, notifier, cancellationToken);
     }
 }

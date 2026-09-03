@@ -281,6 +281,7 @@
   "Receipt.Total": "TOTAL:",
   "Receipt.TotalLength": "Total (m)",
   "Receipt.Weight": "Weight (kg)",
+  "Receipt.WeightPerUnit": "Weight per m (kg)",
   "Sales.AccountLabel": "Account:",
   "Sales.Buyer": "Buyer",
   "Sales.CategoriesLoadError": "Failed to load categories!",

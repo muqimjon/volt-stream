@@ -10,6 +10,8 @@ using VoltStream.Domain.Enums;
 
 public static class PrintJobExtensions
 {
+    public const int MaxAttempts = 3;
+
     public static async Task<PrintJob> FindJobAsync(this IAppDbContext context, long id, ICurrentUser user, CancellationToken cancellationToken)
     {
         var job = await context.PrintJobs.FirstOrDefaultAsync(job => job.Id == id, cancellationToken)
@@ -29,6 +31,36 @@ public static class PrintJobExtensions
         => statuses.Contains(job.Status)
             ? job
             : throw new ConflictException($"Chop etish holati mos emas: {job.Status}");
+
+    public static async Task<PrintJobDto> RequeueOrFailAsync(
+        this PrintJob job,
+        string? error,
+        IAppDbContext context,
+        IPrintJobNotifier notifier,
+        CancellationToken cancellationToken)
+    {
+        var requeue = job.Attempts < MaxAttempts;
+        job.Error = error;
+
+        if (requeue)
+        {
+            job.Status = PrintJobStatus.Pending;
+            job.AgentUserId = null;
+            job.ClaimedAt = null;
+            job.FinishedAt = null;
+        }
+        else
+        {
+            job.Status = PrintJobStatus.Failed;
+            job.FinishedAt = DateTimeOffset.UtcNow;
+        }
+
+        await context.SaveAsync(cancellationToken);
+        var dto = await job.ToDtoAsync(context, cancellationToken);
+        await (requeue ? notifier.JobCreated(dto) : notifier.JobChanged(dto));
+
+        return dto;
+    }
 
     public static async Task<PrintJobDto> SaveAndNotifyAsync(
         this PrintJob job,

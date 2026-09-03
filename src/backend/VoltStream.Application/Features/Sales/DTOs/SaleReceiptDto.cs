@@ -25,6 +25,7 @@ public record SaleReceiptItemDto
     public decimal TotalLength { get; set; }
     public string Unit { get; set; } = string.Empty;
     public decimal Weight { get; set; }
+    public decimal? WeightPerUnit { get; set; }
     public decimal? UnitPrice { get; set; }
     public decimal? TotalAmount { get; set; }
 }

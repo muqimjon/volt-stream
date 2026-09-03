@@ -27,8 +27,8 @@
             PreviewCommand="{Binding PreviewCommand}"
             PrintCommand="{Binding PrintCommand}">
             <controls:FilterBar.Filters>
-                <StackPanel Orientation="Horizontal">
-                    <StackPanel Margin="0,0,14,0">
+                <WrapPanel Orientation="Horizontal">
+                    <StackPanel Margin="0,0,14,6">
                         <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Turnovers.StartDate}" />
                         <controls:UserCalendar
                             Width="120"
@@ -36,7 +36,7 @@
                             SelectedDate="{Binding BeginDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </StackPanel>
 
-                    <StackPanel Margin="0,0,14,0">
+                    <StackPanel Margin="0,0,14,6">
                         <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Turnovers.EndDate}" />
                         <controls:UserCalendar
                             Width="120"
@@ -44,7 +44,7 @@
                             SelectedDate="{Binding EndDate, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" />
                     </StackPanel>
 
-                    <StackPanel Margin="0,0,14,0">
+                    <StackPanel Margin="0,0,14,6">
                         <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Logs.User}" />
                         <ComboBox
                             Width="150"
@@ -59,7 +59,7 @@
                         </ComboBox>
                     </StackPanel>
 
-                    <StackPanel Margin="0,0,14,0" Visibility="{Binding CanSelectBranch, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel Margin="0,0,14,6" Visibility="{Binding CanSelectBranch, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Logs.Branch}" />
                         <ComboBox
                             Width="150"
@@ -74,7 +74,7 @@
                         </ComboBox>
                     </StackPanel>
 
-                    <StackPanel Margin="0,0,14,0">
+                    <StackPanel Margin="0,0,14,6">
                         <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Logs.Action}" />
                         <ComboBox
                             Width="170"
@@ -83,7 +83,7 @@
                             Style="{StaticResource ModernCombo}" />
                     </StackPanel>
 
-                    <StackPanel Margin="0,0,14,0">
+                    <StackPanel Margin="0,0,14,6">
                         <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Common.Search}" />
                         <TextBox
                             Width="180"
@@ -102,7 +102,7 @@
                             Foreground="{DynamicResource TextSecondary}"
                             Icon="ArrowsRotate" />
                     </Button>
-                </StackPanel>
+                </WrapPanel>
             </controls:FilterBar.Filters>
         </controls:FilterBar>
 

@@ -452,9 +452,9 @@
                                 <TextBlock Margin="12,0,18,0" VerticalAlignment="Center" FontSize="{DynamicResource FontSizeTitle}" FontWeight="Bold" Text="{TemplateBinding Title}" />
                             </StackPanel>
 
-                            <ContentPresenter Grid.Column="1" VerticalAlignment="Center" Content="{TemplateBinding Filters}" />
+                            <ContentPresenter Grid.Column="1" VerticalAlignment="Bottom" Content="{TemplateBinding Filters}" />
 
-                            <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal">
+                            <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Orientation="Horizontal">
                                 <Button Height="40" Margin="8,0,0,0" Padding="14,0" Command="{TemplateBinding ClearCommand}" Style="{DynamicResource SecondaryButton}" ToolTip="{loc:Loc Common.ClearFilters}">
                                     <StackPanel Orientation="Horizontal">
                                         <fa:IconImage Width="13" Height="13" Margin="0,0,7,0" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondary}" Icon="Broom" />

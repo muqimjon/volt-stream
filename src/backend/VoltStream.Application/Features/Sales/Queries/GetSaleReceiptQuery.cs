@@ -54,6 +54,7 @@ public class GetSaleReceiptQueryHandler(IAppDbContext context, ICurrentUser user
                 TotalLength = item.TotalLength,
                 Unit = item.Product.Unit,
                 Weight = item.Weight,
+                WeightPerUnit = item.Product.IsWeightTracked ? item.Product.WeightPerUnit : null,
                 UnitPrice = hasPrices ? item.UnitPrice : null,
                 TotalAmount = hasPrices ? item.FinalAmount : null
             })],

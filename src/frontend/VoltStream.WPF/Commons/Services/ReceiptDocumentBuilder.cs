@@ -32,31 +32,37 @@ public static class ReceiptDocumentBuilder
     public static string Title(ReceiptResponse receipt)
         => string.Format(TranslationSource.T("Receipt.Title"), receipt.SaleId);
 
+    private const double ContentWidth = 733.7;
+
     private static ReportDefinition<ReceiptItemResponse> Define(ReceiptResponse receipt, ReceiptMode mode)
     {
         bool money = mode == ReceiptMode.Money && receipt.HasPrices;
 
         List<ReportColumn<ReceiptItemResponse>> columns =
         [
-            new() { Header = TranslationSource.T("Receipt.Product"), Width = money ? 190 : 260, Value = Product },
+            new() { Header = TranslationSource.T("Receipt.Product"), Width = ContentWidth - (money ? 495 : 405), Value = Product },
             new() { Header = TranslationSource.T("Receipt.PerRoll"), Width = 70, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = i => i.LengthPerRoll },
             new() { Header = TranslationSource.T("Receipt.RollCount"), Width = 70, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = i => i.RollCount },
-            new() { Header = TranslationSource.T("Receipt.TotalLength"), Width = 85, Align = ReportAlign.Right, Value = i => $"{i.TotalLength:N0} {i.Unit}" },
-            new() { Header = TranslationSource.T("Receipt.Weight"), Width = 85, Align = ReportAlign.Right, IsNumber = true, Format = "N3", Value = i => i.Weight }
+            new() { Header = TranslationSource.T("Receipt.TotalLength"), Width = 85, Align = ReportAlign.Right, Value = i => $"{i.TotalLength:N0} {i.Unit}" }
         ];
 
         List<ReportTotalCell> totals =
         [
             new() { Column = 2, Value = receipt.TotalRolls, Format = "N0" },
-            new() { Column = 3, Value = $"{receipt.TotalLength:N0}" },
-            new() { Column = 4, Value = receipt.TotalWeight, Format = "N3" }
+            new() { Column = 3, Value = $"{receipt.TotalLength:N0}" }
         ];
+
+        if (!money)
+            columns.Add(new() { Header = TranslationSource.T("Receipt.WeightPerUnit"), Width = 95, Align = ReportAlign.Right, IsNumber = true, Format = "N3", Value = i => i.WeightPerUnit });
+
+        columns.Add(new() { Header = TranslationSource.T("Receipt.Weight"), Width = 85, Align = ReportAlign.Right, IsNumber = true, Format = "N3", Value = i => i.Weight });
+        totals.Add(new() { Column = columns.Count - 1, Value = receipt.TotalWeight, Format = "N3" });
 
         if (money)
         {
-            columns.Add(new() { Header = TranslationSource.T("Receipt.Price"), Width = 85, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = i => i.UnitPrice });
-            columns.Add(new() { Header = TranslationSource.T("Receipt.Amount"), Width = 100, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = i => i.TotalAmount });
-            totals.Add(new() { Column = 6, Value = receipt.Amount, Format = "N0" });
+            columns.Add(new() { Header = TranslationSource.T("Receipt.Price"), Width = 90, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = i => i.UnitPrice });
+            columns.Add(new() { Header = TranslationSource.T("Receipt.Amount"), Width = 105, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = i => i.TotalAmount });
+            totals.Add(new() { Column = columns.Count - 1, Value = receipt.Amount, Format = "N0" });
         }
 
         return new ReportDefinition<ReceiptItemResponse>

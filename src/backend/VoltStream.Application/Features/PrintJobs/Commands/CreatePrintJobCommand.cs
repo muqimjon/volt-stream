@@ -10,7 +10,7 @@ using VoltStream.Domain.Entities;
 using VoltStream.Domain.Enums;
 
 [RequirePermission(Permissions.PrintRequest)]
-public record CreatePrintJobCommand(long SaleId, int Copies = 1, bool Force = false) : IRequest<PrintJobDto>;
+public record CreatePrintJobCommand(long SaleId, int Copies = 1, bool Force = false, long? BranchId = null) : IRequest<PrintJobDto>;
 
 public class CreatePrintJobCommandHandler(
     IAppDbContext context,
@@ -38,10 +38,15 @@ public class CreatePrintJobCommandHandler(
                 && (job.Status == PrintJobStatus.Pending || job.Status == PrintJobStatus.Printing), cancellationToken))
             throw new ConflictException("Bu savdo uchun faol chop etish so'rovi mavjud.");
 
+        var branchId = user.Has(Permissions.BranchesAll) ? request.BranchId ?? sale.BranchId : sale.BranchId;
+
+        if (branchId != sale.BranchId && !await context.Branches.AnyAsync(branch => branch.Id == branchId, cancellationToken))
+            throw new NotFoundException(nameof(Branch), nameof(request.BranchId), branchId);
+
         var job = new PrintJob
         {
             SaleId = sale.Id,
-            BranchId = sale.BranchId,
+            BranchId = branchId,
             RequestedByUserId = requester.Id,
             Status = PrintJobStatus.Pending,
             Copies = Math.Clamp(request.Copies, 1, 5)

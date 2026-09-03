@@ -15,7 +15,8 @@ public class CancelPrintJobCommandHandler(
 {
     public async Task<PrintJobDto> Handle(CancelPrintJobCommand request, CancellationToken cancellationToken)
     {
-        var job = (await context.FindJobAsync(request.Id, user, cancellationToken)).Require(PrintJobStatus.Pending);
+        var job = (await context.FindJobAsync(request.Id, user, cancellationToken))
+            .Require(PrintJobStatus.Pending, PrintJobStatus.Printing);
 
         if (!user.IsAdmin && job.RequestedByUserId != user.UserId)
             throw new ForbiddenException("Faqat so'rov egasi bekor qila oladi.");

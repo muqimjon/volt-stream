@@ -163,7 +163,7 @@
                         ItemsSource="{Binding Agent.RecentJobs}">
                         <DataGrid.Columns>
                             <DataGridTextColumn
-                                Width="130"
+                                Width="165"
                                 Binding="{Binding CreatedAt.LocalDateTime, StringFormat={}{0:dd.MM.yyyy HH:mm:ss}}"
                                 ElementStyle="{StaticResource CenterCellText}"
                                 Header="{loc:Loc Logs.Time}" />
