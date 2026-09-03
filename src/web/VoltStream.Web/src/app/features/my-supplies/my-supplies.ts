@@ -1,5 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal, untracked } from '@angular/core';
 import { ApiClient } from '../../core/api/api-client';
+import { AuthService } from '../../core/auth/auth';
 import { TranslatePipe } from '../../core/i18n/translate';
 import { SupplyListItem } from '../../core/models';
 import { fmtDateTime, toDateInput } from '../../core/utils/date';
@@ -19,6 +20,7 @@ const PAGE_SIZE = 20;
 })
 export class MySuppliesPage {
   private readonly api = inject(ApiClient);
+  private readonly auth = inject(AuthService);
 
   protected readonly fmt = fmtNum;
   protected readonly fmtDateTime = fmtDateTime;
@@ -30,7 +32,10 @@ export class MySuppliesPage {
   protected readonly loading = signal(false);
 
   constructor() {
-    void this.load(1);
+    effect(() => {
+      this.auth.branchId();
+      untracked(() => void this.load(1));
+    });
   }
 
   protected onDate(value: string): void {

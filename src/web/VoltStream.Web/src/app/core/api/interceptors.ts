@@ -52,7 +52,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     catchError((err: HttpErrorResponse) => {
       const body = err.error as { message?: string } | null;
       const serverMessage = typeof body?.message === 'string' ? body.message : '';
-      let message = serverMessage || err.message;
+      let message: string;
 
       if (err.status === 0) {
         message = translate.t('Web.NetworkError');
@@ -62,11 +62,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         auth.logout();
         toast.error(message);
         void router.navigate(['/login']);
-      } else if (err.status === 403) {
-        message = serverMessage || translate.t('Web.NoAccess');
+      } else {
+        if (err.status === 403) message = serverMessage || translate.t('Web.NoAccess');
+        else if (err.status >= 500) message = translate.t('Web.ServerError');
+        else message = serverMessage || translate.t('Web.RequestFailed');
         if (!silent) toast.error(message);
-      } else if (!silent) {
-        toast.error(message);
       }
 
       return throwError(() => new ApiError(err.status, message, err.error));

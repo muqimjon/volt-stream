@@ -1,4 +1,4 @@
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { ApiClient } from '../../core/api/api-client';
 import { AuthService } from '../../core/auth/auth';
 import { TranslatePipe } from '../../core/i18n/translate';
@@ -46,7 +46,10 @@ export class MySalesPage {
   );
 
   constructor() {
-    void this.load(1);
+    effect(() => {
+      this.auth.branchId();
+      untracked(() => void this.load(1));
+    });
     const timer = setInterval(() => void this.load(1), REFRESH_MS);
     inject(DestroyRef).onDestroy(() => clearInterval(timer));
   }

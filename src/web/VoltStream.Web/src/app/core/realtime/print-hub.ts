@@ -52,6 +52,7 @@ export class PrintHubService {
       .configureLogging(LogLevel.Warning)
       .build();
 
+    connection.on('PrintJobCreated', (job: PrintJob) => this.track(job));
     connection.on('PrintJobStatusChanged', (job: PrintJob) => this.track(job));
     connection.onreconnected(() => this.connected.set(true));
     connection.onreconnecting(() => this.connected.set(false));

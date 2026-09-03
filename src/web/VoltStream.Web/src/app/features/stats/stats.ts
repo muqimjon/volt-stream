@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal, untracked } from '@angular/core';
 import { ApiClient } from '../../core/api/api-client';
 import { AuthService } from '../../core/auth/auth';
 import { TranslatePipe } from '../../core/i18n/translate';
@@ -44,7 +44,10 @@ export class StatsPage {
   protected readonly loading = signal(false);
 
   constructor() {
-    void this.load();
+    effect(() => {
+      this.auth.branchId();
+      untracked(() => void this.load());
+    });
   }
 
   protected select(range: Range): void {

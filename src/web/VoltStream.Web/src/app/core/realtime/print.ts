@@ -30,8 +30,8 @@ export class PrintService {
 
   async request(saleId: number, copies = 1): Promise<void> {
     try {
-      const id = await this.api.post<number>('print-jobs', { saleId, copies }, true);
-      this.hub.track({ id, saleId, status: 'Pending' });
+      const job = await this.api.post<PrintJob>('print-jobs', { saleId, copies }, true);
+      this.hub.track(job);
       this.toast.success(this.translate.t('Web.PrintRequested'));
       this.sync();
     } catch (e) {

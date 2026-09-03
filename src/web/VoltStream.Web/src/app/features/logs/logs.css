@@ -1,0 +1,41 @@
+.log {
+  padding: 0;
+  overflow: hidden;
+}
+
+.log.failed {
+  border-color: var(--danger);
+}
+
+.log-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-md);
+  width: 100%;
+  padding: var(--sp-md) var(--sp-lg);
+  border: none;
+  background: transparent;
+  text-align: start;
+}
+
+.log-head small {
+  display: block;
+  font-size: var(--fs-caption);
+}
+
+.meta {
+  text-align: end;
+  font-size: var(--fs-caption);
+  white-space: nowrap;
+}
+
+.details {
+  margin: 0;
+  padding: var(--sp-md) var(--sp-lg);
+  background: var(--surface-alt);
+  font-size: var(--fs-caption);
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+}
