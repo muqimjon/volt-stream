@@ -21,6 +21,10 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
+**/.angular
+src/backend/VoltStream.WebApi/wwwroot
+src/frontend
+backups
 LICENSE
 README.md
 !**/.gitignore

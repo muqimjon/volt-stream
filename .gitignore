@@ -428,3 +428,7 @@ src/web/VoltStream.Web/node_modules/
 
 # Angular feature folder wrongly matched by the [Ll]ogs/ rule above
 !src/web/VoltStream.Web/src/app/features/logs/
+
+# Docker deploy: maxfiy qiymatlar va baza nusxalari
+.env
+backups/
