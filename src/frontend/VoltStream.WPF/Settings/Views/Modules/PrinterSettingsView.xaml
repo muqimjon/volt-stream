@@ -45,6 +45,37 @@
                     </TextBlock.Style>
                 </TextBlock>
 
+                <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Printer.Branch}" />
+                <ComboBox
+                    Margin="0,0,0,6"
+                    ItemsSource="{Binding Branches}"
+                    SelectedItem="{Binding SelectedBranch}"
+                    Style="{StaticResource ModernCombo}"
+                    ToolTip="{loc:Loc Printer.BranchHint}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <TextBlock
+                    Margin="0,0,0,12"
+                    Foreground="{DynamicResource Danger}"
+                    Text="{loc:Loc Printer.NoBranch}"
+                    TextWrapping="Wrap">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasBranch}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
                 <CheckBox
                     Margin="0,0,0,15"
                     Content="{loc:Loc Printer.Enabled}"

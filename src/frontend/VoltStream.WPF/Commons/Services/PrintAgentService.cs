@@ -38,10 +38,11 @@ public partial class PrintAgentService(
     IServiceProvider services,
     ISessionService session,
     PrinterSettings settings,
-    ApiConnectionViewModel apiConnection,
-    BranchContext branchContext) : ObservableObject
+    ApiConnectionViewModel apiConnection) : ObservableObject
 {
-    private long? AgentBranchId => session.BranchId ?? branchContext.BranchId;
+    public long? AgentBranchId => settings.BranchId;
+
+    public string? AgentBranchName => settings.BranchName;
 
     private static readonly TimeSpan PrintTimeout = TimeSpan.FromMinutes(2);
 
@@ -56,7 +57,8 @@ public partial class PrintAgentService(
 
     public bool CanRun => settings.Enabled
         && !string.IsNullOrWhiteSpace(settings.PrinterName)
-        && session.Has("print.agent");
+        && session.Has("print.agent")
+        && AgentBranchId is not null;
 
     public async Task StartAsync()
     {
@@ -70,9 +72,6 @@ public partial class PrintAgentService(
 
         Status = AgentStatus.Connecting;
         stopping = false;
-
-        if (session.BranchId is null && branchContext.Branches.Count == 0)
-            await branchContext.LoadAsync();
 
         var hub = new HubConnectionBuilder()
             .WithUrl($"{apiConnection.Url}hubs/print{(AgentBranchId is long id ? $"?branchId={id}" : string.Empty)}", options =>
