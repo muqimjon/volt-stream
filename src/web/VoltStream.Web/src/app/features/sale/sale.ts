@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ApiClient } from '../../core/api/api-client';
 import { AuthService } from '../../core/auth/auth';
+import { BranchStore } from '../../core/branches';
 import { TranslatePipe, TranslateService } from '../../core/i18n/translate';
 import {
   Category,
@@ -47,6 +48,7 @@ export class SalePage {
   private readonly dialog = inject(DialogService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
+  private readonly branches = inject(BranchStore);
   private readonly permissions = inject(PermissionService);
   private readonly hub = inject(PrintHubService);
 
@@ -100,11 +102,17 @@ export class SalePage {
 
   protected readonly nameOf = (item: { name: string }) => item.name;
   protected readonly stockLabel = (item: WarehouseItem) => fmtNum(item.lengthPerRoll);
-  protected readonly stockHint = (item: WarehouseItem) =>
-    this.translate.t('Web.StockInfo', fmtNum(item.rollCount, 0), fmtNum(item.totalLength));
+  protected readonly stockHint = (item: WarehouseItem) => {
+    const info = this.translate.t('Web.StockInfo', fmtNum(item.rollCount, 0), fmtNum(item.totalLength));
+    const branch = this.showBranch() ? this.branches.nameOf(item.branchId) : null;
+    return branch ? `${branch} · ${info}` : info;
+  };
+  private readonly showBranch = computed(() => this.auth.isAdmin() && this.auth.branchId() === null);
+  private pendingCommit: Promise<void> = Promise.resolve();
   protected readonly customerHint = (item: Customer) => item.phone ?? '';
 
   constructor() {
+    void this.branches.load();
     const draft = this.store.draft();
     if (draft.customerId) this.customer.set({ id: draft.customerId, name: draft.customerName });
     void this.loadCategories();
@@ -192,7 +200,15 @@ export class SalePage {
     this.syncLengthFromRolls();
   }
 
-  protected async onRollCountCommit(value: number | null): Promise<void> {
+  protected onRollCountCommit(value: number | null): Promise<void> {
+    return (this.pendingCommit = this.commitRollCount(value));
+  }
+
+  protected onLengthCommit(value: number | null): Promise<void> {
+    return (this.pendingCommit = this.commitLength(value));
+  }
+
+  private async commitRollCount(value: number | null): Promise<void> {
     const stock = this.stock();
     if (value !== null && stock && value > stock.rollCount) {
       const ok = await this.dialog.confirm(
@@ -207,7 +223,7 @@ export class SalePage {
     this.syncLengthFromRolls();
   }
 
-  protected async onLengthCommit(value: number | null): Promise<void> {
+  private async commitLength(value: number | null): Promise<void> {
     const stock = this.stock();
     const perRoll = stock?.lengthPerRoll ?? 0;
     if (value === null || value <= 0 || perRoll <= 0) {
@@ -263,7 +279,8 @@ export class SalePage {
     this.length.set(rolls !== null && perRoll !== null ? round(rolls * perRoll, 3) : null);
   }
 
-  protected addItem(): void {
+  protected async addItem(): Promise<void> {
+    await this.pendingCommit;
     const category = this.category();
     const product = this.product();
     const stock = this.stock();
