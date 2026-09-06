@@ -282,7 +282,7 @@ partial class PaymentPageViewModel : ViewModelBase
         {
             Success = $"{TranslationSource.T("Payments.SuccessDiscountApplied")}\n\n{TranslationSource.T("Payments.TypeLabel")} {(result.discountCash ? TranslationSource.T("Payments.Cash") : TranslationSource.T("Payments.Settlement"))}\n{TranslationSource.T("Payments.AmountLabel")} {result.discountSum:N2}";
             await LoadCustomerDetailsAsync();
-            Payment.PaidAt = null;
+            Payment.PaidAt = DateTime.Now;
         }
         else Error = response.Message ?? TranslationSource.T("Payments.ErrorApplyDiscount");
     }

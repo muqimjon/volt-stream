@@ -53,11 +53,18 @@
                         <ComboBox
                             x:Name="cbxCustomer"
                             Width="200"
+                            AutomationProperties.Name="{loc:Loc SalesHistory.SelectCustomer}"
                             DisplayMemberPath="Name"
                             IsEditable="True"
                             ItemsSource="{Binding Customers}"
                             SelectedItem="{Binding SelectedCustomer}"
-                            Style="{StaticResource ModernCombo}" />
+                            Style="{StaticResource ModernCombo}">
+                            <ComboBox.ItemContainerStyle>
+                                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource ModernComboItem}">
+                                    <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+                                </Style>
+                            </ComboBox.ItemContainerStyle>
+                        </ComboBox>
                     </StackPanel>
 
                     <StackPanel Margin="0,0,14,8">

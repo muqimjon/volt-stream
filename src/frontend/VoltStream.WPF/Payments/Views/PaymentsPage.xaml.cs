@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
@@ -67,7 +68,7 @@ public partial class PaymentsPage : Page
             else
             {
                 e.Handled = true;
-                MessageBox.Show($"{TranslationSource.T("Payments.Error")}: {response.Message}", TranslationSource.T("Payments.Error"), MessageBoxButton.OK, MessageBoxImage.Error);
+                AppDialog.Error($"{TranslationSource.T("Payments.Error")}: {response.Message}", TranslationSource.T("Payments.Error"), Window.GetWindow(this));
             }
         }
         else e.Handled = true;

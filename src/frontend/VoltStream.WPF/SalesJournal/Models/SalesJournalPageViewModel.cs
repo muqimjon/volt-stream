@@ -1,6 +1,7 @@
-namespace VoltStream.WPF.SalesJournal.Models;
+﻿namespace VoltStream.WPF.SalesJournal.Models;
 
 using ApiServices.Extensions;
+using System.ComponentModel;
 using ApiServices.Interfaces;
 using ApiServices.Models;
 using ApiServices.Models.Responses;
@@ -34,6 +35,7 @@ public partial class SalesJournalPageViewModel : ViewModelBase
     {
         this.services = services;
         branchContext = services.GetRequiredService<BranchContext>();
+        PropertyChangedEventManager.AddHandler(branchContext, (_, _) => _ = ReloadAsync(), nameof(BranchContext.BranchId));
         session = services.GetRequiredService<ISessionService>();
         Pagination = new PaginationViewModel(LoadPageAsync);
         _ = LoadInitialDataAsync();

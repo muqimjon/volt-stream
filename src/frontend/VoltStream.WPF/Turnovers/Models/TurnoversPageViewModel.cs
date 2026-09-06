@@ -19,6 +19,7 @@ using System.Windows.Documents;
 using System.Windows.Markup;
 using System.Windows.Media;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
@@ -230,17 +231,13 @@ public partial class TurnoversPageViewModel : ViewModelBase
             return;
         }
 
-        var result = MessageBox.Show(
+        if (!AppDialog.Confirm(
             $"{TranslationSource.T("Turnovers.ConfirmDeleteOperation")}\n\n" +
             $"{TranslationSource.T("Turnovers.DateLabel")} {operation.Date:dd.MM.yyyy}\n" +
             $"{TranslationSource.T("Turnovers.Debit")}: {operation.Debit:N2}\n" +
             $"{TranslationSource.T("Turnovers.Credit")}: {operation.Credit:N2}\n" +
             $"{TranslationSource.T("Common.Description")}: {operation.Description}",
-            TranslationSource.T("Turnovers.ConfirmDeleteTitle"),
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-
-        if (result == MessageBoxResult.No)
+            TranslationSource.T("Turnovers.ConfirmDeleteTitle")))
             return;
 
         var response = await customerOperationsApi.Delete(operation.Id)

@@ -1,6 +1,7 @@
-namespace VoltStream.WPF.Supplies.ViewModels;
+﻿namespace VoltStream.WPF.Supplies.ViewModels;
 
 using ApiServices.Extensions;
+using System.ComponentModel;
 using ApiServices.Interfaces;
 using ApiServices.Models;
 using ApiServices.Models.Requests;
@@ -11,8 +12,8 @@ using CommunityToolkit.Mvvm.Messaging;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
-using System.Windows;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
@@ -38,6 +39,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
         warehouseItemsApi = services.GetRequiredService<IWarehouseStocksApi>();
         mapper = services.GetRequiredService<IMapper>();
         branchContext = services.GetRequiredService<BranchContext>();
+        PropertyChangedEventManager.AddHandler(branchContext, (_, _) => _ = LoadPageAsync(), nameof(BranchContext.BranchId));
 
         Pagination = new PaginationViewModel(LoadPageAsync);
 
@@ -443,7 +445,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
     }
 
     private static bool Confirm(string message) =>
-        MessageBox.Show(message, TranslationSource.T("Supplies.ConfirmTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+        AppDialog.Confirm(message, TranslationSource.T("Supplies.ConfirmTitle"));
 
     #endregion Helper Methods
 }

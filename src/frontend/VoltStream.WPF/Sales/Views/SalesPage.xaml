@@ -92,9 +92,16 @@
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Center"
                             utils:ComboBoxQuickNavBehavior.EnableQuickNavigation="True"
+                            AutomationProperties.Name="{loc:Loc Sales.CustomerLabel}"
                             FontSize="14"
                             IsEditable="True"
-                            Text="{Binding CustomerName}" />
+                            Text="{Binding CustomerName}">
+                            <ComboBox.ItemContainerStyle>
+                                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource ModernComboItem}">
+                                    <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+                                </Style>
+                            </ComboBox.ItemContainerStyle>
+                        </ComboBox>
                     </Grid>
                     <Grid Grid.Row="2" Grid.Column="1">
                         <Grid.ColumnDefinitions>

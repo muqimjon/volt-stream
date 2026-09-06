@@ -422,7 +422,7 @@ FodyWeavers.xsd
 
 # Web (Angular) build output and tooling
 src/backend/VoltStream.WebApi/wwwroot/
-src/web/VoltStream.Web/.angular/
+.angular/
 src/web/VoltStream.Web/dist/
 src/web/VoltStream.Web/node_modules/
 

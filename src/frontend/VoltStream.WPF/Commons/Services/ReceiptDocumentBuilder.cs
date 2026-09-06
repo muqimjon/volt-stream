@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Enums;
 using VoltStream.WPF.Commons.Localization;
 
@@ -84,14 +85,15 @@ public static class ReceiptDocumentBuilder
         var response = await services.GetRequiredService<IPrintJobsApi>()
             .CreateAsync(new PrintJobRequest { SaleId = receipt.SaleId, Copies = 1, BranchId = branchId }).Handle();
 
-        MessageBox.Show(
-            Window.GetWindow(button)!,
-            response.IsSuccess
-                ? TranslationSource.T("Receipt.SentToBranch")
-                : string.IsNullOrWhiteSpace(response.Message) ? TranslationSource.T("Receipt.SendFailed") : response.Message,
-            TranslationSource.T("Receipt.SendToBranch"),
-            MessageBoxButton.OK,
-            response.IsSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        var owner = Window.GetWindow(button);
+        var title = TranslationSource.T("Receipt.SendToBranch");
+
+        if (response.IsSuccess)
+            AppDialog.Info(TranslationSource.T("Receipt.SentToBranch"), title, owner);
+        else
+            AppDialog.Warning(
+                string.IsNullOrWhiteSpace(response.Message) ? TranslationSource.T("Receipt.SendFailed") : response.Message,
+                title, owner);
     }
 
     public static string FileName(ReceiptResponse receipt) => $"Chek-{receipt.SaleId}";

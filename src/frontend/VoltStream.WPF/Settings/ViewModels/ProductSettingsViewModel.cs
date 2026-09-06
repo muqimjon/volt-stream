@@ -9,8 +9,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
-using System.Windows;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Localization;
 
 public partial class ProductSettingsViewModel : ViewModelBase
@@ -136,7 +136,7 @@ public partial class ProductSettingsViewModel : ViewModelBase
     [RelayCommand]
     private async Task Delete(ProductResponse product)
     {
-        if (MessageBox.Show($"{product.Name} {TranslationSource.T("Settings.ConfirmDeleteProduct")}", TranslationSource.T("Common.Delete"), MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
+        if (!AppDialog.Confirm($"{product.Name} {TranslationSource.T("Settings.ConfirmDeleteProduct")}", TranslationSource.T("Common.Delete"))) return;
 
         var response = await productsApi.DeleteAsync(product.Id).Handle(isLoading => IsLoading = isLoading);
 

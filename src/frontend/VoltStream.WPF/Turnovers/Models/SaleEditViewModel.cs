@@ -12,8 +12,8 @@ using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Windows;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
@@ -642,28 +642,18 @@ public partial class SaleEditViewModel : ViewModelBase
 
         if (requestedRolls > totalRollsInWarehouse)
         {
-            var result = MessageBox.Show(
+            return AppDialog.Confirm(
                 string.Format(TranslationSource.T("Turnovers.WarehouseRollsLeft"), SelectedProduct?.Name, totalRollsInWarehouse)
                     + Environment.NewLine + TranslationSource.T("Turnovers.ContinueConfirm"),
-                TranslationSource.T("Turnovers.Sale"),
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question,
-                MessageBoxResult.No);
-
-            return result == MessageBoxResult.Yes;
+                TranslationSource.T("Turnovers.Sale"));
         }
 
         if (requestedLength > selectedStock.TotalLength)
         {
-            var result = MessageBox.Show(
+            return AppDialog.Confirm(
                 string.Format(TranslationSource.T("Turnovers.WarehouseMetersLeft"), SelectedProduct?.Name, selectedStock.LengthPerRoll, selectedStock.TotalLength.ToString("N2"))
                     + Environment.NewLine + TranslationSource.T("Turnovers.ContinueConfirm"),
-                TranslationSource.T("Turnovers.Sale"),
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question,
-                MessageBoxResult.No);
-
-            return result == MessageBoxResult.Yes;
+                TranslationSource.T("Turnovers.Sale"));
         }
 
         return true;
@@ -675,7 +665,7 @@ public partial class SaleEditViewModel : ViewModelBase
 
         var newRollLength = CurrentItem.LengthPerRoll.Value - remainder;
 
-        var result = MessageBox.Show(
+        return AppDialog.Confirm(
             string.Format(TranslationSource.T("Turnovers.RemainderConfirm"),
                 SelectedProduct?.Name,
                 CurrentItem.LengthPerRoll.Value,
@@ -683,12 +673,7 @@ public partial class SaleEditViewModel : ViewModelBase
                 remainder.ToString("N2"),
                 newRollLength.ToString("N2"))
                 + Environment.NewLine + TranslationSource.T("Turnovers.ContinueConfirm"),
-            TranslationSource.T("Turnovers.Sale"),
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question,
-            MessageBoxResult.No);
-
-        return result == MessageBoxResult.Yes;
+            TranslationSource.T("Turnovers.Sale"));
     }
 
     private void UpdateCustomerBalance()
@@ -859,7 +844,7 @@ public partial class SaleEditViewModel : ViewModelBase
     }
 
     private static bool ShowConfirmation(string message) =>
-        MessageBox.Show(message, TranslationSource.T("Turnovers.ConfirmTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+        AppDialog.Confirm(message, TranslationSource.T("Turnovers.ConfirmTitle"));
 
     #endregion 
 }

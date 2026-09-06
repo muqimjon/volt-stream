@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using VoltStream.WPF.Commons.Dialogs;
 
 public static class ComboBoxHelper
 {
@@ -32,14 +33,14 @@ public static class ComboBoxHelper
 
         if (exists) return false;
 
-        if (allow && MessageBox.Show($"{input} - {strInfo}: ro'yxatda yo'q. Yangi qo'shilsinmi?", "Tekshiruv", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+        if (allow && AppDialog.Confirm($"{input} - {strInfo}: ro'yxatda yo'q. Yangi qo'shilsinmi?", "Tekshiruv", Window.GetWindow(cb)))
             return true;
 
         cb.Text = "";
         cb.SelectedItem = cb.SelectedValue = null;
         e.Handled = true;
 
-        if (!allow) MessageBox.Show($"{input} - {strInfo}: ro'yxatda yo'q.", "Tekshiruv", MessageBoxButton.OK, MessageBoxImage.Warning);
+        if (!allow) AppDialog.Warning($"{input} - {strInfo}: ro'yxatda yo'q.", "Tekshiruv", Window.GetWindow(cb));
 
         Application.Current.Dispatcher.BeginInvoke(() => { try { cb.IsDropDownOpen = true; } catch { } });
         return false;

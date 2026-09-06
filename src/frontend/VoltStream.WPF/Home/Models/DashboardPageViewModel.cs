@@ -1,6 +1,7 @@
-namespace VoltStream.WPF.Home.Models;
+﻿namespace VoltStream.WPF.Home.Models;
 
 using ApiServices.Extensions;
+using System.ComponentModel;
 using ApiServices.Interfaces;
 using ApiServices.Models.Responses;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -65,6 +66,7 @@ public partial class DashboardPageViewModel : ViewModelBase
         dashboardApi = services.GetRequiredService<IDashboardApi>();
         marketDataApi = services.GetRequiredService<IMarketDataApi>();
         branchContext = services.GetRequiredService<BranchContext>();
+        PropertyChangedEventManager.AddHandler(branchContext, (_, _) => _ = LoadAsync(), nameof(BranchContext.BranchId));
         _ = LoadAsync();
         _ = LoadMarketAsync();
     }

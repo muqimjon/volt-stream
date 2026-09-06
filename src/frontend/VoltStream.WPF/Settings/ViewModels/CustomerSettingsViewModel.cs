@@ -8,8 +8,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
-using System.Windows;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Localization;
 
 public partial class CustomerSettingsViewModel : ViewModelBase
@@ -107,7 +107,7 @@ public partial class CustomerSettingsViewModel : ViewModelBase
     [RelayCommand]
     private async Task Delete(CustomerResponse customer)
     {
-        if (MessageBox.Show($"{customer.Name} {TranslationSource.T("Settings.ConfirmDeleteCustomer")}", TranslationSource.T("Common.Delete"), MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
+        if (!AppDialog.Confirm($"{customer.Name} {TranslationSource.T("Settings.ConfirmDeleteCustomer")}", TranslationSource.T("Common.Delete"))) return;
 
         var response = await customersApi.DeleteAsync(customer.Id).Handle(isLoading => IsLoading = isLoading);
 

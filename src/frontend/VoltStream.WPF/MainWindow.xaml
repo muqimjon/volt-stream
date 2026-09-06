@@ -262,12 +262,13 @@
                                           Width="150"
                                           Height="26"
                                           FontSize="12"
+                                          AutomationProperties.Name="{loc:Loc Header.Branch}"
                                           ItemsSource="{Binding BranchContext.Branches}"
                                           SelectedItem="{Binding BranchContext.Selected}"
                                           Visibility="{Binding BranchContext.CanSelect, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Name}" />
+                                            <TextBlock Text="{Binding Name}" AutomationProperties.Name="{Binding Name}" />
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>

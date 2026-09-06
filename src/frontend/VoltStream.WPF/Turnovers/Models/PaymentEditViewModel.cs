@@ -12,8 +12,8 @@ using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Windows;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
@@ -172,13 +172,9 @@ public partial class PaymentEditViewModel : ViewModelBase
             return;
         }
 
-        var result = MessageBox.Show(
+        if (!AppDialog.Confirm(
             TranslationSource.T("Turnovers.ConfirmSaveChanges"),
-            TranslationSource.T("Turnovers.ConfirmTitle"),
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-
-        if (result == MessageBoxResult.No)
+            TranslationSource.T("Turnovers.ConfirmTitle")))
             return;
 
         var request = mapper.Map<PaymentRequest>(Payment);
@@ -198,13 +194,9 @@ public partial class PaymentEditViewModel : ViewModelBase
     [RelayCommand]
     private void Cancel()
     {
-        var result = MessageBox.Show(
+        if (AppDialog.Confirm(
             TranslationSource.T("Turnovers.ConfirmDiscardChanges"),
-            TranslationSource.T("Turnovers.ConfirmTitle"),
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-
-        if (result == MessageBoxResult.Yes)
+            TranslationSource.T("Turnovers.ConfirmTitle")))
             navigationService.GoBack();
     }
 

@@ -11,6 +11,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
@@ -114,8 +115,8 @@ public partial class SalesPage : Page
         {
             if ((decimal.TryParse(txtRollCount.Text, out decimal value) ? value : 0) > sale.WarehouseCountRoll)
             {
-                if (MessageBox.Show(string.Format(TranslationSource.T("Sales.RollStockWarning"), cbxProductName.Text, sale.WarehouseCountRoll),
-                    TranslationSource.T("Sales.SaleCaption"), MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.No)
+                if (!AppDialog.Confirm(string.Format(TranslationSource.T("Sales.RollStockWarning"), cbxProductName.Text, sale.WarehouseCountRoll),
+                    TranslationSource.T("Sales.SaleCaption"), Window.GetWindow(this)))
                 {
                     e.Handled = true;
                     txtRollCount.Text = null;
@@ -346,8 +347,8 @@ public partial class SalesPage : Page
         {
             if ((decimal.TryParse(txtQuantity.Text, out decimal value) ? value : 0) > sale.WarehouseQuantity)
             {
-                if (MessageBox.Show(string.Format(TranslationSource.T("Sales.MeterStockWarning"), cbxProductName.Text, cbxPerRollCount.Text, sale.WarehouseQuantity),
-                    TranslationSource.T("Sales.SaleCaption"), MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.No)
+                if (!AppDialog.Confirm(string.Format(TranslationSource.T("Sales.MeterStockWarning"), cbxProductName.Text, cbxPerRollCount.Text, sale.WarehouseQuantity),
+                    TranslationSource.T("Sales.SaleCaption"), Window.GetWindow(this)))
                 {
                     e.Handled = true;
                     txtQuantity.Text = null;
@@ -361,9 +362,8 @@ public partial class SalesPage : Page
                 decimal _quantity = quantity - _q;
                 decimal q_quantity = perRollCount - _quantity;
                 sale.NewQuantity = q_quantity;
-                if (MessageBox.Show(string.Format(TranslationSource.T("Sales.RollCutWarning"), cbxProductName.Text, cbxPerRollCount.Text, quantity, _quantity, q_quantity),
-                    TranslationSource.T("Sales.SaleCaption"), MessageBoxButton.YesNo, MessageBoxImage.Question,
-                    MessageBoxResult.No) == MessageBoxResult.No)
+                if (!AppDialog.Confirm(string.Format(TranslationSource.T("Sales.RollCutWarning"), cbxProductName.Text, cbxPerRollCount.Text, quantity, _quantity, q_quantity),
+                    TranslationSource.T("Sales.SaleCaption"), Window.GetWindow(this)))
                 {
                     e.Handled = true;
                     txtQuantity.Text = _q.ToString();
@@ -637,7 +637,7 @@ public partial class SalesPage : Page
 
         if (cbxCategoryName.SelectedValue == null)
         {
-            MessageBox.Show(TranslationSource.T("Sales.CategoryNotSelected"), TranslationSource.T("Sales.ErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+            AppDialog.Error(TranslationSource.T("Sales.CategoryNotSelected"), TranslationSource.T("Sales.ErrorTitle"), Window.GetWindow(this));
             cbxCategoryName.Focus();
             isSuccess = false;
         }
@@ -976,9 +976,6 @@ public partial class SalesPage : Page
         }
     }
 
-    private static bool Confirm(string message, MessageBoxImage image = MessageBoxImage.Question)
-    {
-        var result = MessageBox.Show(message, TranslationSource.T("Sales.ConfirmTitle"), MessageBoxButton.YesNo, image);
-        return result == MessageBoxResult.Yes;
-    }
+    private bool Confirm(string message)
+        => AppDialog.Confirm(message, TranslationSource.T("Sales.ConfirmTitle"), Window.GetWindow(this));
 }

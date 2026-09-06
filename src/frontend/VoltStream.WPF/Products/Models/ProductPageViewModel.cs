@@ -1,6 +1,7 @@
-namespace VoltStream.WPF.Products.Models;
+﻿namespace VoltStream.WPF.Products.Models;
 
 using ApiServices.Extensions;
+using System.ComponentModel;
 using ApiServices.Interfaces;
 using ApiServices.Models;
 using ApiServices.Models.Responses;
@@ -27,6 +28,7 @@ public partial class ProductPageViewModel : ViewModelBase
         mapper = services.GetRequiredService<IMapper>();
         this.services = services;
         branchContext = services.GetRequiredService<BranchContext>();
+        PropertyChangedEventManager.AddHandler(branchContext, (_, _) => _ = ReloadAsync(), nameof(BranchContext.BranchId));
         Pagination = new PaginationViewModel(LoadPageAsync);
         _ = LoadInitialDataAsync();
     }

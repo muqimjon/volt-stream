@@ -26,7 +26,7 @@ public partial class AuditLogViewModel : ViewModelBase
     private readonly IUsersApi usersApi;
     private readonly IBranchesApi branchesApi;
     private readonly ISessionService session;
-    private readonly string anyLabel = TranslationSource.T("Common.All");
+    private string anyLabel = TranslationSource.T("Common.All");
 
     private bool suppressReload;
 
@@ -41,6 +41,8 @@ public partial class AuditLogViewModel : ViewModelBase
 
         Actions = [anyLabel, .. KnownActions];
         selectedAction = anyLabel;
+
+        LocalizationManager.LanguageChanged += _ => RefreshAnyLabel();
 
         _ = LoadInitialDataAsync();
     }
@@ -109,6 +111,27 @@ public partial class AuditLogViewModel : ViewModelBase
         suppressReload = true;
         Branches = [new BranchResponse { Id = 0, Name = anyLabel }, .. response.Data];
         SelectedBranch = Branches[0];
+        suppressReload = false;
+    }
+
+    private void RefreshAnyLabel()
+    {
+        var wasAnyAction = SelectedAction == anyLabel;
+        var userId = SelectedUser?.Id;
+        var branchId = SelectedBranch?.Id;
+
+        anyLabel = TranslationSource.T("Common.All");
+
+        suppressReload = true;
+
+        if (Actions.Count > 0) Actions[0] = anyLabel;
+        if (Users.Count > 0) Users[0] = new UserResponse { Id = 0, Username = anyLabel };
+        if (Branches.Count > 0) Branches[0] = new BranchResponse { Id = 0, Name = anyLabel };
+
+        if (wasAnyAction) SelectedAction = anyLabel;
+        SelectedUser = Users.FirstOrDefault(u => u.Id == userId);
+        SelectedBranch = Branches.FirstOrDefault(b => b.Id == branchId);
+
         suppressReload = false;
     }
 

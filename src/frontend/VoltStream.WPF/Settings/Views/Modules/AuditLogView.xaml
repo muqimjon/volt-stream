@@ -48,12 +48,13 @@
                         <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Logs.User}" />
                         <ComboBox
                             Width="150"
+                            AutomationProperties.Name="{loc:Loc Logs.User}"
                             ItemsSource="{Binding Users}"
                             SelectedItem="{Binding SelectedUser}"
                             Style="{StaticResource ModernCombo}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Username}" />
+                                    <TextBlock Text="{Binding Username}" AutomationProperties.Name="{Binding Username}" />
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
@@ -63,12 +64,13 @@
                         <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Logs.Branch}" />
                         <ComboBox
                             Width="150"
+                            AutomationProperties.Name="{loc:Loc Logs.Branch}"
                             ItemsSource="{Binding Branches}"
                             SelectedItem="{Binding SelectedBranch}"
                             Style="{StaticResource ModernCombo}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Name}" />
+                                    <TextBlock Text="{Binding Name}" AutomationProperties.Name="{Binding Name}" />
                                 </DataTemplate>
                             </ComboBox.ItemTemplate>
                         </ComboBox>
@@ -78,6 +80,7 @@
                         <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Logs.Action}" />
                         <ComboBox
                             Width="170"
+                            AutomationProperties.Name="{loc:Loc Logs.Action}"
                             ItemsSource="{Binding Actions}"
                             SelectedItem="{Binding SelectedAction}"
                             Style="{StaticResource ModernCombo}" />

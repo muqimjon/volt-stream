@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.Net.Http;
 using System.Text.Json.Serialization;
 using System.Windows;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Enums;
 using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.ViewModels;
@@ -273,14 +274,8 @@ public partial class PrintAgentService(
         => Application.Current.Dispatcher.InvokeAsync(() =>
         {
             var message = string.Format(TranslationSource.T("Printer.AskMessage"), job.SaleId, job.RequestedBy);
-            var caption = TranslationSource.T("Printer.AskTitle");
-            var owner = Application.Current.MainWindow;
 
-            var result = owner is { IsLoaded: true }
-                ? MessageBox.Show(owner, message, caption, MessageBoxButton.YesNo, MessageBoxImage.Question)
-                : MessageBox.Show(message, caption, MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            return result == MessageBoxResult.Yes;
+            return AppDialog.Confirm(message, TranslationSource.T("Printer.AskTitle"), Application.Current.MainWindow);
         }).Task;
 
     private void Track(PrintJobResponse job)

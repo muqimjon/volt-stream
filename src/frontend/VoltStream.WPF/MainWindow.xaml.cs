@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using VoltStream.WPF.Commons.Animations;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Enums;
 using VoltStream.WPF.Configurations;
 using VoltStream.WPF.Commons.Localization;
@@ -86,13 +87,7 @@ public partial class MainWindow : Window
 
     private void LogoutButton_Click(object sender, RoutedEventArgs e)
     {
-        var confirm = MessageBox.Show(
-            TranslationSource.T("Nav.LogoutConfirm"),
-            TranslationSource.T("Nav.Logout"),
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-
-        if (confirm != MessageBoxResult.Yes)
+        if (!AppDialog.Confirm(TranslationSource.T("Nav.LogoutConfirm"), TranslationSource.T("Nav.Logout"), this))
             return;
 
         services.GetRequiredService<CredentialStore>().Clear();
