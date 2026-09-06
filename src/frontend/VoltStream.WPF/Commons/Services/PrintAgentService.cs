@@ -142,10 +142,11 @@ public partial class PrintAgentService(
         {
             var sample = SampleReceipt();
             await Application.Current.Dispatcher.InvokeAsync(() => PrintService.Print(
-                ReceiptDocumentBuilder.Build(sample, ReceiptMode.Weight),
+                ReceiptDocumentBuilder.Build(sample, ReceiptMode.Weight, settings.Paper),
                 settings.PrinterName!,
                 Math.Max(1, settings.Copies),
-                ReceiptDocumentBuilder.Title(sample)));
+                ReceiptDocumentBuilder.Title(sample),
+                settings.Paper));
 
             Notify(TranslationSource.T("Printer.TestSent"), NotificationType.Success);
         }
@@ -215,7 +216,7 @@ public partial class PrintAgentService(
             if (!receipt.IsSuccess)
                 throw new InvalidOperationException(receipt.Message ?? TranslationSource.T("Receipt.LoadError"));
 
-            await PrintAsync(receipt.Data, printer, Math.Max(1, settings.Copies) * Math.Max(1, claimed.Copies));
+            await PrintAsync(receipt.Data, printer, Math.Max(1, settings.Copies) * Math.Max(1, claimed.Copies), settings.Paper);
 
             if ((await printJobs.CompleteAsync(claimed.Id).Handle()).StatusCode == 409)
             {
@@ -253,13 +254,14 @@ public partial class PrintAgentService(
         return TimeSpan.FromMilliseconds(ms);
     }
 
-    private static async Task PrintAsync(ReceiptResponse receipt, string printer, int copies)
+    private static async Task PrintAsync(ReceiptResponse receipt, string printer, int copies, string paper)
     {
         var operation = Application.Current.Dispatcher.InvokeAsync(() => PrintService.Print(
-            ReceiptDocumentBuilder.Build(receipt, ReceiptMode.Weight),
+            ReceiptDocumentBuilder.Build(receipt, ReceiptMode.Weight, paper),
             printer,
             copies,
-            ReceiptDocumentBuilder.Title(receipt)));
+            ReceiptDocumentBuilder.Title(receipt),
+            paper));
 
         if (await Task.WhenAny(operation.Task, Task.Delay(PrintTimeout)) != operation.Task)
         {

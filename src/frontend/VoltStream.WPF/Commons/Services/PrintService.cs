@@ -23,7 +23,7 @@ public static class PrintService
         }
     });
 
-    public static void Print(FixedDocument document, string printerName, int copies, string title)
+    public static void Print(FixedDocument document, string printerName, int copies, string title, string paper)
     {
         copies = Math.Max(1, copies);
 
@@ -32,6 +32,8 @@ public static class PrintService
 
         var ticket = queue.UserPrintTicket ?? queue.DefaultPrintTicket;
         ticket.CopyCount = copies;
+        ticket.PageMediaSize = new PageMediaSize(paper == "A5" ? PageMediaSizeName.ISOA5 : PageMediaSizeName.ISOA4);
+        ticket.PageOrientation = PageOrientation.Portrait;
         var validated = queue.MergeAndValidatePrintTicket(queue.UserPrintTicket, ticket).ValidatedPrintTicket;
 
         int passes = validated.CopyCount == copies ? 1 : copies;

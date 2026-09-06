@@ -17,8 +17,8 @@ public enum ReceiptMode { Money, Weight }
 
 public static class ReceiptDocumentBuilder
 {
-    public static FixedDocument Build(ReceiptResponse receipt, ReceiptMode mode)
-        => ReportService.BuildFixedDocument(Define(receipt, mode));
+    public static FixedDocument Build(ReceiptResponse receipt, ReceiptMode mode, string paper = "A4")
+        => ReportService.BuildFixedDocument(Define(receipt, mode, ReportService.PaperSize(paper)));
 
     public static void Preview(ReceiptResponse receipt, bool allowMoney, IServiceProvider services)
     {
@@ -101,15 +101,14 @@ public static class ReceiptDocumentBuilder
     public static string Title(ReceiptResponse receipt)
         => string.Format(TranslationSource.T("Receipt.Title"), receipt.SaleId);
 
-    private const double ContentWidth = 733.7;
-
-    private static ReportDefinition<ReceiptItemResponse> Define(ReceiptResponse receipt, ReceiptMode mode)
+    private static ReportDefinition<ReceiptItemResponse> Define(ReceiptResponse receipt, ReceiptMode mode, Size page)
     {
         bool money = mode == ReceiptMode.Money && receipt.HasPrices;
+        double contentWidth = ReportService.ContentWidth(page);
 
         List<ReportColumn<ReceiptItemResponse>> columns =
         [
-            new() { Header = TranslationSource.T("Receipt.Product"), Width = ContentWidth - (money ? 495 : 405), Value = Product },
+            new() { Header = TranslationSource.T("Receipt.Product"), Width = contentWidth - (money ? 495 : 405), Value = Product },
             new() { Header = TranslationSource.T("Receipt.PerRoll"), Width = 70, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = i => i.LengthPerRoll },
             new() { Header = TranslationSource.T("Receipt.RollCount"), Width = 70, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = i => i.RollCount },
             new() { Header = TranslationSource.T("Receipt.TotalLength"), Width = 85, Align = ReportAlign.Right, Value = i => $"{i.TotalLength:N0} {i.Unit}" }
@@ -142,6 +141,7 @@ public static class ReceiptDocumentBuilder
             FileName = FileName(receipt),
             Rows = receipt.Items,
             Columns = columns,
+            PageSize = page,
             Totals = new ReportTotals
             {
                 Label = TranslationSource.T("Receipt.Total"),

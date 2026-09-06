@@ -52,14 +52,15 @@ public sealed class ReportDefinition<T>
     public required IReadOnlyList<ReportColumn<T>> Columns { get; init; }
     public required IReadOnlyList<T> Rows { get; init; }
     public ReportTotals? Totals { get; init; }
+    public Size PageSize { get; init; } = ReportService.A4;
 }
 
 public static class ReportService
 {
     public const string Brand = "VoltStream";
 
-    private const double PageWidth = 793.7;
-    private const double PageHeight = 1122.5;
+    public static readonly Size A4 = new(793.7, 1122.5);
+    public static readonly Size A5 = new(559.4, 793.7);
     private const double Margin = 30;
     private const double FooterZone = 45;
     private const double TotalsReserve = 32;
@@ -70,6 +71,10 @@ public static class ReportService
     private static readonly Brush Muted = Freeze(new SolidColorBrush(Color.FromRgb(0x6B, 0x72, 0x80)));
     private static readonly Brush RowLine = Freeze(new SolidColorBrush(Color.FromRgb(0x9C, 0xA3, 0xAF)));
     private static readonly Brush Zebra = Freeze(new SolidColorBrush(Color.FromRgb(0xF9, 0xFA, 0xFB)));
+
+    public static Size PaperSize(string paper) => paper == "A5" ? A5 : A4;
+
+    public static double ContentWidth(Size page) => page.Width - 2 * Margin;
 
     public static bool ExportExcel<T>(ReportDefinition<T> def)
     {
@@ -346,7 +351,7 @@ public static class ReportService
     public static FixedDocument BuildFixedDocument<T>(ReportDefinition<T> def)
     {
         var doc = new FixedDocument();
-        doc.DocumentPaginator.PageSize = new Size(PageWidth, PageHeight);
+        doc.DocumentPaginator.PageSize = def.PageSize;
 
         var widths = def.Columns.Select(c => c.Width).ToArray();
         var headers = def.Columns.Select(c => c.Header).ToArray();
@@ -364,9 +369,9 @@ public static class ReportService
         {
             bool isFirst = pageNumbers.Count == 0;
             double gridTop = Margin + (isFirst ? brandHeight : 0);
-            double maxContent = PageHeight - gridTop - FooterZone;
+            double maxContent = def.PageSize.Height - gridTop - FooterZone;
 
-            var page = new FixedPage { Width = PageWidth, Height = PageHeight, Background = Brushes.White };
+            var page = new FixedPage { Width = def.PageSize.Width, Height = def.PageSize.Height, Background = Brushes.White };
 
             if (isFirst)
             {
