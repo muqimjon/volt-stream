@@ -198,7 +198,8 @@ public static class ReportService
         layout.Children.Add(toolbarBar);
         layout.Children.Add(viewer);
 
-        var owner = Application.Current?.MainWindow;
+        var owner = Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive && w.IsLoaded)
+            ?? Application.Current?.MainWindow;
         var window = new Window
         {
             Title = title,

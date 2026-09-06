@@ -56,12 +56,7 @@ public partial class BranchContext(IBranchesApi branchesApi, ISessionService ses
         Selected = Branches.FirstOrDefault(b => b.Id == savedId) ?? Branches[0];
     }
 
-    public void ApplyTo(FilteringRequest request)
-    {
-        if (BranchId is not long id) return;
-        request.Filters ??= new();
-        request.Filters["BranchId"] = [$"={id}"];
-    }
+    public void ApplyTo(FilteringRequest request) => request.BranchId = BranchId;
 
     private static long Load()
     {

@@ -76,6 +76,7 @@ public partial class App : Application
 
         mainShown = true;
         var mainWindow = Services!.GetRequiredService<MainWindow>();
+        MainWindow = mainWindow;
         mainWindow.Show();
         loginWindow.Close();
 

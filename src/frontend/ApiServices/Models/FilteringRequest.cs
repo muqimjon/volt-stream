@@ -8,6 +8,7 @@ public record FilteringRequest
     public int PageSize { get; set; }
     public string? SortBy { get; set; }
     public bool Descending { get; set; }
+    public long? BranchId { get; set; }
     public double TimeZone { get; set; } = LocalTimeZone;
 
     public static double LocalTimeZone
