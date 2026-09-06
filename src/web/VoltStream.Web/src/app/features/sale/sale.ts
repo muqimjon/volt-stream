@@ -189,13 +189,17 @@ export class SalePage {
     if (!product) return;
 
     const branchId = this.auth.branchId();
+    const items = await this.api
+      .get<WarehouseItem[]>(
+        `warehouse-items/productId=${product.id}`,
+        branchId === null ? undefined : { branchId },
+      )
+      .catch(() => []);
+    const branchName = (item: WarehouseItem) => this.branches.nameOf(item.branchId) ?? '';
     this.stocks.set(
-      await this.api
-        .get<WarehouseItem[]>(
-          `warehouse-items/productId=${product.id}`,
-          branchId === null ? undefined : { branchId },
-        )
-        .catch(() => []),
+      items.sort(
+        (a, b) => a.lengthPerRoll - b.lengthPerRoll || branchName(a).localeCompare(branchName(b)),
+      ),
     );
   }
 
