@@ -256,6 +256,7 @@
   "Web.NothingFound": "Hech narsa topilmadi",
   "Web.Offline": "Internet aloqasi yo'q",
   "Web.PrintAlreadyPending": "Bu savdo uchun chop etish so'rovi allaqachon navbatda",
+  "Web.PrintBranchTitle": "Qaysi filial printerida chop etilsin?",
   "Web.PrintCancelled": "Bekor qilindi",
   "Web.PrintCompleted": "Chop etildi",
   "Web.PrintDenied": "Chop etishga ruxsat yo'q",

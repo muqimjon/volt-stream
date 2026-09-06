@@ -256,6 +256,7 @@
   "Web.NothingFound": "Nothing found",
   "Web.Offline": "No internet connection",
   "Web.PrintAlreadyPending": "A print request for this sale is already queued",
+  "Web.PrintBranchTitle": "Which branch's printer should print?",
   "Web.PrintCancelled": "Cancelled",
   "Web.PrintCompleted": "Printed",
   "Web.PrintDenied": "Printing is not allowed",

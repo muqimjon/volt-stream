@@ -9,19 +9,42 @@ import { DialogService } from '../core/ui/dialog';
     <dialog #dlg (cancel)="$event.preventDefault(); answer(false)">
       @if (dialog.request(); as req) {
         <h3>{{ req.title | t }}</h3>
-        <p>{{ req.message }}</p>
-        <div class="actions">
-          <button type="button" class="btn btn-ghost" (click)="answer(false)">{{ req.noKey | t }}</button>
-          <button
-            type="button"
-            class="btn"
-            [class.btn-primary]="!req.danger"
-            [class.btn-danger]="req.danger"
-            (click)="answer(true)"
-          >
-            {{ req.yesKey | t }}
-          </button>
-        </div>
+        @if (req.choices; as choices) {
+          <div class="choices">
+            @for (choice of choices; track choice.id) {
+              <button
+                type="button"
+                class="btn btn-block"
+                [class.btn-primary]="choice.id === req.selectedId"
+                [class.btn-ghost]="choice.id !== req.selectedId"
+                (click)="answer(true, choice.id)"
+              >
+                {{ choice.label }}
+              </button>
+            }
+          </div>
+          <div class="actions">
+            <button type="button" class="btn btn-ghost" (click)="answer(false)">
+              {{ req.noKey | t }}
+            </button>
+          </div>
+        } @else {
+          <p>{{ req.message }}</p>
+          <div class="actions">
+            <button type="button" class="btn btn-ghost" (click)="answer(false)">
+              {{ req.noKey | t }}
+            </button>
+            <button
+              type="button"
+              class="btn"
+              [class.btn-primary]="!req.danger"
+              [class.btn-danger]="req.danger"
+              (click)="answer(true)"
+            >
+              {{ req.yesKey | t }}
+            </button>
+          </div>
+        }
       }
     </dialog>
   `,
@@ -52,6 +75,12 @@ import { DialogService } from '../core/ui/dialog';
       justify-content: flex-end;
       gap: var(--sp-sm);
     }
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-sm);
+      margin-bottom: var(--sp-lg);
+    }
   `,
 })
 export class ConfirmDialog {
@@ -67,7 +96,7 @@ export class ConfirmDialog {
     });
   }
 
-  protected answer(ok: boolean): void {
-    this.dialog.answer(ok);
+  protected answer(ok: boolean, choice?: number): void {
+    this.dialog.answer(ok, choice);
   }
 }

@@ -256,6 +256,7 @@
   "Web.NothingFound": "Ничего не найдено",
   "Web.Offline": "Нет подключения к интернету",
   "Web.PrintAlreadyPending": "Запрос на печать для этой продажи уже в очереди",
+  "Web.PrintBranchTitle": "На принтере какого филиала печатать?",
   "Web.PrintCancelled": "Отменено",
   "Web.PrintCompleted": "Напечатано",
   "Web.PrintDenied": "Печать запрещена",

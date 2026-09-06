@@ -120,6 +120,6 @@ export class MySalesPage {
   }
 
   protected requestPrint(sale: SaleListItem): void {
-    void this.print.request(sale.id);
+    void this.print.request(sale.id, sale.branchId ?? null);
   }
 }

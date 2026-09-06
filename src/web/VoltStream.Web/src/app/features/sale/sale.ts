@@ -80,6 +80,7 @@ export class SalePage {
 
   protected readonly submitting = signal(false);
   protected readonly savedSaleId = signal<number | null>(null);
+  private savedBranchId: number | null = null;
 
   protected readonly totalAmount = computed(() =>
     round((this.unitPrice() ?? 0) * (this.length() ?? 0)),
@@ -103,11 +104,17 @@ export class SalePage {
   protected readonly nameOf = (item: { name: string }) => item.name;
   protected readonly stockLabel = (item: WarehouseItem) => fmtNum(item.lengthPerRoll);
   protected readonly stockHint = (item: WarehouseItem) => {
-    const info = this.translate.t('Web.StockInfo', fmtNum(item.rollCount, 0), fmtNum(item.totalLength));
+    const info = this.translate.t(
+      'Web.StockInfo',
+      fmtNum(item.rollCount, 0),
+      fmtNum(item.totalLength),
+    );
     const branch = this.showBranch() ? this.branches.nameOf(item.branchId) : null;
     return branch ? `${branch} · ${info}` : info;
   };
-  private readonly showBranch = computed(() => this.auth.isAdmin() && this.auth.branchId() === null);
+  private readonly showBranch = computed(
+    () => this.auth.isAdmin() && this.auth.branchId() === null,
+  );
   private pendingCommit: Promise<void> = Promise.resolve();
   protected readonly customerHint = (item: Customer) => item.phone ?? '';
 
@@ -381,6 +388,7 @@ export class SalePage {
     try {
       const saleId = await this.api.post<number>('sales', request);
       this.savedSaleId.set(saleId);
+      this.savedBranchId = this.auth.branchId();
       this.toast.success(this.translate.t('Sales.SaveSuccess'));
       this.store.reset();
       this.clearRow();
@@ -393,7 +401,7 @@ export class SalePage {
 
   protected async requestPrint(): Promise<void> {
     const id = this.savedSaleId();
-    if (id !== null) await this.print.request(id);
+    if (id !== null) await this.print.request(id, this.savedBranchId);
   }
 
   protected closeSuccess(): void {

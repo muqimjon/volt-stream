@@ -256,6 +256,7 @@
   "Web.NothingFound": "Ҳеч нарса топилмади",
   "Web.Offline": "Интернет алоқаси йўқ",
   "Web.PrintAlreadyPending": "Бу савдо учун чоп этиш сўрови аллақачон навбатда",
+  "Web.PrintBranchTitle": "Қайси филиал принтерида чоп этилсин?",
   "Web.PrintCancelled": "Бекор қилинди",
   "Web.PrintCompleted": "Чоп этилди",
   "Web.PrintDenied": "Чоп этишга рухсат йўқ",

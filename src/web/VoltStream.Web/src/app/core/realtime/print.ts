@@ -1,8 +1,11 @@
 import { Injectable, effect, inject } from '@angular/core';
 import { ApiClient } from '../api/api-client';
 import { ApiError } from '../api/api-error';
+import { AuthService } from '../auth/auth';
+import { BranchStore } from '../branches';
 import { TranslateService } from '../i18n/translate';
 import { PrintJob } from '../models';
+import { DialogService } from '../ui/dialog';
 import { ToastService } from '../ui/toast';
 import { PrintHubService } from './print-hub';
 
@@ -14,6 +17,9 @@ export class PrintService {
   private readonly hub = inject(PrintHubService);
   private readonly toast = inject(ToastService);
   private readonly translate = inject(TranslateService);
+  private readonly auth = inject(AuthService);
+  private readonly branches = inject(BranchStore);
+  private readonly dialog = inject(DialogService);
   private timer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
@@ -28,9 +34,11 @@ export class PrintService {
     return status === 'Pending' || status === 'Printing';
   }
 
-  async request(saleId: number, copies = 1): Promise<void> {
+  async request(saleId: number, saleBranchId: number | null = null, copies = 1): Promise<void> {
+    const branchId = await this.pickBranch(saleBranchId);
+    if (branchId === undefined) return;
     try {
-      const job = await this.api.post<PrintJob>('print-jobs', { saleId, copies }, true);
+      const job = await this.api.post<PrintJob>('print-jobs', { saleId, copies, branchId }, true);
       this.hub.track(job);
       this.toast.success(this.translate.t('Web.PrintRequested'));
       this.sync();
@@ -40,6 +48,19 @@ export class PrintService {
       else if (err.status === 403) this.toast.error(this.translate.t('Web.PrintDenied'));
       else this.toast.error(err.message);
     }
+  }
+
+  private async pickBranch(saleBranchId: number | null): Promise<number | null | undefined> {
+    if (!this.auth.isAdmin()) return null;
+    await this.branches.load();
+    const list = this.branches.branches();
+    if (list.length < 2) return null;
+    const chosen = await this.dialog.choose(
+      'Web.PrintBranchTitle',
+      list.map((b) => ({ id: b.id, label: b.name })),
+      saleBranchId,
+    );
+    return chosen === null ? undefined : chosen;
   }
 
   private active(): PrintJob[] {
