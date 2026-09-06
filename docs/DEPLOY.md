@@ -41,21 +41,26 @@ curl -f http://localhost:5000/api/health
 
 ## 4. Mavjud bazani ko'chirish (eng muhim qadam)
 
-Mijozda ishlab turgan baza bo'lsa, uni Docker ichidagi bazaga ko'chirish kerak. **Avval nusxa oling.**
+Mijozda ishlab turgan baza eski sxemada (2 ta migratsiya). Yangi versiya bitta `InitialMigration` bilan
+keladi, shuning uchun EF uni o'zi ko'tara olmaydi — buning uchun tayyor skript bor: `docs/upgrade-from-v1.sql`
+(idempotent: sxemani yangilaydi, migratsiya tarixini `InitialMigration` ga almashtiradi, mavjud
+foydalanuvchilarni faollashtiradi, default filialga biriktiradi, roliga qarab ruxsat beradi). **Avval nusxa oling.**
 
 ```bash
 # eski serverda
 pg_dump -U postgres -d voltstream -Fc -f voltstream.dump
 
-# yangi serverda: dump faylni ./backups ga qo'ying (u konteynerga ulangan)
+# yangi serverda: dump va skriptni ./backups ga qo'ying (u konteynerga ulangan)
+cp docs/upgrade-from-v1.sql backups/
 docker compose up -d db
 docker compose exec db pg_restore -U $POSTGRES_USER -d $POSTGRES_DB --clean --if-exists /backups/voltstream.dump
+docker compose exec db psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1 -f /backups/upgrade-from-v1.sql
 docker compose up -d api
 ```
 
-Yangi sxema (filiallar, ruxsatlar, og'irlik, audit, print job) migratsiya orqali qo'llanadi va
-mavjud ma'lumot to'ldiriladi: hamma foydalanuvchi faollashadi, non-admin'lar default filialga
-biriktiriladi, roliga qarab ruxsat oladi. **Bu qadamni avval bazaning nusxasida mashq qiling.**
+Skript ichida "transaction in progress" ogohlantirishlari chiqishi normal. Tekshirish: `api` logida
+"No migrations were applied" bo'lishi, `admin` login qilishi, eski mijozlar/savdolar joyida turishi kerak.
+Bu tartib bazaning nusxasida mashq qilingan: mavjud yozuvlar saqlanadi, birorta qator o'chmaydi.
 
 ## 5. Tunnel
 
