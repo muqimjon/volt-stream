@@ -30,6 +30,9 @@ public class GetSaleReceiptQueryHandler(IAppDbContext context, ICurrentUser user
         if (!user.Has(Permissions.BranchesAll) && sale.BranchId != user.BranchId)
             throw new ForbiddenException("Boshqa filial savdosi.");
 
+        if (!user.Has(Permissions.ReportsView) && sale.CreatedByUserId != user.UserId)
+            throw new ForbiddenException("Boshqa xodim savdosi.");
+
         var hasPrices = user.Has(Permissions.SalesViewPrices);
 
         var operatorName = sale.CreatedByUserId is long userId

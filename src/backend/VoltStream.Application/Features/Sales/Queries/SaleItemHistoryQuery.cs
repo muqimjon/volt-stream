@@ -9,6 +9,7 @@ using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Commons.Services;
 using VoltStream.Application.Features.Sales.DTOs;
 
+[RequirePermission(Permissions.SalesView)]
 public record SaleItemHistoryQuery : IRequest<IReadOnlyCollection<SaleItemHistoryDto>>
 {
     public DateTimeOffset BeginDate { get; set; }
@@ -36,6 +37,7 @@ public class SaleItemHistoryQueryHandler(IAppDbContext context, BranchContext br
             .Where(i => i.Sale.Date >= begin && i.Sale.Date < end);
 
         if (branchId is not null) query = query.Where(i => i.Sale.BranchId == branchId);
+        if (!user.Has(Permissions.ReportsView)) query = query.Where(i => i.Sale.CreatedByUserId == user.UserId);
         if (request.CustomerId is not null) query = query.Where(i => i.Sale.CustomerId == request.CustomerId);
         if (request.CategoryId is not null) query = query.Where(i => i.Product.CategoryId == request.CategoryId);
         if (request.ProductId is not null) query = query.Where(i => i.ProductId == request.ProductId);
