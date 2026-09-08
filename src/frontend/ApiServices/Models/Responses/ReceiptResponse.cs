@@ -7,6 +7,7 @@ public record ReceiptItemResponse
     public decimal LengthPerRoll { get; set; }
     public int RollCount { get; set; }
     public decimal TotalLength { get; set; }
+    public string? Composition { get; set; }
     public string? Unit { get; set; }
     public decimal Weight { get; set; }
     public decimal? WeightPerUnit { get; set; }

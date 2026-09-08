@@ -1,6 +1,7 @@
 namespace VoltStream.Application.Features.Sales.Queries;
 
 using Microsoft.EntityFrameworkCore;
+using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Models;
@@ -55,11 +56,17 @@ public class SaleItemHistoryQueryHandler(IAppDbContext context, BranchContext br
             Weight = i.Weight,
         });
 
-        if (request.Page <= 0 || request.PageSize <= 0)
-            return user.ApplyToItems(await projected.ToListAsync(ct));
+        if (request.Page > 0 && request.PageSize > 0)
+        {
+            var total = await projected.CountAsync(ct);
+            writer.Write(new PagedListMetadata(total, request.Page, request.PageSize, (int)Math.Ceiling((double)total / request.PageSize)));
+            projected = projected.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize);
+        }
 
-        var total = await projected.CountAsync(ct);
-        writer.Write(new PagedListMetadata(total, request.Page, request.PageSize, (int)Math.Ceiling((double)total / request.PageSize)));
-        return user.ApplyToItems(await projected.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToListAsync(ct));
+        var items = await projected.ToListAsync(ct);
+        foreach (var item in items)
+            item.Composition = RollComposition.Format(RollComposition.Of(item.RollCount, item.LengthPerRoll, item.TotalLength));
+
+        return user.ApplyToItems(items);
     }
 }

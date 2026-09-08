@@ -2,6 +2,7 @@ namespace VoltStream.Application.Features.Sales.Queries;
 
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
+using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Security;
@@ -45,18 +46,26 @@ public class GetSaleReceiptQueryHandler(IAppDbContext context, ICurrentUser user
             Branch = sale.Branch?.Name ?? string.Empty,
             Customer = sale.Customer?.Name,
             Operator = operatorName,
-            Items = [.. sale.Items.Select(item => new SaleReceiptItemDto
+            Items = [.. sale.Items.GroupBy(item => item.ProductId).Select(group =>
             {
-                Category = item.Product.Category?.Name ?? string.Empty,
-                Product = item.Product.Name,
-                LengthPerRoll = item.LengthPerRoll,
-                RollCount = item.RollCount,
-                TotalLength = item.TotalLength,
-                Unit = item.Product.Unit,
-                Weight = item.Weight,
-                WeightPerUnit = item.Product.IsWeightTracked ? item.Product.WeightPerUnit : null,
-                UnitPrice = hasPrices ? item.UnitPrice : null,
-                TotalAmount = hasPrices ? item.FinalAmount : null
+                var product = group.First().Product;
+                var lengths = group.Select(item => item.LengthPerRoll).Distinct().ToList();
+                var prices = group.Select(item => item.UnitPrice).Distinct().ToList();
+                return new SaleReceiptItemDto
+                {
+                    Category = product.Category?.Name ?? string.Empty,
+                    Product = product.Name,
+                    LengthPerRoll = lengths.Count == 1 ? lengths[0] : 0,
+                    RollCount = group.Sum(item => item.RollCount),
+                    TotalLength = group.Sum(item => item.TotalLength),
+                    Composition = RollComposition.Format(RollComposition.Merge(
+                        group.SelectMany(item => RollComposition.Of(item.RollCount, item.LengthPerRoll, item.TotalLength)))),
+                    Unit = product.Unit,
+                    Weight = group.Sum(item => item.Weight),
+                    WeightPerUnit = product.IsWeightTracked ? product.WeightPerUnit : null,
+                    UnitPrice = hasPrices && prices.Count == 1 ? prices[0] : null,
+                    TotalAmount = hasPrices ? group.Sum(item => item.FinalAmount) : null
+                };
             })],
             TotalRolls = sale.Items.Sum(item => item.RollCount),
             TotalLength = sale.Items.Sum(item => item.TotalLength),

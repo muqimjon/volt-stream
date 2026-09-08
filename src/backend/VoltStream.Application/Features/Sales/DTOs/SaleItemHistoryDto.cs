@@ -12,4 +12,5 @@ public record SaleItemHistoryDto
     public string? Unit { get; set; }
     public decimal TotalLength { get; set; }
     public decimal Weight { get; set; }
+    public string Composition { get; set; } = string.Empty;
 }

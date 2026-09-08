@@ -11,4 +11,5 @@ public record SaleItemHistoryResponse
     public decimal UnitPrice { get; set; }
     public string? Unit { get; set; }
     public decimal TotalLength { get; set; }
+    public string? Composition { get; set; }
 }

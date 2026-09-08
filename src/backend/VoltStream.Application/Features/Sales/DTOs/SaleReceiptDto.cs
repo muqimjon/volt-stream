@@ -23,6 +23,7 @@ public record SaleReceiptItemDto
     public decimal LengthPerRoll { get; set; }
     public int RollCount { get; set; }
     public decimal TotalLength { get; set; }
+    public string Composition { get; set; } = string.Empty;
     public string Unit { get; set; } = string.Empty;
     public decimal Weight { get; set; }
     public decimal? WeightPerUnit { get; set; }
