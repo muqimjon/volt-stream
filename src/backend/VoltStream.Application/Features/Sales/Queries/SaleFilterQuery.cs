@@ -36,7 +36,7 @@ public class SaleFilterQueryHandler(
             query = query.Where(s => s.CreatedByUserId == user.UserId);
 
         if (!user.Has(Permissions.SalesViewPrices))
-            query = query.Include(s => s.Customer).Include(s => s.Items);
+            query = query.Include(s => s.Customer).Include(s => s.Items).ThenInclude(i => i.Product);
 
         var sales = user.Apply(mapper.Map<IReadOnlyCollection<SaleDto>>(await query
             .ToPagedListAsync(request, writer, cancellationToken)));
