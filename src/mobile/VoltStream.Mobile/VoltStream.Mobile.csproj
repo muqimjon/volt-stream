@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
+    <OutputType>Exe</OutputType>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>VoltStream.Mobile</RootNamespace>
+    <ApplicationTitle>Volt Stream</ApplicationTitle>
+    <ApplicationId>uz.ovoza.voltstream</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' And '$(VOLTSTREAM_KEYSTORE_PASS)' != ''">
+    <AndroidKeyStore>true</AndroidKeyStore>
+    <AndroidSigningKeyStore>$(APPDATA)\Ovoza\VoltStream\voltstream.keystore</AndroidSigningKeyStore>
+    <AndroidSigningKeyAlias>voltstream</AndroidSigningKeyAlias>
+    <AndroidSigningKeyPass>$(VOLTSTREAM_KEYSTORE_PASS)</AndroidSigningKeyPass>
+    <AndroidSigningStorePass>$(VOLTSTREAM_KEYSTORE_PASS)</AndroidSigningStorePass>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#4F46E5" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#4F46E5" BaseSize="128,128" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.20" />
+  </ItemGroup>
+
+</Project>

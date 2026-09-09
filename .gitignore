@@ -432,3 +432,8 @@ src/web/VoltStream.Web/node_modules/
 # Docker deploy: maxfiy qiymatlar va baza nusxalari
 .env
 backups/
+
+# Mobile: release imzo kaliti va build natijalari
+*.keystore
+*.apk
+*.aab

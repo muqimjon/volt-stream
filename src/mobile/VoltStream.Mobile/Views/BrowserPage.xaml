@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:VoltStream.Mobile"
+             x:Class="VoltStream.Mobile.Views.BrowserPage"
+             Shell.NavBarIsVisible="False">
+    <Grid>
+        <WebView x:Name="web" Navigated="OnNavigated" />
+
+        <Grid x:Name="busy" BackgroundColor="White">
+            <ActivityIndicator IsRunning="True" Color="#4F46E5"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+        </Grid>
+
+        <Grid x:Name="error" BackgroundColor="White" IsVisible="False">
+            <VerticalStackLayout Padding="32" Spacing="16"
+                                 HorizontalOptions="Center" VerticalOptions="Center">
+                <Label Text="{x:Static local:Texts.ServerNotFound}" FontSize="20"
+                       HorizontalTextAlignment="Center" />
+                <Button Text="{x:Static local:Texts.Retry}" Clicked="OnRetry"
+                        BackgroundColor="#4F46E5" TextColor="White" />
+                <Button Text="{x:Static local:Texts.Settings}" Clicked="OnSettings"
+                        BackgroundColor="Transparent" TextColor="#4F46E5" />
+            </VerticalStackLayout>
+        </Grid>
+    </Grid>
+</ContentPage>

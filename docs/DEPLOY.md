@@ -91,7 +91,44 @@ Har bir PC da:
 
 Tunnel manzilini brauzerda oching → "Ilovani o'rnatish". PWA sifatida o'rnatiladi.
 
-## 8. Zaxira nusxa
+## 8. Telefon (APK)
+
+`src/mobile/VoltStream.Mobile` — yupqa WebView qobiq (native Android, `net10.0-android`). APK ichida web
+YO'Q, u har safar serverdan yuklanadi (`/`), shuning uchun web yangilansa APK qayta chiqarilmaydi —
+faqat qobiqning o'zi (masalan ikonka, ulanish mantig'i) o'zgarsa kerak bo'ladi.
+
+Bir martalik: release imzo kaliti (yo'q bo'lsa yarating, bor bo'lsa qayta yaratmang — mavjud o'rnatilgan
+APK'larni yangilab bo'lmay qoladi):
+
+```bat
+"C:\Program Files\Android\openjdk\jdk-21.0.8\bin\keytool.exe" -genkeypair -v ^
+  -keystore "%APPDATA%\Ovoza\VoltStream\voltstream.keystore" ^
+  -alias voltstream -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Parolni xavfsiz joyda saqlang (gitga yozilmaydi). Build:
+
+```bat
+set VOLTSTREAM_KEYSTORE_PASS=<parol>
+dotnet publish src/mobile/VoltStream.Mobile -f net10.0-android -c Release
+```
+
+Imzolangan APK: `src/mobile/VoltStream.Mobile/bin/Release/net10.0-android/publish/uz.ovoza.voltstream-Signed.apk`.
+Telefonga o'rnatish:
+
+```bash
+adb install uz.ovoza.voltstream-Signed.apk
+```
+
+(yoki faylni telefonga ko'chirib qo'lda oching — "Noma'lum manbalardan o'rnatish" ruxsati so'raladi).
+
+Birinchi ochganda Ulanish sahifasi chiqadi: Asosiy manzil (odatda LAN, `http://<pc-ip>:5000`) va Zaxira
+manzil (odatda tunnel, `https://<domen>`) — ikkalasi ham ixtiyoriy. Ilova ochilganda avval asosiyni,
+bo'lmasa zaxirani tekshiradi (`/api/health`); ikkalasi ham javob bermasa "Server topilmadi" ekrani
+chiqadi. Manzilni keyinroq o'zgartirish uchun tezkor sozlamalar tugmasi yo'q (ataylab) — ilova
+ma'lumotlarini tozalash (Android sozlamalari → Ilovalar → Volt Stream → Xotirani tozalash) yetarli.
+
+## 9. Zaxira nusxa
 
 ```bash
 docker compose exec db pg_dump -U $POSTGRES_USER -d $POSTGRES_DB -Fc -f /backups/voltstream-$(date +%F).dump
