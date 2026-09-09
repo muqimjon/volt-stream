@@ -6,7 +6,6 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-    <Version>1.1.6</Version>
     <Product>VoltStream</Product>
     <Company>Ovoza Dasturlar</Company>
 	  <ApplicationIcon>Commons/Source/Icons/voltstream.ico</ApplicationIcon>

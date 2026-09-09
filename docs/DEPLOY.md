@@ -3,6 +3,16 @@
 Server Docker'da ishlaydi — u yerda .NET o'rnatish shart emas. Filial kompyuterlaridagi WPF ilova esa
 Windows'da ishlaydi, u alohida chiqariladi (pastda).
 
+## 0. Tayyor fayllar
+
+Mijozga borishdan oldin dasturchi mashinasida bir marta bajariladi:
+
+```
+pwsh scripts/build-all.ps1
+```
+
+Natija `artifacts/` papkasida: `voltstream-server-<ver>.zip` (server), `voltstream-desktop-<ver>-win-x64.exe` (filial kompyuteri, .NET o'rnatish shart emas), `voltstream-<ver>.apk` (telefon). Zip ichida image, `docker-compose.yml`, `.env.example`, ushbu hujjat va baza ko'chirish skripti bor — mijoz serverida internet orqali image yuklab olish shart emas.
+
 ## 1. Serverga nima kerak
 
 - Docker Engine + Compose plugin

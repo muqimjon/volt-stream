@@ -19,6 +19,7 @@ services:
       - "127.0.0.1:${POSTGRES_PORT}:5432"
 
   api:
+    image: voltstream-api:${VOLTSTREAM_VERSION:-latest}
     build:
       context: .
       dockerfile: src/backend/VoltStream.WebApi/Dockerfile

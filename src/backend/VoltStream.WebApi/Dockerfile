@@ -8,7 +8,7 @@ RUN cd src/web/VoltStream.Web && npm run build
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
-COPY VoltStream.sln .
+COPY VoltStream.sln Directory.Build.props ./
 COPY src/backend/VoltStream.WebApi/VoltStream.WebApi.csproj src/backend/VoltStream.WebApi/
 COPY src/backend/VoltStream.Application/VoltStream.Application.csproj src/backend/VoltStream.Application/
 COPY src/backend/VoltStream.Domain/VoltStream.Domain.csproj src/backend/VoltStream.Domain/

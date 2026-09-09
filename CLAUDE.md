@@ -35,6 +35,20 @@ WebApi seeding'dan OLDIN tinglay boshlaydi (migratsiya/seeding `DatabaseInitiali
 
 `Jwt:Secret` (kamida 32 belgi) MAJBURIY — yo'q bo'lsa server ishga tushmaydi. Dev qiymati `appsettings.Development.json` da (gitignored); production'da `appsettings.Production.json` (gitignored) yoki `Jwt__Secret` env. Kalit o'zgarsa barcha tokenlar bekor bo'ladi (WPF qayta login qiladi).
 
+## Tayyor fayllar (artifacts)
+
+`scripts/*.ps1` mijozga beriladigan fayllarni yig'ib `artifacts/` ga qo'yadi (papka gitga tushmaydi):
+
+```
+pwsh scripts/build-all.ps1          # uchalasi: desktop exe, APK, server to'plami
+pwsh scripts/build-exe.ps1          # WPF -> voltstream-desktop-<ver>-win-x64.exe (self-contained)
+pwsh scripts/build-apk.ps1 -Install # MAUI -> voltstream-<ver>.apk (ixtiyoriy: telefonga adb bilan)
+pwsh scripts/build-server.ps1       # Docker image + compose/.env/docs -> voltstream-server-<ver>.zip
+pwsh scripts/set-version.ps1 minor  # versiyani hamma joyda oshiradi
+```
+
+Versiya yagona manbadan: `Directory.Build.props` dagi `<Version>`. `set-version.ps1` uni mobil csproj (`ApplicationDisplayVersion` va `ApplicationVersion` = major*10000+minor*100+patch), web `package.json` va `core/version.ts` bilan sinxronlaydi. APK'ni release kaliti bilan imzolash uchun `VOLTSTREAM_KEYSTORE_PASS` env kerak (bo'lmasa skript ogohlantiradi va debug kaliti bilan imzolaydi — o'rnatilgan ilova ustidan yangilanmaydi). Skriptlarda `MSBUILDDISABLENODEREUSE=1` ataylab: MSBuild ishchi jarayonlari build'dan keyin fayllarni ushlab turib, keyingi build'ni MSB3026 bilan yiqitadi. Server to'plamidagi image `docker load` bilan yuklanadi va `docker-compose.yml` dagi `image: voltstream-api:${VOLTSTREAM_VERSION:-latest}` uni qayta qurmasdan ishlatadi.
+
 ## Migratsiyalar
 
 - Bitta `InitialMigration` — butun sxema shundan quriladi. Yaratish (WebApi papkasidan): `ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations add <Name> --project ../VoltStream.Infrastructure --startup-project . --output-dir Persistence/Migrations` (`dotnet-ef` 10.0.11 lokal manifestda).
