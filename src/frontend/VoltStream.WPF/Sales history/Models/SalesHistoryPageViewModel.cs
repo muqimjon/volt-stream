@@ -147,6 +147,7 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
         Unit = r.Unit,
         TotalCount = r.TotalLength,
         Customer = r.Customer,
+        Composition = r.Composition,
     };
 
     #endregion Load Data
@@ -207,12 +208,13 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
                 new() { Header = TranslationSource.T("SalesHistory.InRoll"), Width = 68, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.RollLength },
                 new() { Header = TranslationSource.T("SalesHistory.RollCount"), Width = 60, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.Quantity },
                 new() { Header = TranslationSource.T("Common.Total"), Width = 50, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.TotalCount },
+                new() { Header = TranslationSource.T("SalesHistory.Composition"), Width = 130, Value = x => x.Composition },
                 new() { Header = TranslationSource.T("SalesHistory.MeasureShort"), Width = 70, Align = ReportAlign.Center, Value = x => x.Unit },
                 new() { Header = TranslationSource.T("Common.Price"), Width = 80, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.Price },
                 new() { Header = TranslationSource.T("SalesHistory.TotalAmount"), Width = 100, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.TotalAmount },
             ],
             Rows = items,
-            Totals = new ReportTotals { Label = TranslationSource.T("SalesHistory.GrandTotal"), LabelSpan = 9, Cells = [new() { Column = 9, Value = FinalAmount ?? 0, Format = "N2" }] },
+            Totals = new ReportTotals { Label = TranslationSource.T("SalesHistory.GrandTotal"), LabelSpan = 10, Cells = [new() { Column = 10, Value = FinalAmount ?? 0, Format = "N2" }] },
         };
     }
 

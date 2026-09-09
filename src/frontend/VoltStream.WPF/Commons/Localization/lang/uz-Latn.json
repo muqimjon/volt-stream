@@ -362,6 +362,7 @@
   "Sales.TotalSumRequired": "Jami summa kiritilishi shart va 0 dan katta bo'lishi kerak.",
   "Sales.WarehouseLoadError": "Ombor ma'lumotlarini yuklashda xatolik yuz berdi!",
   "SalesHistory.BeginDate": "Boshlanish",
+  "SalesHistory.Composition": "Rulon tarkibi",
   "SalesHistory.Customer": "Mijoz",
   "SalesHistory.CustomerLabel": "Mijoz:",
   "SalesHistory.EndDate": "Tugash",

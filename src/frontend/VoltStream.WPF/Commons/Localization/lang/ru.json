@@ -362,6 +362,7 @@
   "Sales.TotalSumRequired": "Общая сумма обязательна и должна быть больше 0.",
   "Sales.WarehouseLoadError": "Ошибка при загрузке данных склада!",
   "SalesHistory.BeginDate": "Начало",
+  "SalesHistory.Composition": "Состав рулонов",
   "SalesHistory.Customer": "Клиент",
   "SalesHistory.CustomerLabel": "Клиент:",
   "SalesHistory.EndDate": "Конец",

@@ -362,6 +362,7 @@
   "Sales.TotalSumRequired": "Жами сумма киритилиши шарт ва 0 дан катта бўлиши керак.",
   "Sales.WarehouseLoadError": "Омбор маълумотларини юклашда хатолик юз берди!",
   "SalesHistory.BeginDate": "Бошланиш",
+  "SalesHistory.Composition": "Рулон таркиби",
   "SalesHistory.Customer": "Мижоз",
   "SalesHistory.CustomerLabel": "Мижоз:",
   "SalesHistory.EndDate": "Тугаш",

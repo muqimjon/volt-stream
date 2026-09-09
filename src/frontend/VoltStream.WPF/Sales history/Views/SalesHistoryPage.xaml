@@ -182,6 +182,11 @@
                 </DataGridTextColumn>
 
                 <DataGridTextColumn
+                    Width="1.8*"
+                    Binding="{Binding Composition}"
+                    Header="{loc:Loc SalesHistory.Composition}" />
+
+                <DataGridTextColumn
                     Width="*"
                     Binding="{Binding Unit}"
                     ElementStyle="{StaticResource CenterCellText}"

@@ -362,6 +362,7 @@
   "Sales.TotalSumRequired": "The total amount is required and must be greater than 0.",
   "Sales.WarehouseLoadError": "Failed to load warehouse data!",
   "SalesHistory.BeginDate": "Start",
+  "SalesHistory.Composition": "Roll composition",
   "SalesHistory.Customer": "Customer",
   "SalesHistory.CustomerLabel": "Customer:",
   "SalesHistory.EndDate": "End",
