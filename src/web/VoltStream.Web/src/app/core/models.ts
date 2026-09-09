@@ -113,6 +113,35 @@ export interface PrintJob {
   createdAt?: string;
 }
 
+export interface SaleReceiptItem {
+  category: string;
+  product: string;
+  lengthPerRoll: number;
+  rollCount: number;
+  totalLength: number;
+  composition: string;
+  unit: string;
+  weight: number;
+  weightPerUnit?: number | null;
+  unitPrice?: number | null;
+  totalAmount?: number | null;
+}
+
+export interface SaleReceipt {
+  saleId: number;
+  date: string;
+  branch: string;
+  customer?: string | null;
+  operator?: string | null;
+  items: SaleReceiptItem[];
+  totalRolls: number;
+  totalLength: number;
+  totalWeight: number;
+  hasPrices: boolean;
+  amount?: number | null;
+  discount?: number | null;
+}
+
 export interface SaleListItem {
   id: number;
   date: string;

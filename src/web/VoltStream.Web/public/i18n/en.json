@@ -271,6 +271,7 @@
   "Web.ReceivedWeight": "Weight received",
   "Web.RequestFailed": "Request failed",
   "Web.Role": "Role",
+  "Web.RollComposition": "Roll composition",
   "Web.SaleNumber": "Sale #{0}",
   "Web.SalesCount": "Sales",
   "Web.SendCustomerToOffice": "Send the customer to the office",

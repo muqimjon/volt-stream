@@ -271,6 +271,7 @@
   "Web.ReceivedWeight": "Принято кг",
   "Web.RequestFailed": "Не удалось выполнить запрос",
   "Web.Role": "Роль",
+  "Web.RollComposition": "Состав рулонов",
   "Web.SaleNumber": "Продажа №{0}",
   "Web.SalesCount": "Продажи",
   "Web.SendCustomerToOffice": "Направьте клиента в офис",

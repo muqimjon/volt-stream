@@ -3,7 +3,7 @@ import { ApiClient } from '../../core/api/api-client';
 import { AuthService } from '../../core/auth/auth';
 import { BranchStore } from '../../core/branches';
 import { TranslatePipe } from '../../core/i18n/translate';
-import { PrintJobStatus, SaleListItem } from '../../core/models';
+import { PrintJobStatus, SaleListItem, SaleReceipt } from '../../core/models';
 import { HasPermissionDirective, PermissionService } from '../../core/permissions/permission';
 import { PwaService } from '../../core/pwa/pwa';
 import { PrintService } from '../../core/realtime/print';
@@ -64,6 +64,19 @@ export class MySalesPage {
   protected readonly canPrint = computed(
     () => this.permissions.has('print.request') && this.auth.printPolicy() !== 'Deny',
   );
+  protected readonly showAmount = computed(() => this.permissions.has('sales.view_prices'));
+  protected readonly columnCount = computed(
+    () =>
+      5 +
+      (this.showBranch() ? 1 : 0) +
+      (this.showWeight() ? 1 : 0) +
+      (this.showAmount() ? 1 : 0) +
+      (this.canPrint() ? 1 : 0),
+  );
+
+  protected readonly expandedId = signal<number | null>(null);
+  protected readonly receiptLoadingId = signal<number | null>(null);
+  private readonly receiptById = signal<Record<number, SaleReceipt>>({});
 
   constructor() {
     void this.branches.load();
@@ -121,5 +134,28 @@ export class MySalesPage {
 
   protected requestPrint(sale: SaleListItem): void {
     void this.print.request(sale.id, sale.branchId ?? null);
+  }
+
+  protected receiptOf(saleId: number): SaleReceipt | null {
+    return this.receiptById()[saleId] ?? null;
+  }
+
+  protected async toggleReceipt(sale: SaleListItem): Promise<void> {
+    if (this.expandedId() === sale.id) {
+      this.expandedId.set(null);
+      return;
+    }
+    this.expandedId.set(sale.id);
+    if (this.receiptById()[sale.id]) return;
+
+    this.receiptLoadingId.set(sale.id);
+    try {
+      const receipt = await this.api.get<SaleReceipt>(`sales/${sale.id}/receipt`);
+      this.receiptById.update((map) => ({ ...map, [sale.id]: receipt }));
+    } catch {
+      /* interceptor already reported the error */
+    } finally {
+      this.receiptLoadingId.set(null);
+    }
   }
 }

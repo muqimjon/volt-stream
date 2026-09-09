@@ -14,6 +14,7 @@
       <table class="data">
         <thead>
           <tr>
+            <th></th>
             <th>{{ 'Common.Date' | t }}</th>
             <th>{{ 'Sales.Buyer' | t }}</th>
             @if (showBranch()) {
@@ -34,6 +35,17 @@
         <tbody>
           @for (sale of sales(); track sale.id) {
             <tr>
+              <td>
+                <button
+                  type="button"
+                  class="btn btn-ghost"
+                  [title]="'Web.RollComposition' | t"
+                  [attr.aria-expanded]="expandedId() === sale.id"
+                  (click)="toggleReceipt(sale)"
+                >
+                  <app-icon name="chevron" [size]="18" [class.rotated]="expandedId() === sale.id" />
+                </button>
+              </td>
               <td>{{ fmtDateTime(sale.date) }}</td>
               <td>{{ sale.customer?.name || ('Common.NoData' | t) }}</td>
               @if (showBranch()) {
@@ -64,6 +76,24 @@
                 </td>
               }
             </tr>
+            @if (expandedId() === sale.id) {
+              <tr class="composition-row">
+                <td [attr.colspan]="columnCount() + 1">
+                  @if (receiptLoadingId() === sale.id) {
+                    {{ 'Common.Loading' | t }}
+                  } @else if (receiptOf(sale.id); as receipt) {
+                    <ul class="composition">
+                      @for (item of receipt.items; track $index) {
+                        <li>
+                          {{ item.category }} {{ item.product }} — {{ fmt(item.totalLength) }}
+                          {{ item.unit }} = {{ item.composition }}
+                        </li>
+                      }
+                    </ul>
+                  }
+                </td>
+              </tr>
+            }
           }
         </tbody>
       </table>
@@ -98,18 +128,43 @@
           @if (statusOf(sale); as status) {
             <app-status-badge [status]="status" />
           }
-          @if (canPrint()) {
+          <div class="foot-actions">
             <button
               type="button"
               class="btn btn-ghost"
-              [disabled]="print.isBusy(sale.id) || !pwa.online()"
-              (click)="requestPrint(sale)"
+              [attr.aria-expanded]="expandedId() === sale.id"
+              (click)="toggleReceipt(sale)"
             >
-              <app-icon name="print" [size]="18" />
-              {{ 'Common.Print' | t }}
+              <app-icon name="chevron" [size]="18" [class.rotated]="expandedId() === sale.id" />
+              {{ 'Web.RollComposition' | t }}
             </button>
-          }
+            @if (canPrint()) {
+              <button
+                type="button"
+                class="btn btn-ghost"
+                [disabled]="print.isBusy(sale.id) || !pwa.online()"
+                (click)="requestPrint(sale)"
+              >
+                <app-icon name="print" [size]="18" />
+                {{ 'Common.Print' | t }}
+              </button>
+            }
+          </div>
         </div>
+        @if (expandedId() === sale.id) {
+          @if (receiptLoadingId() === sale.id) {
+            <p class="muted composition-loading">{{ 'Common.Loading' | t }}</p>
+          } @else if (receiptOf(sale.id); as receipt) {
+            <ul class="composition">
+              @for (item of receipt.items; track $index) {
+                <li>
+                  {{ item.category }} {{ item.product }} — {{ fmt(item.totalLength) }}
+                  {{ item.unit }} = {{ item.composition }}
+                </li>
+              }
+            </ul>
+          }
+        }
       </article>
     }
   }
