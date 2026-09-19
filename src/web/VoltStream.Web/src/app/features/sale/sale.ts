@@ -375,7 +375,7 @@ export class SalePage {
       discount: round(totals.discount),
       description: draft.description || '',
       branchId: this.auth.branchId(),
-      items: draft.items.map((i) => ({
+      items: [...draft.items].reverse().map((i) => ({
         productId: i.productId,
         rollCount: i.rollCount,
         lengthPerRoll: i.lengthPerRoll,
