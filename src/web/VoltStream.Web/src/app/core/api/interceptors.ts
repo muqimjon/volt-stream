@@ -59,9 +59,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         if (!silent) toast.error(message);
       } else if (err.status === 401 && !isLogin) {
         message = translate.t('Web.SessionExpired');
-        auth.logout();
-        toast.error(message);
-        void router.navigate(['/login']);
+        if (auth.token()) {
+          auth.logout();
+          toast.error(message);
+          void router.navigate(['/login']);
+        }
       } else {
         if (err.status === 403) message = serverMessage || translate.t('Web.NoAccess');
         else if (err.status >= 500) message = translate.t('Web.ServerError');

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, ElementRef, afterRenderEffect, inject, viewChild } from '@angular/core';
 import { AuthService } from '../core/auth/auth';
 import { BranchStore } from '../core/branches';
 import { TranslatePipe } from '../core/i18n/translate';
@@ -8,11 +8,7 @@ import { TranslatePipe } from '../core/i18n/translate';
   imports: [TranslatePipe],
   template: `
     @if (auth.isAdmin()) {
-      <select
-        class="pill"
-        [value]="auth.selectedBranchId() ?? ''"
-        (change)="pick($any($event.target).value)"
-      >
+      <select #select class="pill" (change)="pick($any($event.target).value)">
         <option value="">{{ 'Web.AllBranches' | t }}</option>
         @for (branch of store.branches(); track branch.id) {
           <option [value]="branch.id">{{ branch.name }}</option>
@@ -44,9 +40,15 @@ import { TranslatePipe } from '../core/i18n/translate';
 export class BranchSwitcher {
   protected readonly auth = inject(AuthService);
   protected readonly store = inject(BranchStore);
+  private readonly select = viewChild<ElementRef<HTMLSelectElement>>('select');
 
   constructor() {
     void this.store.load();
+    afterRenderEffect(() => {
+      this.store.branches();
+      const el = this.select()?.nativeElement;
+      if (el) el.value = String(this.auth.selectedBranchId() ?? '');
+    });
   }
 
   protected pick(value: string): void {
