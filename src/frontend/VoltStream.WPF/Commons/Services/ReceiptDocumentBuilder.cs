@@ -125,30 +125,32 @@ public static class ReceiptDocumentBuilder
         if (!hasComposition)
             rest.Add(new() { Header = TranslationSource.T("Receipt.PerRoll"), Width = 70, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = i => i.LengthPerRoll });
 
+        rest.Add(new() { Header = TranslationSource.T("Receipt.RollCount"), Width = 70, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = i => i.RollCount });
+
+        int rollCountColumn = rest.Count;
+
         if (expanded)
             rest.Add(new() { Header = TranslationSource.T("Receipt.Composition"), Width = 165, Value = ExpandedComposition });
+        else
+            rest.Add(new() { Header = TranslationSource.T("Receipt.TotalLength"), Width = 85, Align = ReportAlign.Right, Value = i => $"{i.TotalLength:N0} {i.Unit}" });
 
-        rest.Add(new() { Header = TranslationSource.T("Receipt.RollCount"), Width = 70, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = i => i.RollCount });
-        rest.Add(new() { Header = TranslationSource.T("Receipt.TotalLength"), Width = 85, Align = ReportAlign.Right, Value = i => $"{i.TotalLength:N0} {i.Unit}" });
-
-        int rollCountColumn = rest.Count - 1;
         List<ReportTotalCell> totals =
         [
             new() { Column = rollCountColumn, Value = receipt.TotalRolls, Format = "N0" },
             new() { Column = rollCountColumn + 1, Value = $"{receipt.TotalLength:N0}" }
         ];
 
-        if (!money)
-            rest.Add(new() { Header = TranslationSource.T("Receipt.WeightPerUnit"), Width = 95, Align = ReportAlign.Right, IsNumber = true, Format = "N3", Value = i => i.WeightPerUnit });
-
-        rest.Add(new() { Header = TranslationSource.T("Receipt.Weight"), Width = 85, Align = ReportAlign.Right, IsNumber = true, Format = "N3", Value = i => i.Weight });
-        totals.Add(new() { Column = rest.Count, Value = receipt.TotalWeight, Format = "N3" });
-
         if (money)
         {
             rest.Add(new() { Header = TranslationSource.T("Receipt.Price"), Width = 90, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = i => (object?)i.UnitPrice ?? "—" });
             rest.Add(new() { Header = TranslationSource.T("Receipt.Amount"), Width = 105, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = i => i.TotalAmount });
             totals.Add(new() { Column = rest.Count, Value = receipt.Amount, Format = "N0" });
+        }
+        else
+        {
+            rest.Add(new() { Header = TranslationSource.T("Receipt.WeightPerUnit"), Width = 95, Align = ReportAlign.Right, IsNumber = true, Format = "N3", Value = i => i.WeightPerUnit });
+            rest.Add(new() { Header = TranslationSource.T("Receipt.Weight"), Width = 85, Align = ReportAlign.Right, IsNumber = true, Format = "N3", Value = i => i.Weight });
+            totals.Add(new() { Column = rest.Count, Value = receipt.TotalWeight, Format = "N3" });
         }
 
         var product = new ReportColumn<ReceiptItemResponse>
@@ -184,10 +186,14 @@ public static class ReceiptDocumentBuilder
         if (item.Rolls.Count == 0)
             return item.Composition ?? string.Empty;
 
+        if (item.Rolls.Count == 1)
+        {
+            var r = item.Rolls[0];
+            return $"{r.Count} × {r.Length:0.###} = {item.TotalLength:0.###} {item.Unit}";
+        }
+
         var lines = item.Rolls.Select(r => $"{r.Count} × {r.Length:0.###} {item.Unit}");
-        return item.Rolls.Count > 1
-            ? string.Join("\n", lines) + $"\n{TranslationSource.T("Common.Total")}: {item.TotalLength:0.###} {item.Unit}"
-            : string.Join("\n", lines);
+        return string.Join("\n", lines) + $"\n{TranslationSource.T("Common.Total")}: {item.TotalLength:0.###} {item.Unit}";
     }
 
     private static string Subtitle(ReceiptResponse receipt, bool money)

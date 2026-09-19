@@ -304,7 +304,7 @@
   "Receipt.Title": "Receipt #{0}",
   "Receipt.Total": "TOTAL:",
   "Receipt.TotalLength": "Total (m)",
-  "Receipt.Weight": "Weight (kg)",
+  "Receipt.Weight": "Total weight (kg)",
   "Receipt.WeightPerUnit": "Weight per m (kg)",
   "Sales.AccountLabel": "Account:",
   "Sales.Buyer": "Buyer",

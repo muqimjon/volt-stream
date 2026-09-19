@@ -304,7 +304,7 @@
   "Receipt.Title": "Чек №{0}",
   "Receipt.Total": "ИТОГО:",
   "Receipt.TotalLength": "Итого (м)",
-  "Receipt.Weight": "Вес (кг)",
+  "Receipt.Weight": "Общий вес (кг)",
   "Receipt.WeightPerUnit": "Вес 1 м (кг)",
   "Sales.AccountLabel": "Счёт:",
   "Sales.Buyer": "Покупатель",
