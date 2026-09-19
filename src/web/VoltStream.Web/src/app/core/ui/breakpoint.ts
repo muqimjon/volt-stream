@@ -9,5 +9,6 @@ function matches(query: string): Signal<boolean> {
 
 @Injectable({ providedIn: 'root' })
 export class BreakpointService {
+  readonly tablet = matches('(min-width: 768px)');
   readonly desktop = matches('(min-width: 1024px)');
 }

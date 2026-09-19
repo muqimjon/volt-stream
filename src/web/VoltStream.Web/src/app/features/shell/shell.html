@@ -1,7 +1,44 @@
 <div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand">Volt Stream</span>
+    </div>
+
+    <nav class="tabs">
+      @for (item of items(); track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="active">
+          <app-icon [name]="item.icon" [size]="22" />
+          <span>{{ item.key | t }}</span>
+        </a>
+      }
+    </nav>
+  </aside>
+
   <header class="app-header">
-    <span class="brand">Volt Stream</span>
+    <span class="brand mobile-brand">Volt Stream</span>
+    <span class="page-title">{{ activeTitle() | t }}</span>
     <app-branch-switcher />
+    <div class="header-actions">
+      <button
+        type="button"
+        class="icon-btn"
+        [title]="actions.themeKey[actions.theme.mode()] | t"
+        (click)="cycleTheme()"
+      >
+        <app-icon [name]="actions.theme.effectiveDark() ? 'sun' : 'moon'" [size]="18" />
+      </button>
+      <label class="lang-picker">
+        <app-icon name="globe" [size]="18" />
+        <select
+          [value]="actions.translate.lang()"
+          (change)="actions.setLang($any($event.target).value)"
+        >
+          @for (lang of actions.languages; track lang.code) {
+            <option [value]="lang.code">{{ lang.label }}</option>
+          }
+        </select>
+      </label>
+    </div>
     <app-user-menu />
   </header>
 
@@ -18,15 +55,6 @@
       </div>
     }
   </div>
-
-  <nav class="tabs">
-    @for (item of items(); track item.path) {
-      <a [routerLink]="item.path" routerLinkActive="active">
-        <app-icon [name]="item.icon" [size]="22" />
-        <span>{{ item.key | t }}</span>
-      </a>
-    }
-  </nav>
 
   <main>
     <div class="content">

@@ -81,6 +81,14 @@ import { DialogService } from '../core/ui/dialog';
       gap: var(--sp-sm);
       margin-bottom: var(--sp-lg);
     }
+    @media (min-width: 1024px) {
+      dialog {
+        box-shadow: var(--shadow-card);
+      }
+      .actions .btn {
+        min-width: 96px;
+      }
+    }
   `,
 })
 export class ConfirmDialog {

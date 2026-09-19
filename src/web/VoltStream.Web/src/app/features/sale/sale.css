@@ -67,7 +67,7 @@
   gap: var(--sp-lg);
 }
 
-@media (max-width: 1023.98px) {
+@media (max-width: 899.98px) {
   .totals.pinned {
     position: sticky;
     bottom: 0;
@@ -98,7 +98,7 @@
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 900px) {
   .split {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

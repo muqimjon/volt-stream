@@ -17,6 +17,8 @@ export const ICONS: Record<string, string> = {
   logout: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9',
   download: 'M12 3v12 M7 10l5 5 5-5 M4 21h16',
   chevron: 'M6 9l6 6 6-6',
+  globe:
+    'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M3 12h18 M12 3a13 13 0 0 1 0 18 M12 3a13 13 0 0 0 0 18',
 };
 
 @Component({

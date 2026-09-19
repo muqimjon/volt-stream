@@ -168,6 +168,11 @@ import { Icon } from './icon';
         text-align: start;
       }
     }
+    @media (min-width: 1024px) {
+      .trigger {
+        min-height: 32px;
+      }
+    }
   `,
 })
 export class UserMenu {

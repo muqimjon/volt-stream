@@ -1,4 +1,4 @@
-import { Injectable, effect, signal } from '@angular/core';
+import { Injectable, computed, effect, signal } from '@angular/core';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
 
@@ -9,6 +9,9 @@ export class ThemeService {
   readonly mode = signal<ThemeMode>(read());
   private readonly media = matchMedia('(prefers-color-scheme: dark)');
   private readonly systemDark = signal(this.media.matches);
+  readonly effectiveDark = computed(
+    () => this.mode() === 'dark' || (this.mode() === 'system' && this.systemDark()),
+  );
 
   constructor() {
     this.media.addEventListener('change', (e) => this.systemDark.set(e.matches));
@@ -17,10 +20,9 @@ export class ThemeService {
       const root = document.documentElement;
       if (mode === 'system') delete root.dataset['theme'];
       else root.dataset['theme'] = mode;
-      const dark = mode === 'dark' || (mode === 'system' && this.systemDark());
       document
         .querySelector('meta[name="theme-color"]')
-        ?.setAttribute('content', dark ? '#141A2A' : '#4F46E5');
+        ?.setAttribute('content', this.effectiveDark() ? '#141A2A' : '#4F46E5');
     });
   }
 

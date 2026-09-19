@@ -1,29 +1,31 @@
 <div class="page">
-  <app-page-header [title]="'Web.Logs' | t">
-    <button type="button" class="btn btn-ghost" [disabled]="loading()" (click)="load(1)">
-      <app-icon name="refresh" [size]="18" />
-    </button>
-  </app-page-header>
+  <div class="filter-bar">
+    <app-page-header [title]="'Web.Logs' | t">
+      <button type="button" class="btn btn-ghost" [disabled]="loading()" (click)="load(1)">
+        <app-icon name="refresh" [size]="18" />
+      </button>
+    </app-page-header>
 
-  <div class="filters">
-    <app-date-field [label]="'Common.Date' | t" [value]="date()" (valueChange)="onDate($event)" />
+    <div class="filters">
+      <app-date-field [label]="'Common.Date' | t" [value]="date()" (valueChange)="onDate($event)" />
 
-    <div class="field">
-      <label for="q">{{ 'Common.Search' | t }}</label>
-      <input
-        id="q"
-        class="input"
-        type="search"
-        [value]="search()"
-        (input)="search.set($any($event.target).value)"
-        (change)="load(1)"
-      />
+      <div class="field">
+        <label for="q">{{ 'Common.Search' | t }}</label>
+        <input
+          id="q"
+          class="input"
+          type="search"
+          [value]="search()"
+          (input)="search.set($any($event.target).value)"
+          (change)="load(1)"
+        />
+      </div>
     </div>
   </div>
 
   @if (!logs().length && !loading()) {
     <app-empty-state [text]="'Common.NoData' | t" />
-  } @else if (bp.desktop()) {
+  } @else if (bp.desktop() || bp.tablet()) {
     <div class="table-wrap">
       <table class="data">
         <thead>

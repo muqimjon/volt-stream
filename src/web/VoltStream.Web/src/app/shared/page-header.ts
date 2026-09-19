@@ -27,6 +27,12 @@ import { Component, input } from '@angular/core';
     p {
       font-size: var(--fs-caption);
     }
+    @media (min-width: 1024px) {
+      h1,
+      p {
+        display: none;
+      }
+    }
   `,
 })
 export class PageHeader {

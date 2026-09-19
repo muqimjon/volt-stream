@@ -1,4 +1,15 @@
-import { Component, computed, input, model, output, signal, viewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+  viewChild,
+  ElementRef,
+} from '@angular/core';
+import { BreakpointService } from '../core/ui/breakpoint';
 import { TranslatePipe } from '../core/i18n/translate';
 
 @Component({
@@ -9,7 +20,13 @@ import { TranslatePipe } from '../core/i18n/translate';
       @if (label()) {
         <label>{{ label() }}</label>
       }
-      <button type="button" class="input trigger" [disabled]="disabled()" (click)="open()">
+      <button
+        #trigger
+        type="button"
+        class="input trigger"
+        [disabled]="disabled()"
+        (click)="open()"
+      >
         <span [class.ph]="!selected()">{{ display() }}</span>
         <span class="chev">▾</span>
       </button>
@@ -18,7 +35,7 @@ import { TranslatePipe } from '../core/i18n/translate';
       }
     </div>
 
-    <dialog #dlg class="sheet" (click)="backdrop($event)">
+    <dialog #dlg class="sheet" [class.anchored]="anchored()" (click)="backdrop($event)">
       <div class="sheet-body">
         <div class="sheet-head">
           <input
@@ -90,7 +107,7 @@ import { TranslatePipe } from '../core/i18n/translate';
       padding: 0;
       margin: auto auto 0;
       width: min(560px, 100%);
-      max-height: 82dvh;
+      max-height: var(--popover-max-h, 82dvh);
       background: transparent;
     }
     dialog.sheet::backdrop {
@@ -103,7 +120,22 @@ import { TranslatePipe } from '../core/i18n/translate';
       display: flex;
       flex-direction: column;
       gap: var(--sp-sm);
-      max-height: 82dvh;
+      max-height: var(--popover-max-h, 82dvh);
+    }
+    @media (min-width: 1024px) {
+      dialog.sheet.anchored {
+        margin: 0;
+        max-height: var(--popover-max-h, 420px);
+        box-shadow: var(--shadow-popup);
+        border-radius: var(--r-lg);
+      }
+      dialog.sheet.anchored::backdrop {
+        background: transparent;
+      }
+      dialog.sheet.anchored .sheet-body {
+        border-radius: var(--r-lg);
+        padding-bottom: var(--sp-md);
+      }
     }
     .sheet-head {
       display: flex;
@@ -157,8 +189,11 @@ export class SearchSelect<T> {
   readonly opened = output<void>();
   readonly create = output<string>();
 
+  private readonly bp = inject(BreakpointService);
   private readonly dlg = viewChild.required<ElementRef<HTMLDialogElement>>('dlg');
+  private readonly trigger = viewChild.required<ElementRef<HTMLButtonElement>>('trigger');
   protected readonly query = signal('');
+  protected readonly anchored = signal(false);
 
   protected readonly display = computed(() => {
     const item = this.selected();
@@ -182,7 +217,27 @@ export class SearchSelect<T> {
     if (this.disabled()) return;
     this.query.set('');
     this.opened.emit();
-    this.dlg().nativeElement.showModal();
+    const dlg = this.dlg().nativeElement;
+    this.anchored.set(this.bp.desktop());
+    if (this.anchored()) this.position(dlg);
+    else dlg.style.cssText = '';
+    dlg.showModal();
+  }
+
+  private position(dlg: HTMLDialogElement): void {
+    const rect = this.trigger().nativeElement.getBoundingClientRect();
+    const gap = 6;
+    const width = Math.min(360, window.innerWidth - 16);
+    const left = Math.min(Math.max(8, rect.left), window.innerWidth - width - 8);
+    const spaceBelow = window.innerHeight - rect.bottom - gap;
+    const spaceAbove = rect.top - gap;
+    const openBelow = spaceBelow >= 200 || spaceBelow >= spaceAbove;
+    const height = Math.min(420, Math.max(160, openBelow ? spaceBelow : spaceAbove));
+    const top = openBelow ? rect.bottom + gap : Math.max(8, rect.top - gap - height);
+    dlg.style.left = `${left}px`;
+    dlg.style.top = `${top}px`;
+    dlg.style.width = `${width}px`;
+    dlg.style.setProperty('--popover-max-h', `${height}px`);
   }
 
   close(): void {

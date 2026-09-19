@@ -191,8 +191,12 @@ table.data tbody tr:last-child td {
   border-bottom: none;
 }
 
-table.data tbody tr:hover {
+table.data tbody tr:nth-child(even) {
   background: var(--row-alt);
+}
+
+table.data tbody tr:hover {
+  background: var(--brand-subtle);
 }
 
 table.data .num {
@@ -205,14 +209,57 @@ table.data .btn {
   padding: 0 var(--sp-sm);
 }
 
+.filter-bar {
+  display: contents;
+}
+
 @media (min-width: 1024px) {
   .page {
     padding: var(--sp-xl);
     gap: var(--sp-xl);
   }
 
-  .page > app-date-field {
+  .filter-bar > app-date-field {
     display: block;
     max-width: 260px;
+  }
+
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-lg);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: var(--sp-md) var(--sp-lg);
+  }
+
+  .filter-bar > :first-child {
+    order: 2;
+  }
+
+  .filter-bar > :last-child {
+    order: 1;
+  }
+
+  .btn,
+  .input {
+    min-height: 38px;
+    border-width: 1.5px;
+  }
+
+  table.data th {
+    padding: 11px var(--sp-lg);
+    font-size: var(--fs-caption);
+  }
+
+  table.data td {
+    padding: 4px var(--sp-lg);
+    font-size: 14px;
+  }
+
+  table.data .btn {
+    min-height: 30px;
   }
 }
