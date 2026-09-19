@@ -197,7 +197,7 @@ public partial class SaleEditViewModel : ViewModelBase
             Sale.Items.Insert(originalItemIndex, CurrentItem);
             ResetEditMode();
         }
-        else Sale.Items.Insert(0, CurrentItem);
+        else Sale.Items.Add(CurrentItem);
 
         RecalculateSaleTotals();
         ClearCurrentItem();

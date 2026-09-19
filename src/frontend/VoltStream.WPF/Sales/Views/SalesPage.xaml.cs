@@ -795,7 +795,7 @@ public partial class SalesPage : Page
             Length = (decimal)sale.SaleItems.Sum(si => si.Quantity)!,
             RollCount = (int)sale.SaleItems.Sum(si => si.RollCount)!,
             IsDiscountApplied = sale.IsDiscountApplied,
-            Items = [.. sale.SaleItems.Select(i => new SaleItemRequest
+            Items = [.. sale.SaleItems.AsEnumerable().Reverse().Select(i => new SaleItemRequest
             {
                 ProductId = i.ProductId,
                 RollCount = i.RollCount ?? 0,
