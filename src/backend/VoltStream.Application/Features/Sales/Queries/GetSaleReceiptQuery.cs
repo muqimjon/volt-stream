@@ -49,7 +49,7 @@ public class GetSaleReceiptQueryHandler(IAppDbContext context, ICurrentUser user
             Branch = sale.Branch?.Name ?? string.Empty,
             Customer = sale.Customer?.Name,
             Operator = operatorName,
-            Items = [.. sale.Items.GroupBy(item => item.ProductId).Select(group =>
+            Items = [.. sale.Items.OrderBy(item => item.Id).GroupBy(item => item.ProductId).Select(group =>
             {
                 var product = group.First().Product;
                 var lengths = group.Select(item => item.LengthPerRoll).Distinct().ToList();
