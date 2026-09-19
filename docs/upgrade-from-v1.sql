@@ -1,7 +1,14 @@
 -- VoltStream: mijozning eski bazasini (2 ta migratsiya: InitialMigration + UpdateDeleteBehaviors)
--- yangi sxemaga ko'tarish. Bir marta, transaksiyada, AVVAL pg_dump nusxasi olingan holda ishlatiladi:
---   psql -U <user> -d <db> -v ON_ERROR_STOP=1 -1 -f upgrade-from-v1.sql
--- Idempotent: qayta ishga tushirilsa qo'llangan qadamlarni o'tkazib yuboradi.
+-- yangi sxemaga ko'tarish. AVVAL pg_dump nusxasi olingan holda ishlatiladi:
+--   psql -U postgres -d voltstream -v ON_ERROR_STOP=1 -f upgrade-from-v1.sql
+-- Ko'chirilgan bazada qayta ishga tushirilsa hech narsa qilmaydi.
+
+SELECT EXISTS (SELECT 1 FROM "__EFMigrationsHistory"
+               WHERE "MigrationId" = '20260903213355_InitialMigration') AS ko_chirilgan \gset
+\if :ko_chirilgan
+\echo 'Baza allaqachon yangi sxemada — hech narsa qilinmadi.'
+\q
+\endif
 
 START TRANSACTION;
 
@@ -445,18 +452,24 @@ END $EF$;
 COMMIT;
 
 -- ==== VoltStream: eski migratsiya tarixini yangi InitialMigration ga almashtirish ====
-DELETE FROM "__EFMigrationsHistory" WHERE "MigrationId" IN (
-    '20260902114838_AddCreatedByUserId','20260902120211_AddBranches','20260902120238_DropBranchIdDefaults',
-    '20260902121445_AddUserPermissions','20260902121652_AddProductWeight','20260902144250_AddAuditLogs','20260902144737_AddPrintJobs',
-    '20251229052754_InitialMigration','20251230125200_UpdateDeleteBehaviors');
-INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-SELECT '20260903213355_InitialMigration', '10.0.11'
-WHERE NOT EXISTS (SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260903213355_InitialMigration');
+-- ==== va mavjud ma'lumotni to'ldirish (eski DatabaseInitializer.dataMigrations) ====
+DO $UP$
+BEGIN
+    IF EXISTS (SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260903213355_InitialMigration') THEN
+        RETURN;
+    END IF;
 
--- ==== Mavjud ma'lumotni to'ldirish (eski DatabaseInitializer.dataMigrations) ====
-UPDATE "Users" SET "IsActive" = true;
-UPDATE "Users" SET "BranchId" = (SELECT MIN("Id") FROM "Branches") WHERE "Role" <> 0 AND "BranchId" IS NULL;
-UPDATE "Users" SET "Permissions" = ARRAY['sales.create','sales.view','sales.view_prices','sales.edit','supplies.create','supplies.view','supplies.edit','stock.view','payments.manage','customers.manage','reports.view','settings.currencies','settings.categories','settings.products','settings.customers','settings.branches','settings.users','settings.printer','settings.audit','print.request','print.agent','logs.view_own','branches.all']::text[] WHERE "Role" = 0 AND cardinality("Permissions") = 0;
-UPDATE "Users" SET "Permissions" = ARRAY['sales.create','sales.view','sales.view_prices','sales.edit','supplies.create','supplies.view','supplies.edit','stock.view','payments.manage','customers.manage','reports.view','print.request','logs.view_own']::text[] WHERE "Role" = 1 AND cardinality("Permissions") = 0;
-UPDATE "Users" SET "Permissions" = ARRAY['sales.view','sales.view_prices','payments.manage','customers.manage','stock.view','reports.view','print.request']::text[] WHERE "Role" = 2 AND cardinality("Permissions") = 0;
-UPDATE "Users" SET "Permissions" = ARRAY['sales.create','sales.view','supplies.create','supplies.view','stock.view','customers.manage','print.request']::text[] WHERE "Role" = 3 AND cardinality("Permissions") = 0;
+    DELETE FROM "__EFMigrationsHistory" WHERE "MigrationId" IN (
+        '20260902114838_AddCreatedByUserId','20260902120211_AddBranches','20260902120238_DropBranchIdDefaults',
+        '20260902121445_AddUserPermissions','20260902121652_AddProductWeight','20260902144250_AddAuditLogs','20260902144737_AddPrintJobs',
+        '20251229052754_InitialMigration','20251230125200_UpdateDeleteBehaviors');
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20260903213355_InitialMigration', '10.0.11');
+
+    UPDATE "Users" SET "IsActive" = true;
+    UPDATE "Users" SET "BranchId" = (SELECT MIN("Id") FROM "Branches") WHERE "Role" <> 0 AND "BranchId" IS NULL;
+    UPDATE "Users" SET "Permissions" = ARRAY['sales.create','sales.view','sales.view_prices','sales.edit','supplies.create','supplies.view','supplies.edit','stock.view','payments.manage','customers.manage','reports.view','settings.currencies','settings.categories','settings.products','settings.customers','settings.branches','settings.users','settings.printer','settings.audit','print.request','print.agent','logs.view_own','branches.all']::text[] WHERE "Role" = 0 AND cardinality("Permissions") = 0;
+    UPDATE "Users" SET "Permissions" = ARRAY['sales.create','sales.view','sales.view_prices','sales.edit','supplies.create','supplies.view','supplies.edit','stock.view','payments.manage','customers.manage','reports.view','print.request','logs.view_own']::text[] WHERE "Role" = 1 AND cardinality("Permissions") = 0;
+    UPDATE "Users" SET "Permissions" = ARRAY['sales.view','sales.view_prices','payments.manage','customers.manage','stock.view','reports.view','print.request']::text[] WHERE "Role" = 2 AND cardinality("Permissions") = 0;
+    UPDATE "Users" SET "Permissions" = ARRAY['sales.create','sales.view','supplies.create','supplies.view','stock.view','customers.manage','print.request']::text[] WHERE "Role" = 3 AND cardinality("Permissions") = 0;
+END $UP$;

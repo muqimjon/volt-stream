@@ -56,21 +56,34 @@ keladi, shuning uchun EF uni o'zi ko'tara olmaydi — buning uchun tayyor skript
 (idempotent: sxemani yangilaydi, migratsiya tarixini `InitialMigration` ga almashtiradi, mavjud
 foydalanuvchilarni faollashtiradi, default filialga biriktiradi, roliga qarab ruxsat beradi). **Avval nusxa oling.**
 
-```bash
-# eski serverda
-pg_dump -U postgres -d voltstream -Fc -f voltstream.dump
+`api` ni skriptdan OLDIN ko'tarmang: EF butun `CREATE TABLE` skriptini qaytadan bajarishga urinib
+`relation "AllowedClients" already exists` bilan yiqiladi. Ma'lumot yo'qolmaydi (tranzaksiya qaytariladi),
+lekin `/api/health` 200 qaytarib turib login 503 bo'lib qoladi — server tirik ko'rinadi, hech kim kira olmaydi.
+
+```powershell
+# eski serverda: dump konteyner ichida yaratilib, keyin ko'chiriladi
+#   (PowerShell `>` ikkilik oqimni buzadi, shuning uchun -f va docker cp)
+docker exec <db-konteyner> pg_dump -U postgres -d voltstream -Fc -f /tmp/voltstream.dump
+docker cp <db-konteyner>:/tmp/voltstream.dump .\voltstream.dump
 
 # yangi serverda: dump va skriptni ./backups ga qo'ying (u konteynerga ulangan)
-cp docs/upgrade-from-v1.sql backups/
+copy docs\upgrade-from-v1.sql backups\
+copy voltstream.dump backups\
 docker compose up -d db
-docker compose exec db pg_restore -U $POSTGRES_USER -d $POSTGRES_DB --clean --if-exists /backups/voltstream.dump
-docker compose exec db psql -U $POSTGRES_USER -d $POSTGRES_DB -v ON_ERROR_STOP=1 -f /backups/upgrade-from-v1.sql
+docker compose exec db pg_restore -U postgres -d voltstream --clean --if-exists /backups/voltstream.dump
+docker compose exec db psql -U postgres -d voltstream -v ON_ERROR_STOP=1 -f /backups/upgrade-from-v1.sql
 docker compose up -d api
 ```
 
-Skript ichida "transaction in progress" ogohlantirishlari chiqishi normal. Tekshirish: `api` logida
-"No migrations were applied" bo'lishi, `admin` login qilishi, eski mijozlar/savdolar joyida turishi kerak.
-Bu tartib bazaning nusxasida mashq qilingan: mavjud yozuvlar saqlanadi, birorta qator o'chmaydi.
+`-U postgres -d voltstream` `.env` dagi `POSTGRES_USER`/`POSTGRES_DB` bilan bir xil bo'lishi shart.
+Dump obyektlari `postgres` egaligida, shuning uchun `POSTGRES_USER` boshqa nom bo'lsa restore
+`role "postgres" does not exist` bilan to'xtaydi. Dump `-Fc` siz oddiy `.sql` bo'lsa `pg_restore` emas,
+`psql -f` ishlatiladi.
+
+Skript ichida "transaction in progress" ogohlantirishlari chiqishi normal. Tekshirish: `api` logida xato
+bo'lmasligi, `admin` login qilishi (503 emas), eski mijozlar/savdolar joyida turishi kerak.
+Bu tartib productionning 2026-09-14 nusxasida mashq qilingan: 2995 savdo va 13838 qator saqlandi,
+natijaviy sxema EF ning toza sxemasi bilan bir xil chiqdi.
 
 ## 5. Tunnel
 
