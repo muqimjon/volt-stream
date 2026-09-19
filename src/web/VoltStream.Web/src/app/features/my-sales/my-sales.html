@@ -82,12 +82,32 @@
                   @if (receiptLoadingId() === sale.id) {
                     {{ 'Common.Loading' | t }}
                   } @else if (receiptOf(sale.id); as receipt) {
+                    <div class="view-toggle">
+                      <button
+                        type="button"
+                        [class.active]="receiptView() === 'compact'"
+                        (click)="setReceiptView('compact')"
+                      >
+                        {{ 'Web.ReceiptCompact' | t }}
+                      </button>
+                      <button
+                        type="button"
+                        [class.active]="receiptView() === 'detailed'"
+                        (click)="setReceiptView('detailed')"
+                      >
+                        {{ 'Web.ReceiptDetailed' | t }}
+                      </button>
+                    </div>
                     <ul class="composition">
                       @for (item of receipt.items; track $index) {
-                        <li>
-                          {{ item.category }} {{ item.product }} — {{ fmt(item.totalLength) }}
-                          {{ item.unit }} = {{ item.composition }}
-                        </li>
+                        @if (receiptView() === 'compact') {
+                          <li>{{ item.category }} {{ item.product }} — {{ stockInfo(item) }}</li>
+                        } @else {
+                          <li class="detailed-item">
+                            <span class="item-name">{{ item.category }} {{ item.product }}</span>
+                            <span class="item-rolls">{{ rollsBreakdown(item) }}</span>
+                          </li>
+                        }
                       }
                     </ul>
                   }
@@ -155,12 +175,32 @@
           @if (receiptLoadingId() === sale.id) {
             <p class="muted composition-loading">{{ 'Common.Loading' | t }}</p>
           } @else if (receiptOf(sale.id); as receipt) {
+            <div class="view-toggle">
+              <button
+                type="button"
+                [class.active]="receiptView() === 'compact'"
+                (click)="setReceiptView('compact')"
+              >
+                {{ 'Web.ReceiptCompact' | t }}
+              </button>
+              <button
+                type="button"
+                [class.active]="receiptView() === 'detailed'"
+                (click)="setReceiptView('detailed')"
+              >
+                {{ 'Web.ReceiptDetailed' | t }}
+              </button>
+            </div>
             <ul class="composition">
               @for (item of receipt.items; track $index) {
-                <li>
-                  {{ item.category }} {{ item.product }} — {{ fmt(item.totalLength) }}
-                  {{ item.unit }} = {{ item.composition }}
-                </li>
+                @if (receiptView() === 'compact') {
+                  <li>{{ item.category }} {{ item.product }} — {{ stockInfo(item) }}</li>
+                } @else {
+                  <li class="detailed-item">
+                    <span class="item-name">{{ item.category }} {{ item.product }}</span>
+                    <span class="item-rolls">{{ rollsBreakdown(item) }}</span>
+                  </li>
+                }
               }
             </ul>
           }

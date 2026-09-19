@@ -266,6 +266,8 @@
   "Web.PrintRejected": "Rejected",
   "Web.PrintRequested": "Print request sent",
   "Web.Profile": "Profile",
+  "Web.ReceiptCompact": "Compact",
+  "Web.ReceiptDetailed": "Detailed",
   "Web.ReceivedLength": "Meters received",
   "Web.ReceivedRolls": "Rolls received",
   "Web.ReceivedWeight": "Weight received",

@@ -266,6 +266,8 @@
   "Web.PrintRejected": "Отклонено",
   "Web.PrintRequested": "Запрос на печать отправлен",
   "Web.Profile": "Профиль",
+  "Web.ReceiptCompact": "Сводно",
+  "Web.ReceiptDetailed": "Развёрнуто",
   "Web.ReceivedLength": "Принято метров",
   "Web.ReceivedRolls": "Принято бухт",
   "Web.ReceivedWeight": "Принято кг",

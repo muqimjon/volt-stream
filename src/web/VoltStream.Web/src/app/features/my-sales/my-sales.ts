@@ -2,8 +2,8 @@ import { Component, DestroyRef, computed, effect, inject, signal, untracked } fr
 import { ApiClient } from '../../core/api/api-client';
 import { AuthService } from '../../core/auth/auth';
 import { BranchStore } from '../../core/branches';
-import { TranslatePipe } from '../../core/i18n/translate';
-import { PrintJobStatus, SaleListItem, SaleReceipt } from '../../core/models';
+import { TranslatePipe, TranslateService } from '../../core/i18n/translate';
+import { PrintJobStatus, SaleListItem, SaleReceipt, SaleReceiptItem } from '../../core/models';
 import { HasPermissionDirective, PermissionService } from '../../core/permissions/permission';
 import { PwaService } from '../../core/pwa/pwa';
 import { PrintService } from '../../core/realtime/print';
@@ -19,9 +19,20 @@ import { StatusBadge } from '../../shared/status-badge';
 
 const REFRESH_MS = 30000;
 const PAGE_SIZE = 20;
+const RECEIPT_VIEW_KEY = 'vs.receiptView';
+
+type ReceiptView = 'compact' | 'detailed';
 
 function weightOf(sale: SaleListItem): number {
   return (sale.items ?? []).reduce((sum, i) => sum + (i.weight ?? 0), 0);
+}
+
+function readReceiptView(): ReceiptView {
+  try {
+    return localStorage.getItem(RECEIPT_VIEW_KEY) === 'detailed' ? 'detailed' : 'compact';
+  } catch {
+    return 'compact';
+  }
 }
 
 @Component({
@@ -41,6 +52,7 @@ function weightOf(sale: SaleListItem): number {
 export class MySalesPage {
   private readonly api = inject(ApiClient);
   private readonly hub = inject(PrintHubService);
+  private readonly translate = inject(TranslateService);
   protected readonly auth = inject(AuthService);
   protected readonly branches = inject(BranchStore);
   private readonly permissions = inject(PermissionService);
@@ -76,6 +88,7 @@ export class MySalesPage {
 
   protected readonly expandedId = signal<number | null>(null);
   protected readonly receiptLoadingId = signal<number | null>(null);
+  protected readonly receiptView = signal<ReceiptView>(readReceiptView());
   private readonly receiptById = signal<Record<number, SaleReceipt>>({});
 
   constructor() {
@@ -157,5 +170,24 @@ export class MySalesPage {
     } finally {
       this.receiptLoadingId.set(null);
     }
+  }
+
+  protected setReceiptView(view: ReceiptView): void {
+    this.receiptView.set(view);
+    try {
+      localStorage.setItem(RECEIPT_VIEW_KEY, view);
+    } catch {}
+  }
+
+  protected stockInfo(item: SaleReceiptItem): string {
+    return this.translate.t('Web.StockInfo', this.fmt(item.rollCount, 0), this.fmt(item.totalLength));
+  }
+
+  protected rollsBreakdown(item: SaleReceiptItem): string {
+    const rolls = item.rolls ?? [];
+    const total = `${this.fmt(item.totalLength)} ${item.unit}`;
+    if (!rolls.length) return total;
+    const parts = rolls.map((r) => `${this.fmt(r.count, 0)} × ${this.fmt(r.length)}`);
+    return `${parts.join(' + ')} = ${total}`;
   }
 }

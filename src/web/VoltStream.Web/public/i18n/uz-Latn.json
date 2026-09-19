@@ -266,6 +266,8 @@
   "Web.PrintRejected": "Rad etildi",
   "Web.PrintRequested": "Chop etish so'rovi yuborildi",
   "Web.Profile": "Profil",
+  "Web.ReceiptCompact": "Yig'ma",
+  "Web.ReceiptDetailed": "Yoyma",
   "Web.ReceivedLength": "Qabul qilingan metr",
   "Web.ReceivedRolls": "Qabul qilingan to'plam",
   "Web.ReceivedWeight": "Qabul qilingan kg",

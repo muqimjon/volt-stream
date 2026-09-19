@@ -113,6 +113,11 @@ export interface PrintJob {
   createdAt?: string;
 }
 
+export interface RollGroup {
+  length: number;
+  count: number;
+}
+
 export interface SaleReceiptItem {
   category: string;
   product: string;
@@ -120,6 +125,7 @@ export interface SaleReceiptItem {
   rollCount: number;
   totalLength: number;
   composition: string;
+  rolls?: RollGroup[];
   unit: string;
   weight: number;
   weightPerUnit?: number | null;
