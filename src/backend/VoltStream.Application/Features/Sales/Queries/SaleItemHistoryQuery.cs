@@ -42,7 +42,7 @@ public class SaleItemHistoryQueryHandler(IAppDbContext context, BranchContext br
         if (request.CategoryId is not null) query = query.Where(i => i.Product.CategoryId == request.CategoryId);
         if (request.ProductId is not null) query = query.Where(i => i.ProductId == request.ProductId);
 
-        query = query.OrderByDescending(i => i.Sale.Date);
+        query = query.OrderByDescending(i => i.Sale.Date).ThenByDescending(i => i.Id);
 
         var projected = query.Select(i => new SaleItemHistoryDto
         {

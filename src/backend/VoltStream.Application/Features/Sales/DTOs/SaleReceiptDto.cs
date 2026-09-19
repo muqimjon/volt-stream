@@ -16,6 +16,8 @@ public record SaleReceiptDto
     public decimal? Discount { get; set; }
 }
 
+public record RollGroupDto(decimal Length, int Count);
+
 public record SaleReceiptItemDto
 {
     public string Category { get; set; } = string.Empty;
@@ -24,6 +26,7 @@ public record SaleReceiptItemDto
     public int RollCount { get; set; }
     public decimal TotalLength { get; set; }
     public string Composition { get; set; } = string.Empty;
+    public IReadOnlyList<RollGroupDto> Rolls { get; set; } = [];
     public string Unit { get; set; } = string.Empty;
     public decimal Weight { get; set; }
     public decimal? WeightPerUnit { get; set; }

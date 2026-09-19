@@ -68,6 +68,7 @@ public class GetDashboardQueryHandler(IAppDbContext context, BranchContext branc
             .GroupBy(s => s.CustomerId)
             .Select(g => new { CustomerId = g.Key, Amount = g.Sum(s => s.Amount) })
             .OrderByDescending(x => x.Amount)
+            .ThenBy(x => x.CustomerId)
             .Take(5)
             .ToListAsync(cancellationToken);
 
@@ -91,6 +92,7 @@ public class GetDashboardQueryHandler(IAppDbContext context, BranchContext branc
             .GroupBy(si => si.ProductId)
             .Select(g => new { ProductId = g.Key, Length = g.Sum(si => si.TotalLength) })
             .OrderByDescending(x => x.Length)
+            .ThenBy(x => x.ProductId)
             .Take(5)
             .ToListAsync(cancellationToken);
 

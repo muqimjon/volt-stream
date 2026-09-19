@@ -13,7 +13,12 @@ public static class SortingExtensions
         var prop = typeof(T).GetProperties()
             .FirstOrDefault(p => string.Equals(p.Name, sortBy, StringComparison.OrdinalIgnoreCase));
         if (prop is null || QueryExtensions.IsBlocked(prop.Name) || !IsSortable(prop.PropertyType))
-            return query;
+        {
+            if (typeof(T).GetProperty("Id") is null)
+                return query;
+
+            sortBy = "Id";
+        }
 
         return request.Descending
             ? query.OrderByDescendingDynamic(sortBy)

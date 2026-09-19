@@ -26,6 +26,7 @@ public class CustomerBalanceQueryHandler(
     {
         var projected = context.Customers
             .Where(c => customerId == null || c.Id == customerId)
+            .OrderBy(c => c.Id)
             .Select(c => new
             {
                 c.Name,

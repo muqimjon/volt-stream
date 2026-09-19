@@ -24,7 +24,7 @@ public class CustomerBalanceSummaryQueryHandler(
     {
         var projected = CustomerBalanceQueryHandler.Project(context, request.CustomerId, request.Sign, request.Amount, request.Type);
 
-        var summary = await projected
+        var rows = await projected
             .GroupBy(_ => 1)
             .Select(g => new CustomerBalanceSummaryDto
             {
@@ -32,8 +32,8 @@ public class CustomerBalanceSummaryQueryHandler(
                 Debitor = g.Sum(x => (decimal?)x.Debitor) ?? 0,
                 Creditor = g.Sum(x => (decimal?)x.Creditor) ?? 0
             })
-            .FirstOrDefaultAsync(cancellationToken);
+            .ToListAsync(cancellationToken);
 
-        return summary ?? new CustomerBalanceSummaryDto();
+        return rows.FirstOrDefault() ?? new CustomerBalanceSummaryDto();
     }
 }

@@ -54,6 +54,8 @@ public class GetSaleReceiptQueryHandler(IAppDbContext context, ICurrentUser user
                 var product = group.First().Product;
                 var lengths = group.Select(item => item.LengthPerRoll).Distinct().ToList();
                 var prices = group.Select(item => item.UnitPrice).Distinct().ToList();
+                var rolls = RollComposition.Merge(
+                    group.SelectMany(item => RollComposition.Of(item.RollCount, item.LengthPerRoll, item.TotalLength)));
                 return new SaleReceiptItemDto
                 {
                     Category = product.Category?.Name ?? string.Empty,
@@ -61,8 +63,8 @@ public class GetSaleReceiptQueryHandler(IAppDbContext context, ICurrentUser user
                     LengthPerRoll = lengths.Count == 1 ? lengths[0] : 0,
                     RollCount = group.Sum(item => item.RollCount),
                     TotalLength = group.Sum(item => item.TotalLength),
-                    Composition = RollComposition.Format(RollComposition.Merge(
-                        group.SelectMany(item => RollComposition.Of(item.RollCount, item.LengthPerRoll, item.TotalLength)))),
+                    Composition = RollComposition.Format(rolls),
+                    Rolls = [.. rolls.Select(roll => new RollGroupDto(roll.Length, roll.Count))],
                     Unit = product.Unit,
                     Weight = group.Sum(item => item.Weight),
                     WeightPerUnit = product.IsWeightTracked ? product.WeightPerUnit : null,
