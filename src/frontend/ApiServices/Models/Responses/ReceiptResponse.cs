@@ -1,5 +1,11 @@
 namespace ApiServices.Models.Responses;
 
+public record RollGroup
+{
+    public decimal Length { get; set; }
+    public int Count { get; set; }
+}
+
 public record ReceiptItemResponse
 {
     public string? Category { get; set; }
@@ -8,6 +14,7 @@ public record ReceiptItemResponse
     public int RollCount { get; set; }
     public decimal TotalLength { get; set; }
     public string? Composition { get; set; }
+    public List<RollGroup> Rolls { get; set; } = [];
     public string? Unit { get; set; }
     public decimal Weight { get; set; }
     public decimal? WeightPerUnit { get; set; }

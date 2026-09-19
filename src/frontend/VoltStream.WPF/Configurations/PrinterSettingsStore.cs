@@ -2,6 +2,8 @@ namespace VoltStream.WPF.Configurations;
 
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.ViewModels;
 
 public class PrinterSettingsStore
@@ -10,10 +12,11 @@ public class PrinterSettingsStore
     private readonly JsonSerializerOptions jsonOptions = new()
     {
         WriteIndented = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters = { new JsonStringEnumConverter() }
     };
 
-    private sealed record PrinterSettingsDto(bool Enabled, string? PrinterName, int Copies, string Paper, int Priority = 1, long? BranchId = null, string? BranchName = null);
+    private sealed record PrinterSettingsDto(bool Enabled, string? PrinterName, int Copies, string Paper, ReceiptLayout Layout = ReceiptLayout.Expanded, int Priority = 1, long? BranchId = null, string? BranchName = null);
 
     public PrinterSettings Load()
     {
@@ -32,6 +35,7 @@ public class PrinterSettingsStore
                 PrinterName = dto.PrinterName,
                 Copies = dto.Copies < 1 ? 1 : dto.Copies,
                 Paper = string.IsNullOrWhiteSpace(dto.Paper) ? "A4" : dto.Paper,
+                Layout = dto.Layout,
                 Priority = dto.Priority < 1 ? 1 : Math.Min(dto.Priority, 5),
                 BranchId = dto.BranchId,
                 BranchName = dto.BranchName
@@ -47,7 +51,7 @@ public class PrinterSettingsStore
     {
         try
         {
-            var dto = new PrinterSettingsDto(model.Enabled, model.PrinterName, model.Copies, model.Paper, model.Priority, model.BranchId, model.BranchName);
+            var dto = new PrinterSettingsDto(model.Enabled, model.PrinterName, model.Copies, model.Paper, model.Layout, model.Priority, model.BranchId, model.BranchName);
             Directory.CreateDirectory(Path.GetDirectoryName(ConfigPath)!);
             File.WriteAllText(ConfigPath, JsonSerializer.Serialize(dto, jsonOptions));
         }

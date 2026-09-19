@@ -142,7 +142,7 @@ public partial class PrintAgentService(
         {
             var sample = SampleReceipt();
             await Application.Current.Dispatcher.InvokeAsync(() => PrintService.Print(
-                ReceiptDocumentBuilder.Build(sample, ReceiptMode.Weight, settings.Paper),
+                ReceiptDocumentBuilder.Build(sample, ReceiptMode.Weight, settings.Layout, settings.Paper),
                 settings.PrinterName!,
                 Math.Max(1, settings.Copies),
                 ReceiptDocumentBuilder.Title(sample),
@@ -216,7 +216,7 @@ public partial class PrintAgentService(
             if (!receipt.IsSuccess)
                 throw new InvalidOperationException(receipt.Message ?? TranslationSource.T("Receipt.LoadError"));
 
-            await PrintAsync(receipt.Data, printer, Math.Max(1, settings.Copies) * Math.Max(1, claimed.Copies), settings.Paper);
+            await PrintAsync(receipt.Data, printer, Math.Max(1, settings.Copies) * Math.Max(1, claimed.Copies), settings.Layout, settings.Paper);
 
             if ((await printJobs.CompleteAsync(claimed.Id).Handle()).StatusCode == 409)
             {
@@ -254,10 +254,10 @@ public partial class PrintAgentService(
         return TimeSpan.FromMilliseconds(ms);
     }
 
-    private static async Task PrintAsync(ReceiptResponse receipt, string printer, int copies, string paper)
+    private static async Task PrintAsync(ReceiptResponse receipt, string printer, int copies, ReceiptLayout layout, string paper)
     {
         var operation = Application.Current.Dispatcher.InvokeAsync(() => PrintService.Print(
-            ReceiptDocumentBuilder.Build(receipt, ReceiptMode.Weight, paper),
+            ReceiptDocumentBuilder.Build(receipt, ReceiptMode.Weight, layout, paper),
             printer,
             copies,
             ReceiptDocumentBuilder.Title(receipt),
@@ -300,7 +300,11 @@ public partial class PrintAgentService(
         Operator = TranslationSource.T("Printer.TestPrint"),
         Items =
         [
-            new() { Category = "VVG", Product = "3x2.5", LengthPerRoll = 100, RollCount = 2, TotalLength = 200, Unit = "m", Weight = 25 }
+            new()
+            {
+                Category = "VVG", Product = "3x2.5", LengthPerRoll = 100, RollCount = 2, TotalLength = 200, Unit = "m", Weight = 25,
+                Composition = "2 × 100", Rolls = [new() { Length = 100, Count = 2 }]
+            }
         ],
         TotalRolls = 2,
         TotalLength = 200,

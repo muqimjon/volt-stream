@@ -11,6 +11,35 @@
     d:DesignWidth="900"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <Style x:Key="Segment" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+            <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="18,5" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd" Background="Transparent"
+                                CornerRadius="{DynamicResource RadiusSm}" Padding="{TemplateBinding Padding}">
+                            <TextBlock x:Name="txt" Text="{TemplateBinding Content}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextSecondary}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Brand}" />
+                                <Setter TargetName="txt" Property="Foreground" Value="{DynamicResource OnBrand}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Margin="20" Background="{DynamicResource Canvas}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="360" />
@@ -119,6 +148,29 @@
                     ItemsSource="{Binding PaperOptions}"
                     SelectedItem="{Binding Settings.Paper}"
                     Style="{StaticResource ModernCombo}" />
+
+                <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Printer.Layout}" />
+                <Border
+                    Margin="0,0,0,15"
+                    HorizontalAlignment="Left"
+                    Background="{DynamicResource SurfaceAlt}"
+                    BorderBrush="{DynamicResource Border}"
+                    BorderThickness="1"
+                    CornerRadius="{DynamicResource RadiusMd}"
+                    Padding="3">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton
+                            Content="{loc:Loc Receipt.LayoutCompact}"
+                            GroupName="ReceiptLayout"
+                            IsChecked="{Binding Settings.Layout, Converter={StaticResource EnumToBoolean}, ConverterParameter=Compact}"
+                            Style="{StaticResource Segment}" />
+                        <RadioButton
+                            Content="{loc:Loc Receipt.LayoutExpanded}"
+                            GroupName="ReceiptLayout"
+                            IsChecked="{Binding Settings.Layout, Converter={StaticResource EnumToBoolean}, ConverterParameter=Expanded}"
+                            Style="{StaticResource Segment}" />
+                    </StackPanel>
+                </Border>
 
                 <TextBlock
                     Style="{StaticResource FieldLabel}"

@@ -72,6 +72,31 @@ public static class ReportService
     private static readonly Brush RowLine = Freeze(new SolidColorBrush(Color.FromRgb(0x9C, 0xA3, 0xAF)));
     private static readonly Brush Zebra = Freeze(new SolidColorBrush(Color.FromRgb(0xF9, 0xFA, 0xFB)));
 
+    private static readonly Style SegmentStyle = (Style)XamlReader.Parse("""
+        <Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="RadioButton">
+          <Setter Property="FontWeight" Value="SemiBold" />
+          <Setter Property="Cursor" Value="Hand" />
+          <Setter Property="Padding" Value="14,5" />
+          <Setter Property="Template">
+            <Setter.Value>
+              <ControlTemplate TargetType="RadioButton">
+                <Border x:Name="Bd" Background="Transparent" CornerRadius="{DynamicResource RadiusSm}" Padding="{TemplateBinding Padding}">
+                  <TextBlock x:Name="txt" Text="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                             FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}" />
+                </Border>
+                <ControlTemplate.Triggers>
+                  <Trigger Property="IsChecked" Value="True">
+                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Brand}" />
+                    <Setter TargetName="txt" Property="Foreground" Value="{DynamicResource OnBrand}" />
+                  </Trigger>
+                </ControlTemplate.Triggers>
+              </ControlTemplate>
+            </Setter.Value>
+          </Setter>
+        </Style>
+        """);
+
     public static Size PaperSize(string paper) => paper == "A5" ? A5 : A4;
 
     public static double ContentWidth(Size page) => page.Width - 2 * Margin;
@@ -102,7 +127,7 @@ public static class ReportService
         FixedDocument doc,
         string fileName,
         string title,
-        IReadOnlyList<(string Label, Func<FixedDocument> Build)>? variants = null,
+        IReadOnlyList<IReadOnlyList<(string Label, Func<FixedDocument> Build, bool IsDefault)>>? toggleGroups = null,
         IReadOnlyList<(string Label, Func<Button, Task> Run)>? actions = null)
     {
         var viewer = new DocumentViewer { Document = doc, Margin = new Thickness(8) };
@@ -148,30 +173,38 @@ public static class ReportService
 
         var toolbar = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(10, 8, 10, 8) };
 
-        if (variants is { Count: > 1 })
+        foreach (var group in toggleGroups ?? [])
         {
+            if (group.Count < 2)
+                continue;
+
+            var pill = new StackPanel { Orientation = Orientation.Horizontal };
             var groupName = Guid.NewGuid().ToString("N");
-            for (int i = 0; i < variants.Count; i++)
+            for (int i = 0; i < group.Count; i++)
             {
-                var build = variants[i].Build;
+                var build = group[i].Build;
                 var radio = new RadioButton
                 {
-                    Content = variants[i].Label,
+                    Content = group[i].Label,
                     GroupName = groupName,
-                    IsChecked = i == 0,
-                    Margin = new Thickness(0, 0, 14, 0),
-                    VerticalAlignment = VerticalAlignment.Center,
-                    FontWeight = FontWeights.SemiBold
+                    IsChecked = group[i].IsDefault,
+                    Style = SegmentStyle
                 };
-                radio.SetResourceReference(Control.ForegroundProperty, "TextPrimary");
                 radio.Checked += (_, _) =>
                 {
                     current = build();
                     viewer.Document = current;
                     savedPath = null;
                 };
-                toolbar.Children.Add(radio);
+                pill.Children.Add(radio);
             }
+
+            var pillBorder = new Border { Padding = new Thickness(3), Margin = new Thickness(0, 0, 10, 0), Child = pill };
+            pillBorder.SetResourceReference(Border.BackgroundProperty, "SurfaceAlt");
+            pillBorder.SetResourceReference(Border.BorderBrushProperty, "Border");
+            pillBorder.SetResourceReference(Border.CornerRadiusProperty, "RadiusMd");
+            pillBorder.BorderThickness = new Thickness(1);
+            toolbar.Children.Add(pillBorder);
         }
 
         foreach (var (label, run) in actions ?? [])
@@ -354,6 +387,14 @@ public static class ReportService
         doc.DocumentPaginator.PageSize = def.PageSize;
 
         var widths = def.Columns.Select(c => c.Width).ToArray();
+        double contentWidth = ContentWidth(def.PageSize);
+        double widthSum = widths.Sum();
+        if (widthSum > contentWidth)
+        {
+            double scale = contentWidth / widthSum;
+            for (int i = 0; i < widths.Length; i++)
+                widths[i] *= scale;
+        }
         var headers = def.Columns.Select(c => c.Header).ToArray();
         double headerHeight = MeasureRow(headers, widths, true);
         var rows = def.Rows.Select(r => RowText(def, r)).ToList();
