@@ -21,6 +21,7 @@ RUN dotnet publish src/backend/VoltStream.WebApi/VoltStream.WebApi.csproj \
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 RUN apt-get update && apt-get install -y --no-install-recommends curl tzdata \
     && rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /home/app/.aspnet/DataProtection-Keys && chown -R $APP_UID:$APP_UID /home/app/.aspnet
 WORKDIR /app
 COPY --from=build /app/publish .
 COPY --from=web /src/src/backend/VoltStream.WebApi/wwwroot ./wwwroot
