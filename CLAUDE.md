@@ -89,7 +89,8 @@ Versiya yagona manbadan: `Directory.Build.props` dagi `<Version>`. `set-version.
 
 ## Klient ↔ server ulanishi
 
-- Server manzili QO'LDA kiritiladi (host/port/https) va `config/api-connection.json` ga saqlanadi (`ApiConnectionStore`, faqat `Url`). Avto-kashf (discovery/broadcast/skan) va fon qayta-ulanish YO'Q.
+- Server manzili QO'LDA kiritiladi (host/port/https) va `%APPDATA%\Ovoza\VoltStream\connection.json` ga saqlanadi (`ApiConnectionStore`, faqat `Url`); eslab qolingan login/parol — `login.dat` (`CredentialStore`). Avto-kashf (discovery/broadcast/skan) va fon qayta-ulanish YO'Q.
+- Bu ikki fayl ESKI desktop versiyaning `api-connection.json` / `credentials.dat` fayllaridan ATAYLAB alohida: mijoz kompyuterida eski va yangi ilova yonma-yon ishlaydi, umumiy nom bo'lsa biri ikkinchisining server manzili va loginini almashtirib yuborardi. Nomni eskisiga qaytarma. Formati bir xil zararsiz fayllar (`language.json`, `app-settings.json`, `namoz_times.json`) umumiy qoladi.
 - WPF ishga tushganda login oynasini ko'rsatadi. Saqlangan URL bir marta tekshiriladi (`ServerHealth.IsAliveAsync` → `/api/health`); tirik bo'lsa va USB kalit/eslab qolingan parol bo'lsa avto-login.
 - Login bosilganda URL bir marta tekshiriladi; ulanmasa `ConnectionRecovery` ulanish sozlamalari oynasini ochadi — foydalanuvchi qo'lda tuzatib davom etadi.
 - Ish jarayonida biror API chaqiruvi serverga ulanolmasa (`AuthHeaderHandler`) o'sha sozlamalar oynasi ochiladi (bitta oyna, debounce).
