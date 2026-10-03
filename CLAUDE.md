@@ -95,6 +95,7 @@ Versiya yagona manbadan: `Directory.Build.props` dagi `<Version>`. `set-version.
 - Login bosilganda URL bir marta tekshiriladi; ulanmasa `ConnectionRecovery` ulanish sozlamalari oynasini ochadi — foydalanuvchi qo'lda tuzatib davom etadi.
 - Ish jarayonida biror API chaqiruvi serverga ulanolmasa (`AuthHeaderHandler`) o'sha sozlamalar oynasi ochiladi (bitta oyna, debounce).
 - Portlar: dev `7285` (https), `5123` (http); native production `5000`.
+- Internet: yagona manzil `https://volt-stream.muqimjon.uz` — Cloudflare named tunnel (`volt-stream-api`, mijoz serverida `cloudflared-volt-stream` xizmati) → API, web ham API'dan. Alohida web hosting (Cloudflare Pages) va alohida `api.` domeni ATAYLAB yo'q: web va API bitta image'da, versiya doim mos (sozlash — `docs/DEPLOY.md` §5).
 - `/api/health` `[AllowAnonymous]` — ulanish tekshiruvi shu endpointga tayanadi.
 - Avto-login: removable USB diskdagi `voltstream.key` (`DevKeyService`). Kalit bo'lmasa — qo'lda login.
 

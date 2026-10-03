@@ -85,14 +85,46 @@ bo'lmasligi, `admin` login qilishi (503 emas), eski mijozlar/savdolar joyida tur
 Bu tartib productionning 2026-09-14 nusxasida mashq qilingan: 2995 savdo va 13838 qator saqlandi,
 natijaviy sxema EF ning toza sxemasi bilan bir xil chiqdi.
 
-## 5. Tunnel
+## 5. Internet: bitta domen, Cloudflare Tunnel
+
+Hamma narsa bitta manzilda: `https://volt-stream.muqimjon.uz` → Cloudflare named tunnel → serverdagi API
+(`http://127.0.0.1:5000`). Web ham API'ning o'zidan beriladi (image ichida), shuning uchun alohida web
+hosting (Pages) va alohida `api.` domeni YO'Q — web va API doim bir xil versiya, alohida deploy qilinmaydi.
+Telefon zaxira manzili ham, filial kompyuterlari internet orqali ulansa ham shu manzil.
+
+Tunnel dasturchi kompyuterida yaratiladi (`cloudflared tunnel login` qilingan bo'lsin):
 
 ```bash
-cloudflared tunnel --url http://localhost:5000
+cloudflared tunnel create volt-stream-api
+cloudflared tunnel route dns --overwrite-dns volt-stream-api volt-stream.muqimjon.uz
 ```
 
-Doimiy tunnel uchun `cloudflared service install` bilan named tunnel qiling. WebSocket o'tadi —
-SignalR (chek chiqarish) shu orqali ishlaydi.
+Serverda (Windows, administrator) `config.yml` va `<tunnel-id>.json` `C:\ProgramData\cloudflared\volt-stream\`
+ga qo'yiladi (papka faqat SYSTEM va Administrators uchun; scp bilan yuklangandan keyin
+`icacls "C:\ProgramData\cloudflared\volt-stream\*" /reset` — aks holda fayl faqat yuklagan foydalanuvchiga
+ochiq qoladi va xizmat `Access is denied` bilan yiqiladi):
+
+```yaml
+tunnel: <tunnel-id>
+credentials-file: C:\ProgramData\cloudflared\volt-stream\<tunnel-id>.json
+ingress:
+  - hostname: volt-stream.muqimjon.uz
+    service: http://127.0.0.1:5000
+  - service: http_status:404
+```
+
+Xizmat `cloudflared-volt-stream` (avtomatik, kechiktirilgan start) `New-Service` bilan yaratiladi:
+`"C:\Program Files (x86)\cloudflared\cloudflared.exe" --config "C:\ProgramData\cloudflared\volt-stream\config.yml" --logfile "C:\ProgramData\cloudflared\volt-stream\cloudflared.log" tunnel run`.
+WebSocket o'tadi — SignalR (chek chiqarish) shu orqali ishlaydi.
+
+### SSH orqali boshqarish (Windows server)
+
+- Standart shell — Windows PowerShell 5.1: ikkilik chiqishni `>` buzadi (`cmd /c "... > fayl"` ishlating),
+  ichida qo'shtirnoq bor argumentlar native buyruqqa buzilib boradi — murakkab skriptni `-EncodedCommand` bilan yuboring.
+- SSH sessiyasida Docker'ning Windows Credential Manager yordamchisi ishlamaydi
+  (`A specified logon session does not exist`). Image tortish kerak bo'lsa vaqtinchalik `DOCKER_CONFIG`
+  papkasidagi `config.json` ga `{"auths":{"localhost:1":{}}}` yozing (bo'sh `auths` yetmaydi — CLI baribir wincred'ni tanlaydi).
+  Odatiy yangilashda tortish shart emas: image `docker load` bilan yuklanadi.
 
 ## 6. Filial kompyuterlari (WPF)
 
