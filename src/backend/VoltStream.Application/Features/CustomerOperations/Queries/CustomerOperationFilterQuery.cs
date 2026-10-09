@@ -21,7 +21,10 @@ public class CustomerOperationFilterQueryHandler(
     {
         user.Sanitize(request);
 
-        return user.ApplyToOperations(mapper.Map<IReadOnlyCollection<CustomerOperationDto>>(await context.CustomerOperations
-            .ToPagedListAsync(request, writer, cancellationToken)));
+        var operations = mapper.Map<IReadOnlyCollection<CustomerOperationDto>>(await context.CustomerOperations
+            .ToPagedListAsync(request, writer, cancellationToken));
+
+        await context.FillBalancesAsync(operations.Accounts(), cancellationToken);
+        return user.ApplyToOperations(operations);
     }
 }

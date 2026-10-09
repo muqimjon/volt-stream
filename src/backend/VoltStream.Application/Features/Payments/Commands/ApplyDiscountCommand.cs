@@ -95,10 +95,6 @@ public class ApplyDiscountCommandHandler(
                 };
                 context.Payments.Add(paymentOperation);
             }
-            else
-            {
-                account.Balance += request.DiscountAmount;
-            }
 
 
             await context.CommitTransactionAsync(cancellationToken);

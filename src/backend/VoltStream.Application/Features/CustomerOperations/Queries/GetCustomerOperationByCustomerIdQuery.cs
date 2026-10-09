@@ -2,6 +2,7 @@
 
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Security;
@@ -75,6 +76,7 @@ public class GetCustomerOperationByCustomerIdQueryHandler(
             .ToListAsync(cancellationToken);
 
         var operationDtos = _mapper.Map<IReadOnlyCollection<CustomerOperationDto>>(operations);
+        await _context.FillBalancesAsync(operationDtos.Accounts(), cancellationToken);
 
         return user.Apply(new CustomerOperationSummaryDto
         {

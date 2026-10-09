@@ -2,6 +2,7 @@
 
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Mediator;
@@ -24,6 +25,8 @@ public class GetCustomerByIdQueryHandler(
             .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(Customer), nameof(request.Id), request.Id);
 
-        return user.Apply(mapper.Map<CustomerDto>(customer));
+        var dto = mapper.Map<CustomerDto>(customer);
+        await context.FillBalancesAsync(dto.Accounts ?? [], cancellationToken);
+        return user.Apply(dto);
     }
 }

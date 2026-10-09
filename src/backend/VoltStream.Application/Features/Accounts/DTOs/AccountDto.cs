@@ -5,8 +5,10 @@ using VoltStream.Application.Features.Currencies.DTOs;
 public record AccountDto(
     long Id,
     decimal OpeningBalance,
-    decimal Balance,
     decimal Discount,
     long CustomerId,
     long CurrencyId,
-    CurrencyDto Currency);
+    CurrencyDto Currency)
+{
+    public decimal Balance { get; set; }
+}

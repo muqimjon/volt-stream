@@ -41,7 +41,7 @@ public class DeleteCustomerOperationCommandHandler(
             switch (customerOperation.OperationType)
             {
                 case OperationType.Payment:
-                    await RevertPaymentAsync(customerOperation, account, cancellationToken);
+                    await RevertPaymentAsync(customerOperation, cancellationToken);
                     if (customerOperation.Payment != null)
                         context.Payments.Remove(customerOperation.Payment);
                     break;
@@ -68,12 +68,10 @@ public class DeleteCustomerOperationCommandHandler(
         }
     }
 
-    private async Task RevertPaymentAsync(CustomerOperation co, Account account, CancellationToken cancellationToken)
+    private async Task RevertPaymentAsync(CustomerOperation co, CancellationToken cancellationToken)
     {
         var payment = co.Payment
             ?? throw new NotFoundException("Bog'langan to'lov yozuvi topilmadi.");
-
-        account.Balance -= co.Amount;
 
         if (payment.Currency.IsCash)
         {
@@ -89,8 +87,6 @@ public class DeleteCustomerOperationCommandHandler(
     {
         var sale = co.Sale
             ?? throw new NotFoundException("Bog'langan savdo yozuvi topilmadi.");
-
-        account.Balance += sale.Amount;
 
         if (!sale.IsDiscountApplied)
             account.Discount -= sale.Discount;
@@ -133,6 +129,5 @@ public class DeleteCustomerOperationCommandHandler(
     private async Task RevertDiscountAppliedAsync(CustomerOperation co, Account account, CancellationToken cancellationToken)
     {
         account.Discount += co.Amount;
-        account.Balance -= co.Amount;
     }
 }

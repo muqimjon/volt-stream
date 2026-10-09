@@ -31,6 +31,8 @@ Kabel zavodi uchun hisob-kitob (savdo, ta'minot, to'lovlar, debitor/kreditor, om
    src/frontend/VoltStream.WPF/bin/Debug/net10.0-windows/VoltStream.WPF.exe
    ```
 
+Testlar: `dotnet test tests/VoltStream.Application.Tests` (Docker kerak — haqiqiy `postgres:17-alpine` konteynerida migratsiyalar bilan). Buyruqlar real mediator va pipeline orqali yuboriladi; har test o'z `World` ini yaratadi (`db.NewWorld()`: 2 filial, 2 valyuta, xodimlar `Admin/Manager/Cashier/Seller/OtherSeller`). Pul o'zgarishlarini `LedgerAssert` bilan tekshir (Savdo sahifasi, hisobot va Kontragentlar qoldig'i teng). Pul, ombor yoki ruxsat mantiqiga tegsang — test qo'sh.
+
 WebApi seeding'dan OLDIN tinglay boshlaydi (migratsiya/seeding `DatabaseInitializer` da fonda). Shuning uchun klient va server bir vaqtda ishga tushsa ham klient muzlab qolmaydi.
 
 `Jwt:Secret` (kamida 32 belgi) MAJBURIY — yo'q bo'lsa server ishga tushmaydi. Dev qiymati `appsettings.Development.json` da (gitignored); production'da `appsettings.Production.json` (gitignored) yoki `Jwt__Secret` env. Kalit o'zgarsa barcha tokenlar bekor bo'ladi (WPF qayta login qiladi).
@@ -126,6 +128,7 @@ Bu yerdagi qoidalar "mantiqan g'alati" ko'rinishi mumkin, lekin BUYURTMACHI so'r
 - **Narxsiz kirim stock narxini buzmaydi.** `CreateSupplyCommand.UnitPrice` null bo'lsa mavjud stock narxi ustidan yozilmaydi (ilgari 0 yozib yuborardi).
 - **Bir savdoga bitta faol print job.** Pending/Printing job bo'lsa yangi so'rov 409 — qog'oz isrofini oldini olish uchun ataylab. `force` faqat ongli qayta chop etish uchun.
 - **Chekda narx yo'q (og'irlik + miqdor).** Mahsulot bir necha qo'ldan o'tadi, har qo'l o'z narxini qo'yadi — shuning uchun zavod cheki narxsiz. Desktopda faqat ruxsat bilan Pul rejimi.
+- **Mijoz qoldig'i saqlanmaydi — operatsiyalar tarixidan hisoblanadi.** Qoldiq = `OpeningBalance + Σ CustomerOperations.Amount` (`AccountBalanceExtensions.FillBalancesAsync` — `AccountDto.Balance` qaytaradigan har so'rovda; `CustomerBalanceQuery`; hisobot ham shu formula). `Account.Balance` ustunini qaytarma va `account.Balance +=` yozma: saqlangan kesh 2026-06 da bir hisobda 46 221 000 ga buzilib, Savdo sahifasi bilan Mijoz hisoboti farq qilgan. `Account.Discount` va `Cash.Balance` hozircha saqlanadi.
 - **Katalog umumiy, qoldiq filial bo'yicha.** `Product` filialga bog'lanmaydi; `WarehouseStock` filial omboriga bog'lanadi.
 
 ## Kod uslubi

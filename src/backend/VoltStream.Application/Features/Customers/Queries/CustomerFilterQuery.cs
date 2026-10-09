@@ -20,7 +20,10 @@ public class CustomerFilterQueryHandler(
     {
         user.SanitizeReports(request);
 
-        return user.ApplyToCustomers(mapper.Map<IReadOnlyCollection<CustomerDto>>(await context.Customers
-            .ToPagedListAsync(request, writer, cancellationToken)));
+        var customers = mapper.Map<IReadOnlyCollection<CustomerDto>>(await context.Customers
+            .ToPagedListAsync(request, writer, cancellationToken));
+
+        await context.FillBalancesAsync(customers.Accounts(), cancellationToken);
+        return user.ApplyToCustomers(customers);
     }
 }

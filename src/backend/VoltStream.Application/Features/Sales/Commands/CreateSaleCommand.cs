@@ -62,7 +62,7 @@ public class CreateSaleCommandHandler(
                         CurrencyId = request.CurrencyId
                     });
 
-                UpdateAccountBalance(account, sale.Amount, sale.Discount, request.IsDiscountApplied);
+                AccumulateDiscount(account, sale.Discount, request.IsDiscountApplied);
                 sale.CustomerOperation = CreateCustomerOperation(sale, account, request.Description, descriptionBuilder, request.IsDiscountApplied);
             }
 
@@ -197,9 +197,8 @@ public class CreateSaleCommandHandler(
         }
     }
 
-    private static void UpdateAccountBalance(Account account, decimal amount, decimal discount, bool isApplied)
+    private static void AccumulateDiscount(Account account, decimal discount, bool isApplied)
     {
-        account.Balance -= amount;
         if (!isApplied)
             account.Discount += discount;
     }

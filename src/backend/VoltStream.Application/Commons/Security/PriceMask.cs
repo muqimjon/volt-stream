@@ -2,6 +2,7 @@ namespace VoltStream.Application.Commons.Security;
 
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Models;
+using VoltStream.Application.Features.Accounts.DTOs;
 using VoltStream.Application.Features.Categories.DTOs;
 using VoltStream.Application.Features.CustomerOperations.DTOs;
 using VoltStream.Application.Features.Customers.DTOs;
@@ -234,6 +235,15 @@ public static class PriceMask
         operation.Amount = 0;
         operation.Description = string.Empty;
 
+        if (operation.Account is not null)
+            operation.Account = Hide(operation.Account);
+
+        if (operation.Sale?.Customer?.Accounts is { } saleAccounts)
+            operation.Sale.Customer.Accounts = [.. saleAccounts.Select(Hide)];
+
+        if (operation.Payment?.Customer?.Accounts is { } paymentAccounts)
+            operation.Payment.Customer.Accounts = [.. paymentAccounts.Select(Hide)];
+
         if (operation.Sale is not null)
         {
             operation.Sale.Amount = 0;
@@ -249,6 +259,9 @@ public static class PriceMask
             operation.Payment.Description = string.Empty;
         }
     }
+
+    private static AccountDto Hide(AccountDto account)
+        => account with { OpeningBalance = 0, Balance = 0 };
 
     private static void Hide(IEnumerable<SaleItemDto>? items)
     {

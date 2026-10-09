@@ -32,7 +32,8 @@ public class CustomerBalanceQueryHandler(
                 c.Name,
                 c.Phone,
                 c.Address,
-                Balance = c.Accounts.Sum(a => a.Balance),
+                Balance = c.Accounts.Sum(a => a.OpeningBalance)
+                    + context.CustomerOperations.Where(o => o.Account.CustomerId == c.Id).Sum(o => o.Amount),
                 Discount = c.Accounts.Select(a => a.Discount).FirstOrDefault()
             })
             .Select(x => new CustomerBalanceDto

@@ -2,6 +2,7 @@
 
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Security;
@@ -15,8 +16,13 @@ public class GetAllCustomersQueryHandler(
     IMapper mapper) : IRequestHandler<GetAllCustomersQuery, IReadOnlyCollection<CustomerDto>>
 {
     public async Task<IReadOnlyCollection<CustomerDto>> Handle(GetAllCustomersQuery request, CancellationToken cancellationToken)
-        => user.ApplyToCustomers(mapper.Map<IReadOnlyCollection<CustomerDto>>(await context.Customers
+    {
+        var customers = mapper.Map<IReadOnlyCollection<CustomerDto>>(await context.Customers
             .AsNoTracking()
             .Include(c => c.Accounts)
-            .ToListAsync(cancellationToken)));
+            .ToListAsync(cancellationToken));
+
+        await context.FillBalancesAsync(customers.Accounts(), cancellationToken);
+        return user.ApplyToCustomers(customers);
+    }
 }
