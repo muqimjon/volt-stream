@@ -119,7 +119,7 @@ public class DeleteCustomerOperationCommandHandler(
                     residueStock.RollCount -= 1;
                     residueStock.TotalLength -= residue;
 
-                    if (residueStock.RollCount <= 0)
+                    if (residueStock.RollCount == 0)
                         context.WarehouseStocks.Remove(residueStock);
                 }
             }
