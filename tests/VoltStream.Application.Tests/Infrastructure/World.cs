@@ -1,6 +1,5 @@
 namespace VoltStream.Application.Tests.Infrastructure;
 
-using System.Text.Json;
 using VoltStream.Application.Features.Accounts.DTOs;
 using VoltStream.Application.Features.Branches.Commands;
 using VoltStream.Application.Features.Categories.Commands;
@@ -90,7 +89,7 @@ public sealed class World
 
         return Admin.Send(new CreateCustomerCommand(
             $"customer-{Unique()}", null, null, null, null, null, null,
-            [.. accounts.Select(account => Account(account.Currency, account.Opening))]));
+            [.. accounts.Select(account => new AccountCommandDto(0, account.Opening, 0, 0, account.Currency))]));
     }
 
     public async Task<long> NewProduct(bool weightTracked = false, decimal? weightPerUnit = null)
@@ -172,12 +171,6 @@ public sealed class World
             .Where(stock => stock.Product.Id == productId)
             .OrderBy(stock => stock.LengthPerRoll)
             .Select(stock => new StockRow(stock.LengthPerRoll, stock.RollCount, stock.TotalLength))];
-
-    // AccountCommandDto konstruktori 1.2 (Balance bor) va 1.3 (yo'q) da farq qiladi; klientlar uni JSON bilan yuboradi, JSON ikkalasiga mos
-    private static AccountCommandDto Account(long currencyId, decimal opening)
-        => JsonSerializer.Deserialize<AccountCommandDto>(
-            JsonSerializer.Serialize(new { openingBalance = opening, balance = opening, currencyId }),
-            JsonSerializerOptions.Web)!;
 
     private static string Unique() => Guid.NewGuid().ToString("N")[..8];
 }
