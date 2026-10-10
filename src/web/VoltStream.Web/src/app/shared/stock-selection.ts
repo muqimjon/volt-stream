@@ -69,6 +69,10 @@ export class StockSelection {
   };
 
   private pendingCommit: Promise<void> = Promise.resolve();
+  private good: { rollCount: number | null; length: number | null } = {
+    rollCount: null,
+    length: null,
+  };
   private readonly productStocks = new Map<number, Promise<WarehouseItem[]>>();
   private stockLoad: Promise<void> | null = null;
   private stockBranch: number | null | undefined;
@@ -99,6 +103,7 @@ export class StockSelection {
     this.stocks.set([]);
     this.rollCount.set(null);
     this.length.set(null);
+    this.remember();
   }
 
   async loadProducts(): Promise<void> {
@@ -150,6 +155,7 @@ export class StockSelection {
     this.stock.set(stock);
     if (!stock) return;
     this.syncLengthFromRolls();
+    this.remember();
     if (focus) this.requestStep('count');
   }
 
@@ -195,6 +201,7 @@ export class StockSelection {
     );
     this.rollCount.set(line.rollCount);
     this.length.set(line.totalLength);
+    this.remember();
   }
 
   async adjust(
@@ -225,6 +232,7 @@ export class StockSelection {
     if (next <= 0) {
       this.rollCount.set(null);
       this.length.set(null);
+      this.remember();
       return Promise.resolve();
     }
     this.rollCount.set(next);
@@ -305,12 +313,10 @@ export class StockSelection {
         stock,
         this.translate.t('Sales.RollStockWarning', this.product()?.name ?? '', stock.rollCount),
       );
-      if (!ok) {
-        this.rollCount.set(null);
-        return;
-      }
+      if (!ok) return this.revert();
     }
     this.syncLengthFromRolls();
+    this.remember();
   }
 
   private async commitLength(value: number | null): Promise<void> {
@@ -331,10 +337,7 @@ export class StockSelection {
           fmtNum(stock!.totalLength),
         ),
       );
-      if (!ok) {
-        this.length.set(null);
-        return;
-      }
+      if (!ok) return this.revert();
     }
 
     if (mod(value, perRoll) !== 0) {
@@ -356,11 +359,21 @@ export class StockSelection {
       if (!ok) {
         this.length.set(wholeLength);
         this.rollCount.set(wholeRolls);
-        return;
+        return this.remember();
       }
     }
 
     this.rollCount.set(Math.ceil(value / perRoll));
+    this.remember();
+  }
+
+  private remember(): void {
+    this.good = { rollCount: this.rollCount(), length: this.length() };
+  }
+
+  private revert(): void {
+    this.rollCount.set(this.good.rollCount);
+    this.length.set(this.good.length);
   }
 
   private syncLengthFromRolls(): void {

@@ -14,6 +14,7 @@ export class BackStack {
   private readonly stack: Entry[] = [];
   private seq = 0;
   private silent = 0;
+  private waiting: (() => void)[] = [];
 
   constructor() {
     window.addEventListener('popstate', () => this.onPop());
@@ -41,9 +42,27 @@ export class BackStack {
     history.go(-count);
   }
 
+  // Resolves once the Back traversal started by `release` is done, so a navigation that follows cannot be undone by it.
+  // The Router syncs with popstate in a setTimeout(0); resolving after it keeps that from superseding our navigation.
+  settled(): Promise<void> {
+    if (!this.silent) return Promise.resolve();
+    return new Promise((resolve) => {
+      const done = () => {
+        clearTimeout(timer);
+        resolve();
+      };
+      const timer = setTimeout(() => {
+        this.silent = 0;
+        this.waiting = this.waiting.filter((waiter) => waiter !== done);
+        resolve();
+      }, 1000);
+      this.waiting.push(done);
+    });
+  }
+
   private onPop(): void {
     if (this.silent) {
-      this.silent--;
+      if (!--this.silent) setTimeout(() => this.waiting.splice(0).forEach((done) => done()));
       return;
     }
     this.stack.pop()?.onBack();

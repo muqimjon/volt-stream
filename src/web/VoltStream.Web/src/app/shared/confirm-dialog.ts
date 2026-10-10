@@ -1,6 +1,14 @@
-import { Component, ElementRef, effect, inject, viewChild } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  effect,
+  inject,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { TranslatePipe } from '../core/i18n/translate';
-import { closeOnBack } from '../core/ui/back-stack';
+import { BackStack } from '../core/ui/back-stack';
 import { DialogService } from '../core/ui/dialog';
 
 @Component({
@@ -94,22 +102,31 @@ import { DialogService } from '../core/ui/dialog';
 })
 export class ConfirmDialog {
   protected readonly dialog = inject(DialogService);
+  private readonly stack = inject(BackStack);
   private readonly dlg = viewChild.required<ElementRef<HTMLDialogElement>>('dlg');
+  private token = 0;
 
   constructor() {
-    closeOnBack(
-      () => !!this.dialog.request(),
-      () => this.dialog.answer(false),
-    );
     effect(() => {
       const el = this.dlg().nativeElement;
       if (this.dialog.request()) {
         if (!el.open) el.showModal();
+        untracked(() => {
+          if (!this.token)
+            this.token = this.stack.push(() => {
+              this.token = 0;
+              this.dialog.answer(false);
+            });
+        });
       } else if (el.open) el.close();
     });
+    inject(DestroyRef).onDestroy(() => this.stack.release(this.token));
   }
 
-  protected answer(ok: boolean, choice?: number): void {
+  protected async answer(ok: boolean, choice?: number): Promise<void> {
+    this.stack.release(this.token);
+    this.token = 0;
+    await this.stack.settled();
     this.dialog.answer(ok, choice);
   }
 }

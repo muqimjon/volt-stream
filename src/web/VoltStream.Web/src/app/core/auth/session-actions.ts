@@ -31,9 +31,12 @@ export class SessionActions {
   }
 
   async logout(): Promise<void> {
+    // The login page is lazy: fetch it before the session disappears so a slow link never shows a blank profile.
+    const login = import('../../features/login/login').catch(() => undefined);
     if (!(await this.dialog.confirm(this.translate.t('Web.LogoutConfirm'), { danger: true })))
       return;
+    await login;
     this.auth.logout();
-    await this.router.navigate(['/login']);
+    await this.router.navigate(['/login'], { replaceUrl: true });
   }
 }
