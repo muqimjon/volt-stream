@@ -65,6 +65,11 @@ textarea {
   transition: background 0.12s ease;
 }
 
+a.btn {
+  text-decoration: none;
+  white-space: nowrap;
+}
+
 .btn:disabled {
   background: var(--disabled-bg);
   color: var(--text-disabled);

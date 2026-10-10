@@ -31,7 +31,6 @@
             }
             <th class="num">{{ 'Web.TotalRolls' | t }}</th>
             <th class="num">{{ 'Web.TotalLength' | t }}</th>
-            <th>{{ 'Web.Status' | t }}</th>
             <th class="num">{{ 'Common.Actions' | t }}</th>
           </tr>
         </thead>
@@ -54,7 +53,7 @@
                 </button>
               </td>
               <td>{{ fmtDateTime(draft.date) }}</td>
-              <td>{{ draft.customer || ('Common.NoData' | t) }}</td>
+              <td>{{ draft.customer || '—' }}</td>
               @if (showBranch() && bp.desktop()) {
                 <td class="muted">{{ draft.branch }}</td>
               }
@@ -63,19 +62,17 @@
               }
               <td class="num">{{ fmt(draft.totalRolls, 0) }}</td>
               <td class="num">{{ fmt(draft.totalLength) }}</td>
-              <td>
+              <td class="num">
                 @if (statusOf(draft); as status) {
                   <app-status-badge [status]="status" />
                 }
-              </td>
-              <td class="num">
                 @if (canEdit(draft)) {
                   <a
                     class="btn btn-ghost"
                     [title]="'Common.Edit' | t"
                     [routerLink]="['/drafts', draft.id]"
                   >
-                    <app-icon name="list" [size]="18" />
+                    <app-icon name="edit" [size]="18" />
                   </a>
                 }
                 @if (canPrint()) {
@@ -104,7 +101,7 @@
             </tr>
             @if (expandedId() === draft.id) {
               <tr class="composition-row">
-                <td [attr.colspan]="showBranch() && bp.desktop() ? 9 : bp.desktop() ? 8 : 7">
+                <td [attr.colspan]="showBranch() && bp.desktop() ? 8 : bp.desktop() ? 7 : 6">
                   <ul class="composition">
                     @for (item of draft.items; track item.id) {
                       <li class="detailed-item">
@@ -125,7 +122,7 @@
       <article class="card">
         <div class="row-between">
           <div>
-            <strong>{{ draft.customer || ('Common.NoData' | t) }}</strong>
+            <strong>{{ draft.customer || '—' }}</strong>
             @if (showBranch()) {
               <small class="muted block">{{ draft.branch }}</small>
             }
@@ -153,11 +150,11 @@
             <button
               type="button"
               class="btn btn-ghost"
+              [title]="'Web.RollComposition' | t"
               [attr.aria-expanded]="expandedId() === draft.id"
               (click)="toggle(draft)"
             >
               <app-icon name="chevron" [size]="18" [class.rotated]="expandedId() === draft.id" />
-              {{ 'Web.RollComposition' | t }}
             </button>
             @if (canEdit(draft)) {
               <a
@@ -165,7 +162,7 @@
                 [title]="'Common.Edit' | t"
                 [routerLink]="['/drafts', draft.id]"
               >
-                <app-icon name="list" [size]="18" />
+                <app-icon name="edit" [size]="18" />
               </a>
             }
             @if (canPrint()) {

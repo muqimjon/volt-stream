@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiClient } from '../../core/api/api-client';
 import { AuthService } from '../../core/auth/auth';
@@ -23,6 +23,7 @@ import { StockSelection } from '../../shared/stock-selection';
 
 interface EditorItem {
   productId: number;
+  categoryId: number;
   product: string;
   category: string;
   unit: string;
@@ -72,6 +73,8 @@ export class DraftEditorPage {
   protected readonly description = signal('');
   protected readonly items = signal<EditorItem[]>([]);
   protected readonly saving = signal(false);
+  private readonly picker = viewChild<ElementRef<HTMLElement>>('picker');
+  private editedAt: number | null = null;
 
   protected readonly totals = computed(() => ({
     rolls: this.items().reduce((sum, i) => sum + i.rollCount, 0),
@@ -130,22 +133,34 @@ export class DraftEditorPage {
     if (rollCount === null || rollCount <= 0) return this.warn('Sales.RollCountRequired');
     if (length === null || length <= 0) return this.warn('Sales.TotalQuantityRequired');
 
-    this.items.update((list) => [
-      ...list,
-      {
+    this.items.update((list) => {
+      const next = [...list];
+      next.splice(this.editedAt ?? next.length, 0, {
         productId: product.id,
+        categoryId: category.id,
         product: product.name,
         category: category.name,
         unit: product.unit,
         lengthPerRoll: stock.lengthPerRoll,
         rollCount,
         totalLength: length,
-      },
-    ]);
+      });
+      return next;
+    });
+    this.editedAt = null;
     this.sel.clear();
   }
 
+  protected async editItem(index: number): Promise<void> {
+    const item = this.items()[index];
+    this.removeItem(index);
+    this.editedAt = index;
+    await this.sel.edit(item);
+    this.picker()?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   protected removeItem(index: number): void {
+    this.editedAt = null;
     this.items.update((list) => list.filter((_, i) => i !== index));
   }
 

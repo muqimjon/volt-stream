@@ -20,3 +20,13 @@
   align-items: center;
   gap: var(--sp-sm);
 }
+
+.item-actions {
+  display: flex;
+}
+
+@media (max-width: 639.98px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}

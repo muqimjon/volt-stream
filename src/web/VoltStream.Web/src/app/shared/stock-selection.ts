@@ -131,6 +131,39 @@ export class StockSelection {
     return (this.pendingCommit = this.commitLength(value));
   }
 
+  async edit(line: {
+    productId: number;
+    product: string;
+    category: string;
+    categoryId: number;
+    unit: string;
+    lengthPerRoll: number;
+    rollCount: number;
+    totalLength: number;
+  }): Promise<void> {
+    this.category.set({ id: line.categoryId, name: line.category });
+    await this.onProduct({
+      id: line.productId,
+      name: line.product,
+      unit: line.unit,
+      categoryId: line.categoryId,
+      isWeightTracked: false,
+    });
+    this.stock.set(
+      this.stocks().find((s) => s.lengthPerRoll === line.lengthPerRoll) ?? {
+        id: 0,
+        lengthPerRoll: line.lengthPerRoll,
+        rollCount: 0,
+        totalLength: 0,
+        unitPrice: 0,
+        discountRate: 0,
+        warehouseName: '',
+      },
+    );
+    this.rollCount.set(line.rollCount);
+    this.length.set(line.totalLength);
+  }
+
   step(delta: number): Promise<void> {
     const next = (this.rollCount() ?? 0) + delta;
     if (next <= 0) {
