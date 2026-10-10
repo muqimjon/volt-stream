@@ -53,7 +53,7 @@
                 </button>
               </td>
               <td>{{ fmtDateTime(draft.date) }}</td>
-              <td>{{ draft.customer || '—' }}</td>
+              <td class="clip">{{ draft.customer || '—' }}</td>
               @if (showBranch() && bp.desktop()) {
                 <td class="muted">{{ draft.branch }}</td>
               }

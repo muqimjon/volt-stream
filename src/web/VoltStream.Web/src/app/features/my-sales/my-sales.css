@@ -110,3 +110,11 @@ app-icon {
   color: var(--text);
   font-weight: 600;
 }
+
+@media (max-width: 1023.98px) {
+  .clip {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

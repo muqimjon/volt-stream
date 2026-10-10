@@ -41,6 +41,8 @@
   --nav-item-active: #4f46e5;
   --nav-item-active-bg: #eef0fe;
   --nav-item-hover-bg: #f2f4f9;
+  --nav-item-hover-text: #4f46e5;
+  --nav-item-active-text: #4f46e5;
   --shadow-card: 0 2px 18px rgba(31, 41, 55, 0.1);
   --shadow-popup: 0 2px 14px rgba(85, 85, 85, 0.18);
 
@@ -70,7 +72,7 @@
   --safe-r: env(safe-area-inset-right, 0px);
   --header-h: 56px;
   --tabbar-h: 60px;
-  --rail-w: 84px;
+  --rail-w: 60px;
   --sidebar-w: 250px;
   --content-max: 1280px;
 }
@@ -119,6 +121,8 @@
   --nav-item-active: #6366f1;
   --nav-item-active-bg: #232c44;
   --nav-item-hover-bg: #1c2438;
+  --nav-item-hover-text: #ffffff;
+  --nav-item-active-text: #ffffff;
   --shadow-card: 0 2px 18px rgba(0, 0, 0, 0.45);
   --shadow-popup: 0 2px 14px rgba(0, 0, 0, 0.55);
 }
@@ -166,6 +170,8 @@
     --nav-item-active: #6366f1;
     --nav-item-active-bg: #232c44;
     --nav-item-hover-bg: #1c2438;
+    --nav-item-hover-text: #ffffff;
+    --nav-item-active-text: #ffffff;
     --shadow-card: 0 2px 18px rgba(0, 0, 0, 0.45);
     --shadow-popup: 0 2px 14px rgba(0, 0, 0, 0.55);
   }
