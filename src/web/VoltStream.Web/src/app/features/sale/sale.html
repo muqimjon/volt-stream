@@ -44,7 +44,7 @@
         <app-search-select
           [label]="'Sales.ProductType' | t"
           [placeholder]="'Common.Select' | t"
-          [items]="categories()"
+          [items]="shownCategories()"
           [labelOf]="nameOf"
           [selected]="category()"
           [clearable]="true"
@@ -54,7 +54,7 @@
         <app-search-select
           [label]="'Sales.Product' | t"
           [placeholder]="'Common.Select' | t"
-          [items]="products()"
+          [items]="shownProducts()"
           [labelOf]="nameOf"
           [selected]="product()"
           (opened)="loadProducts()"

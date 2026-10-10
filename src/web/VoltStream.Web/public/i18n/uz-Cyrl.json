@@ -286,6 +286,7 @@
   "Web.Status": "Ҳолат",
   "Web.Stock": "Қолдиқ",
   "Web.StockInfo": "{0} тўплам · {1} м",
+  "Web.StockNotEnough": "Омборда етарли қолдиқ йўқ: {0} — мавжуд {1}",
   "Web.Submitting": "Юборилмоқда...",
   "Web.Success": "Муваффақиятли",
   "Web.SuppliesCount": "Киримлар",

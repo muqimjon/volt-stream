@@ -286,6 +286,7 @@
   "Web.Status": "Статус",
   "Web.Stock": "Остаток",
   "Web.StockInfo": "{0} бухт · {1} м",
+  "Web.StockNotEnough": "На складе недостаточно остатка: {0} — в наличии {1}",
   "Web.Submitting": "Отправка...",
   "Web.Success": "Успешно",
   "Web.SuppliesCount": "Приходы",

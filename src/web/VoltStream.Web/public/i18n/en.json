@@ -286,6 +286,7 @@
   "Web.Status": "Status",
   "Web.Stock": "Stock",
   "Web.StockInfo": "{0} rolls · {1} m",
+  "Web.StockNotEnough": "Not enough stock: {0} — available {1}",
   "Web.Submitting": "Submitting...",
   "Web.Success": "Success",
   "Web.SuppliesCount": "Supplies",

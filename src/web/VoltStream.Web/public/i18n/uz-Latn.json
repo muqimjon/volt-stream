@@ -286,6 +286,7 @@
   "Web.Status": "Holat",
   "Web.Stock": "Qoldiq",
   "Web.StockInfo": "{0} to'plam · {1} m",
+  "Web.StockNotEnough": "Omborda yetarli qoldiq yo'q: {0} — mavjud {1}",
   "Web.Submitting": "Yuborilmoqda...",
   "Web.Success": "Muvaffaqiyatli",
   "Web.SuppliesCount": "Kirimlar",

@@ -48,6 +48,11 @@ export interface WarehouseItem {
   unitPrice: number;
   discountRate: number;
   warehouseName: string;
+  product?: { id: number; categoryId: number };
+}
+
+export interface GeneralSettings {
+  allowNegativeStock: boolean;
 }
 
 export interface Customer {

@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { ApiClient } from '../../core/api/api-client';
 import { AuthService } from '../../core/auth/auth';
 import { TranslatePipe, TranslateService } from '../../core/i18n/translate';
@@ -6,6 +6,7 @@ import {
   Category,
   Currency,
   Customer,
+  GeneralSettings,
   Product,
   SaleRequest,
   WarehouseItem,
@@ -67,6 +68,19 @@ export class SalePage {
   protected readonly customers = signal<Customer[]>([]);
   private readonly currency = signal<Currency | null>(null);
 
+  private readonly allowNegativeStock = signal(true);
+  private readonly inStock = signal<WarehouseItem[]>([]);
+  protected readonly shownCategories = computed(() => {
+    if (this.allowNegativeStock()) return this.categories();
+    const ids = new Set(this.inStock().map((s) => s.product?.categoryId));
+    return this.categories().filter((c) => ids.has(c.id));
+  });
+  protected readonly shownProducts = computed(() => {
+    if (this.allowNegativeStock()) return this.products();
+    const ids = new Set(this.inStock().map((s) => s.product?.id));
+    return this.products().filter((p) => ids.has(p.id));
+  });
+
   protected readonly category = signal<Category | null>(null);
   protected readonly product = signal<Product | null>(null);
   protected readonly stock = signal<WarehouseItem | null>(null);
@@ -120,6 +134,26 @@ export class SalePage {
     if (draft.customerId) this.customer.set({ id: draft.customerId, name: draft.customerName });
     void this.loadCategories();
     void this.loadCurrency();
+    void this.loadSettings();
+    effect(() => {
+      this.auth.branchId();
+      if (!this.allowNegativeStock()) untracked(() => void this.loadInStock());
+    });
+  }
+
+  private async loadSettings(): Promise<void> {
+    const settings = await this.api
+      .get<GeneralSettings>('settings/general', undefined, true)
+      .catch(() => null);
+    this.allowNegativeStock.set(settings?.allowNegativeStock ?? true);
+  }
+
+  private async loadInStock(): Promise<void> {
+    const branchId = this.auth.branchId();
+    const items = await this.api
+      .get<WarehouseItem[]>('warehouse-items', branchId === null ? undefined : { branchId })
+      .catch(() => []);
+    this.inStock.set(items.filter((s) => s.rollCount > 0));
   }
 
   private async loadCategories(): Promise<void> {
@@ -192,10 +226,12 @@ export class SalePage {
       )
       .catch(() => []);
     this.stocks.set(
-      items.sort(
-        (a, b) =>
-          a.lengthPerRoll - b.lengthPerRoll || a.warehouseName.localeCompare(b.warehouseName),
-      ),
+      items
+        .filter((s) => this.allowNegativeStock() || s.rollCount > 0)
+        .sort(
+          (a, b) =>
+            a.lengthPerRoll - b.lengthPerRoll || a.warehouseName.localeCompare(b.warehouseName),
+        ),
     );
   }
 
@@ -215,12 +251,24 @@ export class SalePage {
     return (this.pendingCommit = this.commitLength(value));
   }
 
+  private async confirmOversell(stock: WarehouseItem, message: string): Promise<boolean> {
+    if (this.allowNegativeStock())
+      return this.dialog.confirm(message, { title: 'Sales.SaleCaption' });
+    const available = this.translate.t(
+      'Web.StockInfo',
+      fmtNum(stock.rollCount, 0),
+      fmtNum(stock.totalLength),
+    );
+    this.toast.error(this.translate.t('Web.StockNotEnough', this.product()?.name ?? '', available));
+    return false;
+  }
+
   private async commitRollCount(value: number | null): Promise<void> {
     const stock = this.stock();
     if (value !== null && stock && value > stock.rollCount) {
-      const ok = await this.dialog.confirm(
+      const ok = await this.confirmOversell(
+        stock,
         this.translate.t('Sales.RollStockWarning', this.product()?.name ?? '', stock.rollCount),
-        { title: 'Sales.SaleCaption' },
       );
       if (!ok) {
         this.rollCount.set(null);
@@ -239,14 +287,14 @@ export class SalePage {
     }
 
     if (value > stock!.totalLength) {
-      const ok = await this.dialog.confirm(
+      const ok = await this.confirmOversell(
+        stock!,
         this.translate.t(
           'Sales.MeterStockWarning',
           this.product()?.name ?? '',
           fmtNum(perRoll),
           fmtNum(stock!.totalLength),
         ),
-        { title: 'Sales.SaleCaption' },
       );
       if (!ok) {
         this.length.set(null);
