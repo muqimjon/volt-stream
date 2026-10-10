@@ -1,8 +1,7 @@
 [CmdletBinding()]
 param(
     [switch]$SkipExe,
-    [switch]$SkipApk,
-    [switch]$SkipServer
+    [switch]$SkipApk
 )
 
 $ErrorActionPreference = 'Stop'
@@ -14,7 +13,6 @@ Write-Host "VoltStream $version" -ForegroundColor Cyan
 
 if (-not $SkipExe) { & (Join-Path $PSScriptRoot 'build-exe.ps1') }
 if (-not $SkipApk) { & (Join-Path $PSScriptRoot 'build-apk.ps1') }
-if (-not $SkipServer) { & (Join-Path $PSScriptRoot 'build-server.ps1') }
 
 Write-Host "`nartifacts:" -ForegroundColor Cyan
 Get-ChildItem -Path (Get-ArtifactsDir) -File |

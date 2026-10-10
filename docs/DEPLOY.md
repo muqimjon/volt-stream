@@ -11,7 +11,15 @@ Mijozga borishdan oldin dasturchi mashinasida bir marta bajariladi:
 pwsh scripts/build-all.ps1
 ```
 
-Natija `artifacts/` papkasida: `voltstream-server-<ver>.zip` (server), `voltstream-desktop-<ver>-win-x64.exe` (filial kompyuteri, .NET o'rnatish shart emas), `voltstream-<ver>.apk` (telefon). Zip ichida image, `docker-compose.yml`, `.env.example`, ushbu hujjat va baza ko'chirish skripti bor — mijoz serverida internet orqali image yuklab olish shart emas.
+Natija `artifacts/` papkasida: `voltstream-desktop-<ver>-win-x64.exe` (filial kompyuteri, .NET o'rnatish shart emas), `voltstream-<ver>.apk` (telefon).
+
+Server image'i Docker Hub'da (public, multi-arch `linux/amd64` + `linux/arm64`): `muqimjon/volt-stream:<ver>` va `:latest` (oldingi versiyalar ham shu repoda: `1.0.0`…`1.1.6`). Chiqarish (`docker login` qilingan mashinada):
+
+```
+pwsh scripts/publish-image.ps1
+```
+
+Mijoz serveriga `docker-compose.yml`, `.env` (`.env.example` dan) va `docs/upgrade-from-v1.sql` kifoya — image `docker compose pull` bilan tortiladi. Eski v1 shu reponing `latest` tegida ishlagan serverda `.env` dagi `VOLTSTREAM_VERSION` ni ANIQ versiyaga qotiring va `muqimjon/volt-stream:latest` ni tortmang — aks holda v1 konteyneri qayta yaratilganda yangi versiyani olib, eski bazada buziladi (qaytarish: `:1.1.6`).
 
 ## 1. Serverga nima kerak
 
@@ -124,7 +132,7 @@ WebSocket o'tadi — SignalR (chek chiqarish) shu orqali ishlaydi.
 - SSH sessiyasida Docker'ning Windows Credential Manager yordamchisi ishlamaydi
   (`A specified logon session does not exist`). Image tortish kerak bo'lsa vaqtinchalik `DOCKER_CONFIG`
   papkasidagi `config.json` ga `{"auths":{"localhost:1":{}}}` yozing (bo'sh `auths` yetmaydi — CLI baribir wincred'ni tanlaydi).
-  Odatiy yangilashda tortish shart emas: image `docker load` bilan yuklanadi.
+  Image public — login kerak emas, faqat shu bo'sh `DOCKER_CONFIG` bilan `docker compose pull` ishlaydi.
 
 ## 6. Filial kompyuterlari (WPF)
 
@@ -194,8 +202,9 @@ Buni cron'ga qo'ying va `backups/` ni tashqi diskka ko'chirib turing.
 ## Yangilash
 
 ```bash
-git pull
-docker compose up -d --build
+# .env da VOLTSTREAM_VERSION=<yangi versiya> (yoki latest)
+docker compose pull api
+docker compose up -d api
 ```
 
 Yangi migratsiya bo'lsa startda qo'llanadi. Har yangilashdan oldin zaxira nusxa oling.

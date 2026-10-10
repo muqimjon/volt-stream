@@ -42,14 +42,14 @@ WebApi seeding'dan OLDIN tinglay boshlaydi (migratsiya/seeding `DatabaseInitiali
 `scripts/*.ps1` mijozga beriladigan fayllarni yig'ib `artifacts/` ga qo'yadi (papka gitga tushmaydi):
 
 ```
-pwsh scripts/build-all.ps1          # uchalasi: desktop exe, APK, server to'plami
+pwsh scripts/build-all.ps1          # desktop exe va APK
 pwsh scripts/build-exe.ps1          # WPF -> voltstream-desktop-<ver>-win-x64.exe (self-contained)
 pwsh scripts/build-apk.ps1 -Install # MAUI -> voltstream-<ver>.apk (ixtiyoriy: telefonga adb bilan)
-pwsh scripts/build-server.ps1       # Docker image + compose/.env/docs -> voltstream-server-<ver>.zip
+pwsh scripts/publish-image.ps1      # server image: multi-arch (amd64+arm64) -> Docker Hub muqimjon/volt-stream:<ver> va :latest
 pwsh scripts/set-version.ps1 minor  # versiyani hamma joyda oshiradi
 ```
 
-Versiya yagona manbadan: `Directory.Build.props` dagi `<Version>`. `set-version.ps1` uni mobil csproj (`ApplicationDisplayVersion` va `ApplicationVersion` = major*10000+minor*100+patch), web `package.json` va `core/version.ts` bilan sinxronlaydi. APK'ni release kaliti bilan imzolash uchun `VOLTSTREAM_KEYSTORE_PASS` env kerak (bo'lmasa skript ogohlantiradi va debug kaliti bilan imzolaydi — o'rnatilgan ilova ustidan yangilanmaydi). Skriptlarda `MSBUILDDISABLENODEREUSE=1` ataylab: MSBuild ishchi jarayonlari build'dan keyin fayllarni ushlab turib, keyingi build'ni MSB3026 bilan yiqitadi. Server to'plamidagi image `docker load` bilan yuklanadi va `docker-compose.yml` dagi `image: voltstream-api:${VOLTSTREAM_VERSION:-latest}` uni qayta qurmasdan ishlatadi.
+Versiya yagona manbadan: `Directory.Build.props` dagi `<Version>`. `set-version.ps1` uni mobil csproj (`ApplicationDisplayVersion` va `ApplicationVersion` = major*10000+minor*100+patch), web `package.json` va `core/version.ts` bilan sinxronlaydi. APK'ni release kaliti bilan imzolash uchun `VOLTSTREAM_KEYSTORE_PASS` env kerak (bo'lmasa skript ogohlantiradi va debug kaliti bilan imzolaydi — o'rnatilgan ilova ustidan yangilanmaydi). Skriptlarda `MSBUILDDISABLENODEREUSE=1` ataylab: MSBuild ishchi jarayonlari build'dan keyin fayllarni ushlab turib, keyingi build'ni MSB3026 bilan yiqitadi. Server zip/tar YO'Q (foydalanuvchi qarori): server Docker Hub'dagi public `muqimjon/volt-stream` (oldingi versiyalar `1.0.0`…`1.1.6` ham shu repoda — boshqa nom bilan chiqarma) dan `docker compose pull` bilan yangilanadi; `docker-compose.yml` — `image: muqimjon/volt-stream:${VOLTSTREAM_VERSION:-latest}`. Mijoz serverida eski v1 shu reponing `latest`ida ishlagani uchun v2 `.env` da versiya ANIQ qotiriladi.
 
 ## Migratsiyalar
 

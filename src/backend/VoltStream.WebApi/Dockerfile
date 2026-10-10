@@ -1,12 +1,12 @@
-# Angular SPA -> wwwroot
-FROM node:24-alpine AS web
+# Angular SPA va framework-dependent publish arxitekturaga bog'liq emas — multi-arch'da faqat bir marta, build mashinasida yig'iladi.
+FROM --platform=$BUILDPLATFORM node:24-alpine AS web
 WORKDIR /src
 COPY src/web/VoltStream.Web/package.json src/web/VoltStream.Web/package-lock.json src/web/VoltStream.Web/
 RUN cd src/web/VoltStream.Web && npm ci
 COPY src/web/VoltStream.Web/ src/web/VoltStream.Web/
 RUN cd src/web/VoltStream.Web && npm run build
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY VoltStream.sln Directory.Build.props ./
 COPY src/backend/VoltStream.WebApi/VoltStream.WebApi.csproj src/backend/VoltStream.WebApi/
