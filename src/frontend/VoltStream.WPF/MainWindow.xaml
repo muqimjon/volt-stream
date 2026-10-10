@@ -257,11 +257,13 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Row="0" Grid.Column="0" Margin="20,0,0,0" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock
+                            MaxWidth="260"
                             VerticalAlignment="Center"
                             FontSize="16"
                             FontWeight="SemiBold"
                             Foreground="{DynamicResource HeaderText}"
-                            Text="{Binding CurrentPageTitle}" />
+                            Text="{Binding CurrentPageTitle}"
+                            TextTrimming="CharacterEllipsis" />
                         <Border Margin="12,0,0,0" Padding="8,4" CornerRadius="6" Background="{DynamicResource BrandSubtle}" VerticalAlignment="Center" ToolTip="{loc:Loc Header.Branch}">
                             <StackPanel Orientation="Horizontal">
                                 <fa:IconImage Icon="CodeBranch" Width="12" Height="12" Margin="0,0,6,0" VerticalAlignment="Center" Foreground="{DynamicResource Brand}" />
@@ -289,6 +291,7 @@
                         </Border>
                     </StackPanel>
                     <Grid Grid.Row="0" Grid.Column="1">
+                        <Viewbox HorizontalAlignment="Center" StretchDirection="DownOnly">
                         <StackPanel
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -360,6 +363,7 @@
                                 Foreground="{DynamicResource HeaderText}"
                                 Text="{Binding Xufton}" />
                         </StackPanel>
+                        </Viewbox>
                     </Grid>
 
                     <StackPanel

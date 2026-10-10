@@ -622,8 +622,9 @@ public partial class SaleEditViewModel : ViewModelBase
 
         var rollCount = (int)value;
         var totalLength = rollCount * item.LengthPerRoll.Value;
-        var (netRolls, netLength) = NetDemand(item, rollCount, totalLength);
-        if (!CheckWarehouseAvailabilityForLength(item.Product?.Name, StockOf(item), netLength, netRolls))
+        var (demandRolls, demandLength) = DemandOf(item, rollCount, totalLength);
+        var (ownRolls, ownLength) = OwnUsageOf(item);
+        if (!CheckWarehouseAvailabilityForLength(item.Product?.Name, StockOf(item), demandLength, demandRolls, ownRolls, ownLength))
             return false;
 
         Commit(item, rollCount, totalLength);
@@ -637,8 +638,9 @@ public partial class SaleEditViewModel : ViewModelBase
 
         var lengthPerRoll = item.LengthPerRoll.Value;
         var rollCount = (int)Math.Ceiling(totalLength / lengthPerRoll);
-        var (netRolls, netLength) = NetDemand(item, rollCount, totalLength);
-        if (!CheckWarehouseAvailabilityForLength(item.Product?.Name, StockOf(item), netLength, netRolls))
+        var (demandRolls, demandLength) = DemandOf(item, rollCount, totalLength);
+        var (ownRolls, ownLength) = OwnUsageOf(item);
+        if (!CheckWarehouseAvailabilityForLength(item.Product?.Name, StockOf(item), demandLength, demandRolls, ownRolls, ownLength))
             return false;
 
         var remainder = totalLength % lengthPerRoll;
@@ -688,14 +690,16 @@ public partial class SaleEditViewModel : ViewModelBase
         RecalculateSaleTotals();
     }
 
-    // Server savdoni tahrirlaganda eski miqdorni avval omborga qaytaradi — shuning uchun qoldiqdan faqat farq olinadi.
-    private (int Rolls, decimal Length) NetDemand(SaleItemViewModel item, int rolls, decimal length)
+    private (int Rolls, decimal Length) DemandOf(SaleItemViewModel item, int rolls, decimal length)
     {
         var others = Sale.Items.Where(i => i != item && i.ProductId == item.ProductId && i.LengthPerRoll == item.LengthPerRoll).ToList();
-        var returned = originalUsage.GetValueOrDefault((item.ProductId, item.LengthPerRoll ?? 0));
 
-        return (rolls + others.Sum(i => i.RollCount ?? 0) - returned.Rolls, length + others.Sum(i => i.TotalLength ?? 0) - returned.Length);
+        return (rolls + others.Sum(i => i.RollCount ?? 0), length + others.Sum(i => i.TotalLength ?? 0));
     }
+
+    // Server savdoni tahrirlaganda eski miqdorni avval omborga qaytaradi — shuning uchun ruxsat chegarasi: ombor + savdoning o'z eski miqdori.
+    private (int Rolls, decimal Length) OwnUsageOf(SaleItemViewModel item)
+        => originalUsage.GetValueOrDefault((item.ProductId, item.LengthPerRoll ?? 0));
 
     private WarehouseStockViewModel? StockOf(SaleItemViewModel item) =>
         stocksByProduct.GetValueOrDefault(item.ProductId)?.FirstOrDefault(s => s.LengthPerRoll == item.LengthPerRoll);
@@ -704,17 +708,18 @@ public partial class SaleEditViewModel : ViewModelBase
 
     #region Helpers
 
-    private bool CheckWarehouseAvailabilityForLength(string? productName, WarehouseStockViewModel? stock, decimal requestedLength, int requestedRolls)
+    private bool CheckWarehouseAvailabilityForLength(string? productName, WarehouseStockViewModel? stock, decimal requestedLength, int requestedRolls, int ownRolls = 0, decimal ownLength = 0)
     {
         if (stock is null) return true;
 
-        var totalRollsInWarehouse = (int)(stock.TotalLength / stock.LengthPerRoll);
+        var availableRolls = (int)(stock.TotalLength / stock.LengthPerRoll) + ownRolls;
+        var availableLength = stock.TotalLength + ownLength;
 
-        if (requestedRolls > totalRollsInWarehouse)
-            return ConfirmOrRefuse(string.Format(TranslationSource.T("Turnovers.WarehouseRollsLeft"), productName, totalRollsInWarehouse));
+        if (requestedRolls > availableRolls)
+            return ConfirmOrRefuse(string.Format(TranslationSource.T("Turnovers.WarehouseRollsLeft"), productName, availableRolls));
 
-        if (requestedLength > stock.TotalLength)
-            return ConfirmOrRefuse(string.Format(TranslationSource.T("Turnovers.WarehouseMetersLeft"), productName, stock.LengthPerRoll, stock.TotalLength.ToString("N2")));
+        if (requestedLength > availableLength)
+            return ConfirmOrRefuse(string.Format(TranslationSource.T("Turnovers.WarehouseMetersLeft"), productName, stock.LengthPerRoll, availableLength.ToString("N2")));
 
         return true;
     }
