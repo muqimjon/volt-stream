@@ -19,6 +19,10 @@ public class ExceptionHandlerMiddleware(RequestDelegate next, ILogger<ExceptionH
         {
             await HandleExceptionAsync(context, ex.StatusCode, ex.Message);
         }
+        catch (DbUpdateConcurrencyException)
+        {
+            await HandleExceptionAsync(context, HttpStatusCode.Conflict, "Qoldiq boshqa amal bilan o'zgardi, qayta urinib ko'ring.");
+        }
         catch (DbUpdateException ex)
         {
             logger.LogError(ex, "Ma'lumotlar bazasi xatosi");

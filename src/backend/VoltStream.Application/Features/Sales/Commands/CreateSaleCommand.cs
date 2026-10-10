@@ -53,7 +53,8 @@ public class CreateSaleCommandHandler(
             var descriptionBuilder = new StringBuilder();
             var repriced = ApplyStockPrices(request.Items, warehouse);
 
-            await ProcessSaleItemsAsync(request.Items, warehouse, descriptionBuilder, cancellationToken);
+            var allowNegativeStock = await context.AppSettings.AllAsync(s => s.AllowNegativeStock, cancellationToken);
+            await ProcessSaleItemsAsync(request.Items, warehouse, allowNegativeStock, descriptionBuilder, cancellationToken);
             var sale = mapper.Map<Sale>(request);
             sale.BranchId = branchId;
             sale.WarehouseId = warehouse.Id;
@@ -144,6 +145,7 @@ public class CreateSaleCommandHandler(
     private async Task ProcessSaleItemsAsync(
         List<SaleItemCommand> saleItems,
         Warehouse warehouse,
+        bool allowNegativeStock,
         StringBuilder descriptionBuilder,
         CancellationToken cancellationToken)
     {
@@ -162,6 +164,9 @@ public class CreateSaleCommandHandler(
 
             var product = await context.Products.FirstOrDefaultAsync(p => p.Id == item.ProductId, cancellationToken)
                 ?? throw new NotFoundException(nameof(Product), nameof(item.Id), item.ProductId);
+
+            if (!allowNegativeStock && (residue.RollCount < 0 || residue.TotalLength < 0))
+                throw new ConflictException($"Omborda yetarli qoldiq yo'q: {product.Name} ({item.LengthPerRoll:0.###} {product.Unit}).");
 
             item.Weight = product.IsWeightTracked && product.WeightPerUnit is decimal weight
                 ? item.TotalLength * weight

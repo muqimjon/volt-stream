@@ -104,6 +104,26 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.ToTable("AllowedClients");
                 });
 
+            modelBuilder.Entity("VoltStream.Domain.Entities.AppSettings", b =>
+                {
+                    b.Property<long>("Id")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("AllowNegativeStock")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppSettings", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            AllowNegativeStock = true
+                        });
+                });
+
             modelBuilder.Entity("VoltStream.Domain.Entities.AuditLog", b =>
                 {
                     b.Property<long>("Id")
@@ -988,6 +1008,12 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.Property<long>("WarehouseId")
                         .HasColumnType("bigint");

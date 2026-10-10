@@ -24,6 +24,7 @@ public static class Permissions
     public const string SettingsUsers = "settings.users";
     public const string SettingsPrinter = "settings.printer";
     public const string SettingsAudit = "settings.audit";
+    public const string SettingsGeneral = "settings.general";
 
     public const string PrintRequest = "print.request";
     public const string PrintAgent = "print.agent";
@@ -36,7 +37,7 @@ public static class Permissions
         SuppliesCreate, SuppliesView, SuppliesEdit,
         StockView, PaymentsManage, CustomersManage, ReportsView,
         SettingsCurrencies, SettingsCategories, SettingsProducts, SettingsCustomers,
-        SettingsBranches, SettingsUsers, SettingsPrinter, SettingsAudit,
+        SettingsBranches, SettingsUsers, SettingsPrinter, SettingsAudit, SettingsGeneral,
         PrintRequest, PrintAgent, LogsViewOwn, BranchesAll
     ];
 }

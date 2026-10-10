@@ -26,6 +26,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Branch> Branches { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
     public DbSet<PrintJob> PrintJobs { get; set; }
+    public DbSet<AppSettings> AppSettings { get; set; }
 
     private IDbContextTransaction? currentTransaction;
     private int transactionDepth;

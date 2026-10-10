@@ -7,6 +7,7 @@ public class WarehouseStock : Auditable
     public decimal TotalLength { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal DiscountRate { get; set; }
+    public uint Version { get; set; }
 
     public long ProductId { get; set; }
     public Product Product { get; set; } = default!;
