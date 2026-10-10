@@ -48,7 +48,12 @@ export interface WarehouseItem {
   unitPrice: number;
   discountRate: number;
   warehouseName: string;
-  product?: { id: number; categoryId: number };
+}
+
+export interface StockSummary {
+  productId: number;
+  rollCount: number;
+  totalLength: number;
 }
 
 export interface GeneralSettings {

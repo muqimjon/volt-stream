@@ -2,7 +2,7 @@ import { Injectable, computed, effect, inject, signal, untracked } from '@angula
 import { ApiClient } from '../core/api/api-client';
 import { AuthService } from '../core/auth/auth';
 import { TranslateService } from '../core/i18n/translate';
-import { Category, GeneralSettings, Product, WarehouseItem } from '../core/models';
+import { Category, GeneralSettings, Product, StockSummary, WarehouseItem } from '../core/models';
 import { DialogService } from '../core/ui/dialog';
 import { ToastService } from '../core/ui/toast';
 import { fmtNum, mod, round } from '../core/utils/number';
@@ -28,29 +28,21 @@ export class StockSelection {
   readonly focusStep = signal<{ target: 'length' | 'count'; n: number } | null>(null);
 
   private readonly allowNegativeStock = signal(true);
-  private readonly stockRows = signal<WarehouseItem[]>([]);
-  private readonly inStock = computed(() => this.stockRows().filter((s) => s.rollCount > 0));
-  private readonly totals = computed(() => {
-    const map = new Map<number, { rolls: number; length: number }>();
-    for (const row of this.stockRows()) {
-      const id = row.product?.id;
-      if (id === undefined) continue;
-      const sum = map.get(id) ?? { rolls: 0, length: 0 };
-      sum.rolls += row.rollCount;
-      sum.length += row.totalLength;
-      map.set(id, sum);
-    }
-    return map;
-  });
+  private readonly summary = signal<StockSummary[]>([]);
+  private readonly catalog = signal<Product[]>([]);
+  private readonly totals = computed(() => new Map(this.summary().map((s) => [s.productId, s])));
   readonly shownCategories = computed(() => {
     if (this.allowNegativeStock()) return this.categories();
-    const ids = new Set(this.inStock().map((s) => s.product?.categoryId));
+    const ids = new Set(
+      this.catalog()
+        .filter((p) => this.totals().has(p.id))
+        .map((p) => p.categoryId),
+    );
     return this.categories().filter((c) => ids.has(c.id));
   });
   readonly shownProducts = computed(() => {
     if (this.allowNegativeStock()) return this.products();
-    const ids = new Set(this.inStock().map((s) => s.product?.id));
-    return this.products().filter((p) => ids.has(p.id));
+    return this.products().filter((p) => this.totals().has(p.id));
   });
 
   private readonly showBranch = computed(
@@ -67,8 +59,12 @@ export class StockSelection {
   };
 
   readonly productHint = (item: Product) => {
-    const sum = this.totals().get(item.id) ?? { rolls: 0, length: 0 };
-    const info = this.translate.t('Web.StockInfo', fmtNum(sum.rolls, 0), fmtNum(sum.length));
+    const sum = this.totals().get(item.id);
+    const info = this.translate.t(
+      'Web.StockInfo',
+      fmtNum(sum?.rollCount ?? 0, 0),
+      fmtNum(sum?.totalLength ?? 0),
+    );
     return this.category() || !item.category ? info : `${item.category.name} · ${info}`;
   };
 
@@ -81,7 +77,11 @@ export class StockSelection {
     void this.loadSettings();
     effect(() => {
       this.auth.branchId();
-      if (!this.allowNegativeStock()) untracked(() => void this.ensureStock());
+      if (!this.allowNegativeStock())
+        untracked(() => {
+          void this.ensureStock();
+          void this.loadCatalog();
+        });
     });
   }
 
@@ -222,9 +222,17 @@ export class StockSelection {
     if (this.stockLoad && this.stockBranch === branchId) return this.stockLoad;
     this.stockBranch = branchId;
     return (this.stockLoad = this.api
-      .get<WarehouseItem[]>('warehouse-items', branchId === null ? undefined : { branchId })
-      .then((rows) => this.stockRows.set(rows))
+      .get<StockSummary[]>('warehouse-items/summary', branchId === null ? undefined : { branchId })
+      .then((rows) => this.summary.set(rows))
       .catch(() => undefined));
+  }
+
+  private async loadCatalog(): Promise<void> {
+    if (this.catalog().length) return;
+    const page = await this.api
+      .filter<Product>('products/filter', { page: 1, pageSize: 500, descending: false })
+      .catch(() => ({ items: [], paging: null }));
+    this.catalog.set(page.items);
   }
 
   private requestStep(target: 'length' | 'count'): void {
