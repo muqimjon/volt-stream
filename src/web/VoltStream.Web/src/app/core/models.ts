@@ -183,6 +183,7 @@ export interface SupplyListItem {
 }
 
 export interface BranchStats {
+  isOwnScope: boolean;
   salesCount: number;
   soldRolls: number;
   soldLength: number;
@@ -191,6 +192,12 @@ export interface BranchStats {
   receivedRolls: number;
   receivedLength: number;
   receivedWeight: number;
+  draftsCount: number;
+  draftsOpen: number;
+  draftsConfirmed: number;
+  draftsCancelled: number;
+  draftRolls: number;
+  draftLength: number;
 }
 
 export interface AuditLog {

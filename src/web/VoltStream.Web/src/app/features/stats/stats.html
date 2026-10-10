@@ -1,5 +1,5 @@
 <div class="page">
-  <app-page-header [title]="'Web.Stats' | t" />
+  <app-page-header [title]="heading() | t" />
 
   <div class="segmented">
     @for (item of ranges; track item) {
@@ -9,12 +9,19 @@
     }
   </div>
 
-  <div class="tiles">
-    @for (tile of tiles; track tile.field) {
-      <div class="card tile">
-        <span class="label">{{ tile.key | t }}</span>
-        <strong>{{ loading() ? '…' : fmt(valueOf(tile.field), tile.frac) }}</strong>
+  @for (section of sections(); track section.title) {
+    <section class="group">
+      <h2><app-icon [name]="section.icon" [size]="20" /> {{ section.title | t }}</h2>
+      <div class="tiles">
+        @for (tile of section.tiles; track tile.field) {
+          <div class="card tile">
+            <span class="label">{{ tile.key | t }}</span>
+            <strong>{{ loading() ? '…' : fmt(valueOf(tile.field), tile.frac) }}</strong>
+          </div>
+        }
       </div>
-    }
-  </div>
+    </section>
+  } @empty {
+    <app-empty-state [text]="'Common.NoData' | t" />
+  }
 </div>

@@ -181,37 +181,19 @@
                 <app-icon name="trash" [size]="18" />
               </button>
             </div>
-            <dl class="sums">
-              <div>
-                <dt>{{ 'Sales.PerRoll' | t }}</dt>
-                <dd>{{ fmt(item.lengthPerRoll) }}</dd>
-              </div>
-              <div>
-                <dt>{{ 'Sales.RollCount' | t }}</dt>
-                <dd>{{ fmt(item.rollCount, 0) }}</dd>
-              </div>
-              <div>
-                <dt>{{ 'Common.Quantity' | t }}</dt>
-                <dd>{{ fmt(item.totalLength) }}</dd>
-              </div>
-              @if (item.weight) {
-                <div>
-                  <dt>{{ 'Web.Weight' | t }}</dt>
-                  <dd>{{ fmt(item.weight, 3) }}</dd>
-                </div>
-              }
-              @if (canViewPrices()) {
-                <div>
-                  <dt>{{ 'Common.Price' | t }}</dt>
-                  <dd>{{ fmt(item.unitPrice) }}</dd>
-                </div>
-                <div>
-                  <dt>{{ 'Sales.GrandTotal' | t }}</dt>
-                  <dd>{{ fmt(item.finalAmount) }}</dd>
-                </div>
-              }
-            </dl>
             @if (bp.phone()) {
+              <p class="line">
+                {{
+                  'Web.LineSummary'
+                    | t: fmt(item.rollCount, 0) : fmt(item.lengthPerRoll) : fmt(item.totalLength)
+                }}
+                @if (canViewPrices()) {
+                  · {{ fmt(item.unitPrice) }} · <strong>{{ fmt(item.finalAmount) }}</strong>
+                }
+              </p>
+              @if (item.weight) {
+                <p class="muted">{{ 'Web.Weight' | t }}: {{ fmt(item.weight, 3) }}</p>
+              }
               <div class="card-stepper">
                 <button
                   type="button"
@@ -229,6 +211,37 @@
                   +
                 </button>
               </div>
+            } @else {
+              <dl class="sums">
+                <div>
+                  <dt>{{ 'Sales.PerRoll' | t }}</dt>
+                  <dd>{{ fmt(item.lengthPerRoll) }}</dd>
+                </div>
+                <div>
+                  <dt>{{ 'Sales.RollCount' | t }}</dt>
+                  <dd>{{ fmt(item.rollCount, 0) }}</dd>
+                </div>
+                <div>
+                  <dt>{{ 'Web.TotalLength' | t }}</dt>
+                  <dd>{{ fmt(item.totalLength) }}</dd>
+                </div>
+                @if (item.weight) {
+                  <div>
+                    <dt>{{ 'Web.Weight' | t }}</dt>
+                    <dd>{{ fmt(item.weight, 3) }}</dd>
+                  </div>
+                }
+                @if (canViewPrices()) {
+                  <div>
+                    <dt>{{ 'Common.Price' | t }}</dt>
+                    <dd>{{ fmt(item.unitPrice) }}</dd>
+                  </div>
+                  <div>
+                    <dt>{{ 'Sales.GrandTotal' | t }}</dt>
+                    <dd>{{ fmt(item.finalAmount) }}</dd>
+                  </div>
+                }
+              </dl>
             }
           </article>
         }
@@ -292,7 +305,7 @@
     [priced]="canViewPrices()"
     [(unitPrice)]="unitPrice"
     [(discountRate)]="discountRate"
-    [count]="store.draft().items.length"
+    [total]="finalAmount()"
     [adder]="adder"
   />
 }

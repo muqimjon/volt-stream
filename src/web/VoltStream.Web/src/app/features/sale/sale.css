@@ -190,3 +190,7 @@
 .item.tappable {
   cursor: pointer;
 }
+
+.line {
+  margin-top: var(--sp-sm);
+}

@@ -55,7 +55,7 @@
 
   <header class="app-header">
     <span class="brand mobile-brand">Volt Stream</span>
-    <span class="page-title">{{ activeTitle() | t }}</span>
+    <span class="page-title">{{ title.override() ?? activeTitle() | t }}</span>
     <app-branch-switcher />
     <app-user-menu class="profile" />
     <div class="header-actions">

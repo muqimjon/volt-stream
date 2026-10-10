@@ -5,6 +5,7 @@ import { TranslatePipe } from '../../core/i18n/translate';
 import { ThemeMode } from '../../core/theme/theme';
 import { PwaService } from '../../core/pwa/pwa';
 import { BreakpointService } from '../../core/ui/breakpoint';
+import { PageTitle } from '../../core/ui/page-title';
 import { PaletteService } from '../../core/ui/palette';
 import { BranchSwitcher } from '../../shared/branch-switcher';
 import { Icon } from '../../shared/icon';
@@ -46,6 +47,7 @@ export class Shell {
   protected readonly pwa = inject(PwaService);
   protected readonly actions = inject(SessionActions);
   protected readonly palette = inject(PaletteService);
+  protected readonly title = inject(PageTitle);
   private readonly bp = inject(BreakpointService);
 
   protected readonly items = this.nav.allowed;

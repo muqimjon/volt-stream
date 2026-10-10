@@ -146,11 +146,11 @@ export class StockSelection {
     else if (options.length) this.requestStep('length');
   }
 
-  onStock(stock: WarehouseItem | null): void {
+  onStock(stock: WarehouseItem | null, focus = true): void {
     this.stock.set(stock);
     if (!stock) return;
     this.syncLengthFromRolls();
-    this.requestStep('count');
+    if (focus) this.requestStep('count');
   }
 
   onRollCountCommit(value: number | null): Promise<void> {

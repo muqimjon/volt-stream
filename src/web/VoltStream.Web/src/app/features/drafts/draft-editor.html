@@ -250,12 +250,7 @@
 </div>
 
 @if (bp.phone()) {
-  <app-product-sheet
-    [(open)]="sheetOpen"
-    [start]="sheetStart()"
-    [count]="items().length"
-    [adder]="adder"
-  />
+  <app-product-sheet [(open)]="sheetOpen" [start]="sheetStart()" [adder]="adder" />
 }
 
 @if (savedId(); as saved) {

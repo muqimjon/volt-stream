@@ -2,7 +2,7 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router, Routes } from '@angular/router';
 import { authGuard, guestGuard, permissionGuard } from './core/auth/guards';
 import { PermissionService } from './core/permissions/permission';
-import { NAV_ITEMS } from './features/shell/nav';
+import { NAV_ITEMS, STATS_PERMISSIONS } from './features/shell/nav';
 
 const indexRedirect: CanActivateFn = () => {
   const permissions = inject(PermissionService);
@@ -61,6 +61,7 @@ export const routes: Routes = [
       },
       {
         path: 'stats',
+        canActivate: [permissionGuard(STATS_PERMISSIONS)],
         loadComponent: () => import('./features/stats/stats').then((m) => m.StatsPage),
       },
       {

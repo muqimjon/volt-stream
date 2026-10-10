@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { TranslatePipe } from '../core/i18n/translate';
 import { Category, Product, WarehouseItem } from '../core/models';
+import { fmtNum } from '../core/utils/number';
 import { Icon } from './icon';
 import { NumberField } from './number-field';
 import { StockFlow } from './stock-flow';
@@ -27,7 +28,9 @@ import { StockSelection } from './stock-selection';
             <app-icon name="chevronLeft" [size]="20" />
             {{ 'Web.Back' | t }}
           </button>
-          <span class="muted">{{ 'Web.AddedCount' | t: count() }}</span>
+          @if (added()) {
+            <span class="muted">{{ 'Web.AddedCount' | t: added() }}</span>
+          }
           <button type="button" class="link done" (click)="close()">{{ 'Web.Done' | t }}</button>
         </header>
 
@@ -81,7 +84,7 @@ import { StockSelection } from './stock-selection';
               <small>{{ 'Sales.RollLength' | t }}</small>
             </div>
             <ul class="rows">
-              @for (stock of sel.stocks(); track stock.id) {
+              @for (stock of lengths(); track stock.id) {
                 <li>
                   <button type="button" (click)="choose(stock)">
                     <strong>{{ sel.stockLabel(stock) }}</strong>
@@ -130,6 +133,12 @@ import { StockSelection } from './stock-selection';
                     [value]="discountRate()"
                     (valueChange)="discountRate.set($event)"
                   />
+                </div>
+              }
+              @if (priced() && total() !== null) {
+                <div class="total">
+                  <span>{{ 'Sales.GrandTotal' | t }}</span>
+                  <strong>{{ fmt(total()) }}</strong>
                 </div>
               }
             </div>
@@ -301,6 +310,19 @@ import { StockSelection } from './stock-selection';
       padding: 0;
       font-size: 28px;
     }
+    .total {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-inline: var(--sp-lg);
+      padding: var(--sp-md) var(--sp-lg);
+      border-radius: var(--r-md);
+      background: var(--brand-subtle);
+      color: var(--brand);
+    }
+    .total strong {
+      font-size: var(--fs-title);
+    }
     footer {
       flex: 0 0 auto;
       padding: var(--sp-md) var(--sp-lg) calc(var(--sp-md) + var(--safe-b));
@@ -319,15 +341,17 @@ export class ProductSheet {
   readonly priced = input(false);
   readonly unitPrice = model<number | null>(null);
   readonly discountRate = model<number | null>(null);
-  readonly count = input(0);
+  readonly total = input<number | null>(null);
   readonly adder = input.required<() => Promise<boolean>>();
 
   protected readonly sel = inject(StockSelection);
+  protected readonly fmt = fmtNum;
   protected readonly steps = signal<number[]>([1]);
   protected readonly step = computed(() => this.steps().at(-1) ?? 1);
   protected readonly query = signal('');
   protected readonly chip = signal<Category | null>(null);
   protected readonly flash = signal(false);
+  protected readonly added = signal(0);
   protected readonly editing = signal(false);
   protected readonly viewport = signal({ height: window.innerHeight, top: 0 });
   private silent = false;
@@ -341,6 +365,15 @@ export class ProductSheet {
         (p) => (!chip || p.categoryId === chip.id) && (!q || p.name.toLowerCase().includes(q)),
       );
   });
+
+  protected readonly lengths = computed(() =>
+    [...this.sel.stocks()].sort(
+      (a, b) =>
+        Number(a.rollCount <= 0) - Number(b.rollCount <= 0) ||
+        b.rollCount - a.rollCount ||
+        b.lengthPerRoll - a.lengthPerRoll,
+    ),
+  );
 
   constructor() {
     effect(() => {
@@ -383,20 +416,21 @@ export class ProductSheet {
   protected async pick(product: Product): Promise<void> {
     await this.sel.onProduct(product, false);
     const options = this.sel.stocks();
-    if (options.length === 1) {
-      this.sel.onStock(options[0]);
-      this.go(3);
-    } else this.go(2);
+    if (options.length === 1) this.choose(options[0]);
+    else this.go(2);
   }
 
   protected choose(stock: WarehouseItem): void {
-    this.sel.onStock(stock);
+    this.sel.onStock(stock, false);
+    this.sel.rollCount.set(1);
+    void this.sel.onRollCountCommit(1);
     this.go(3);
   }
 
   protected async add(): Promise<void> {
     if (!(await this.adder()())) return;
     if (this.editing()) return this.close();
+    this.added.update((n) => n + 1);
     this.flash.set(true);
     setTimeout(() => this.flash.set(false), 1500);
     this.restart();
@@ -405,6 +439,7 @@ export class ProductSheet {
   private begin(): void {
     const start = this.start();
     this.editing.set(start === 3);
+    this.added.set(0);
     this.steps.set([start]);
     this.query.set('');
     this.chip.set(null);
