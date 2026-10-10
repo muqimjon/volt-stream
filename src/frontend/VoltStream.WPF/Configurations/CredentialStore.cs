@@ -6,7 +6,7 @@ using System.Text.Json;
 
 public class CredentialStore
 {
-    private static readonly string FilePath = AppStorage.PathFor("credentials.dat");
+    private static readonly string FilePath = AppStorage.PathFor("login.dat");
     private static readonly TimeSpan Lifetime = TimeSpan.FromHours(5);
 
     private sealed record CredentialsDto(string Username, string Password, DateTime SavedAtUtc);

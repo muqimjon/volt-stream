@@ -8,8 +8,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
-using System.Windows;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Localization;
 
 public partial class CategorySettingsViewModel : ViewModelBase
@@ -78,7 +78,7 @@ public partial class CategorySettingsViewModel : ViewModelBase
     [RelayCommand]
     private async Task Delete(CategoryResponse category)
     {
-        if (MessageBox.Show($"{category.Name} {TranslationSource.T("Settings.ConfirmDeleteCategory")}", TranslationSource.T("Common.Delete"), MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
+        if (!AppDialog.Confirm($"{category.Name} {TranslationSource.T("Settings.ConfirmDeleteCategory")}", TranslationSource.T("Common.Delete"))) return;
 
         var response = await categoriesApi.DeleteAsync(category.Id).Handle(isLoading => IsLoading = isLoading);
         if (response.IsSuccess)

@@ -1,9 +1,12 @@
-namespace VoltStream.Infrastructure.Persistence;
+﻿namespace VoltStream.Infrastructure.Persistence;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using VoltStream.Application.Commons.Services;
+using VoltStream.Domain.Entities;
+using VoltStream.Infrastructure.Persistence.Configurations;
 
 public class DatabaseInitializer(
     IServiceProvider services,
@@ -19,10 +22,13 @@ public class DatabaseInitializer(
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
                 await context.Database.MigrateAsync(stoppingToken);
+                await EnsureDefaultBranchAsync(context, stoppingToken);
                 await EnsurePerformanceIndexesAsync(context, stoppingToken);
 
                 var seeder = scope.ServiceProvider.GetRequiredService<ExcelDataSeeder>();
                 await seeder.SeedAsync(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SeedData"));
+
+                AppReadiness.Ready = true;
                 return;
             }
             catch (Exception ex)
@@ -31,6 +37,65 @@ public class DatabaseInitializer(
                 await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
             }
         }
+    }
+
+    private static async Task EnsureDefaultBranchAsync(AppDbContext context, CancellationToken ct)
+    {
+        if (!await context.Branches.AnyAsync(ct))
+        {
+            context.Branches.Add(new Branch
+            {
+                Name = BranchConfiguration.DefaultBranchName,
+                NormalizedName = BranchConfiguration.DefaultBranchName.ToUpperInvariant()
+            });
+            await context.SaveChangesAsync(ct);
+        }
+
+        await LinkBranchWarehousesAsync(context, ct);
+    }
+
+    // Eski Warehouses.BranchId bu kod ishlashidan oldin migratsiyada o'chadi, shuning uchun
+    // filial va bo'sh ombor Id tartibida juftlanadi (ikkalasi bir xil tartibda yaratilgan).
+    public static async Task LinkBranchWarehousesAsync(AppDbContext context, CancellationToken ct)
+    {
+        var branches = await context.Branches
+            .Where(b => b.WarehouseId == null)
+            .OrderBy(b => b.Id)
+            .ToListAsync(ct);
+
+        if (branches.Count > 0)
+        {
+            var free = await context.Warehouses
+                .Where(w => !w.IsDeleted && !w.Branches.Any())
+                .OrderBy(w => w.Id)
+                .ToListAsync(ct);
+
+            for (var i = 0; i < branches.Count; i++)
+            {
+                var warehouse = i < free.Count ? free[i] : new Warehouse();
+
+                // v1 dan ko'chgan ombor nomsiz — ro'yxat va tanlagichlarda bo'sh ko'rinmasin.
+                if (string.IsNullOrWhiteSpace(warehouse.Name))
+                {
+                    warehouse.Name = branches[i].Name;
+                    warehouse.NormalizedName = branches[i].NormalizedName;
+                }
+
+                branches[i].Warehouse = warehouse;
+            }
+
+            await context.SaveChangesAsync(ct);
+        }
+
+        await context.Sales
+            .Where(s => s.WarehouseId == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(x => x.WarehouseId,
+                x => context.Branches.Where(b => b.Id == x.BranchId).Select(b => b.WarehouseId).FirstOrDefault()), ct);
+
+        await context.Supplies
+            .Where(s => s.WarehouseId == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(x => x.WarehouseId,
+                x => context.Branches.Where(b => b.Id == x.BranchId).Select(b => b.WarehouseId).FirstOrDefault()), ct);
     }
 
     private static Task EnsurePerformanceIndexesAsync(AppDbContext context, CancellationToken ct)

@@ -1,0 +1,24 @@
+.row-between {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-sm);
+}
+
+.readout {
+  display: flex;
+  align-items: center;
+  min-height: var(--touch);
+  padding: 0 var(--sp-md);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-alt);
+  font-weight: 600;
+}
+
+@media (min-width: 1024px) {
+  .totals .sums {
+    display: none;
+  }
+}

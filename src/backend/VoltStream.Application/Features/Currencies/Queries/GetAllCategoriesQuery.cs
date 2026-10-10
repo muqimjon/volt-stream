@@ -1,9 +1,9 @@
 ﻿namespace VoltStream.Application.Features.Currencies.Queries;
 
-using AutoMapper;
-using MediatR;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Features.Currencies.DTOs;
 
 public record GetAllCurrenciesQuery : IRequest<IReadOnlyCollection<CurrencyDto>>;

@@ -20,6 +20,7 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
 {
     private readonly IServiceProvider services;
     private readonly IMapper mapper;
+    private readonly BranchContext branchContext;
 
     public PaginationViewModel Pagination { get; }
 
@@ -29,6 +30,7 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
     {
         this.services = services;
         this.mapper = mapper;
+        branchContext = services.GetRequiredService<BranchContext>();
         Pagination = new PaginationViewModel(LoadPageAsync);
         _ = LoadInitialDataAsync();
     }
@@ -128,6 +130,7 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
     {
         BeginDate = BeginDate,
         EndDate = EndDate,
+        BranchId = branchContext.BranchId,
         CustomerId = SelectedCustomer?.Id > 0 ? SelectedCustomer.Id : null,
         CategoryId = SelectedCategory?.Id > 0 ? SelectedCategory.Id : null,
         ProductId = SelectedProduct?.Id > 0 ? SelectedProduct.Id : null,
@@ -144,6 +147,7 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
         Unit = r.Unit,
         TotalCount = r.TotalLength,
         Customer = r.Customer,
+        Composition = r.Composition,
     };
 
     #endregion Load Data
@@ -197,19 +201,20 @@ public partial class SalesHistoryPageViewModel : ViewModelBase
             FileName = TranslationSource.T("SalesHistory.ReportName"),
             Columns =
             [
-                new() { Header = TranslationSource.T("Common.Date"), Width = 74, Align = ReportAlign.Center, Value = x => x.OperationDate?.ToString("dd.MM.yyyy") },
-                new() { Header = TranslationSource.T("SalesHistory.Customer"), Width = 82, Value = x => x.Customer },
-                new() { Header = TranslationSource.T("SalesHistory.ProductType"), Width = 80, Value = x => x.Category },
-                new() { Header = TranslationSource.T("Common.Name"), Width = 82, Value = x => x.Name },
-                new() { Header = TranslationSource.T("SalesHistory.InRoll"), Width = 68, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.RollLength },
-                new() { Header = TranslationSource.T("SalesHistory.RollCount"), Width = 60, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.Quantity },
-                new() { Header = TranslationSource.T("Common.Total"), Width = 50, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.TotalCount },
-                new() { Header = TranslationSource.T("SalesHistory.MeasureShort"), Width = 70, Align = ReportAlign.Center, Value = x => x.Unit },
-                new() { Header = TranslationSource.T("Common.Price"), Width = 80, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.Price },
-                new() { Header = TranslationSource.T("SalesHistory.TotalAmount"), Width = 100, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.TotalAmount },
+                new() { Header = TranslationSource.T("Common.Date"), Width = 80, Align = ReportAlign.Center, Value = x => x.OperationDate?.ToString("dd.MM.yyyy") },
+                new() { Header = TranslationSource.T("SalesHistory.Customer"), Width = 76, Value = x => x.Customer },
+                new() { Header = TranslationSource.T("SalesHistory.ProductType"), Width = 65, Value = x => x.Category },
+                new() { Header = TranslationSource.T("Common.Name"), Width = 65, Value = x => x.Name },
+                new() { Header = TranslationSource.T("SalesHistory.InRoll"), Width = 70, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.RollLength },
+                new() { Header = TranslationSource.T("SalesHistory.RollCount"), Width = 70, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.Quantity },
+                new() { Header = TranslationSource.T("Common.Total"), Width = 45, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.TotalCount },
+                new() { Header = TranslationSource.T("SalesHistory.Composition"), Width = 58, Value = x => x.Composition },
+                new() { Header = TranslationSource.T("SalesHistory.MeasureShort"), Width = 56, Align = ReportAlign.Center, Value = x => x.Unit },
+                new() { Header = TranslationSource.T("Common.Price"), Width = 64, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.Price },
+                new() { Header = TranslationSource.T("SalesHistory.TotalAmount"), Width = 80, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.TotalAmount },
             ],
             Rows = items,
-            Totals = new ReportTotals { Label = TranslationSource.T("SalesHistory.GrandTotal"), LabelSpan = 9, Cells = [new() { Column = 9, Value = FinalAmount ?? 0, Format = "N2" }] },
+            Totals = new ReportTotals { Label = TranslationSource.T("SalesHistory.GrandTotal"), LabelSpan = 10, Cells = [new() { Column = 10, Value = FinalAmount ?? 0, Format = "N2" }] },
         };
     }
 

@@ -1,0 +1,230 @@
+<UserControl x:Class="VoltStream.WPF.Settings.Views.Modules.UserSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+             xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
+             xmlns:uc="clr-namespace:VoltStream.WPF.Commons.UserControls"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="900">
+	<Grid Margin="20" Background="{DynamicResource Canvas}">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+			<ColumnDefinition Width="340" />
+		</Grid.ColumnDefinitions>
+
+		<!-- List -->
+		<DataGrid Grid.Column="0"
+                  Margin="0,0,20,0"
+                  ItemsSource="{Binding Users}"
+                  IsReadOnly="True">
+			<DataGrid.Columns>
+				<DataGridTextColumn Header="{loc:Loc Users.Username}" Binding="{Binding Username}" Width="1.2*" />
+				<DataGridTextColumn Header="{loc:Loc Common.Name}" Binding="{Binding Name}" Width="1.6*" />
+				<DataGridTextColumn Header="{loc:Loc Users.Role}" Width="0.9*">
+					<DataGridTextColumn.Binding>
+						<Binding Path="Role" Converter="{StaticResource LocalizedEnumConverter}" ConverterParameter="Users.Role" />
+					</DataGridTextColumn.Binding>
+				</DataGridTextColumn>
+				<DataGridTextColumn Header="{loc:Loc Users.Branch}" Binding="{Binding BranchName}" Width="1.2*" />
+				<DataGridTextColumn Header="{loc:Loc Users.PrintPolicy}" Width="1.4*">
+					<DataGridTextColumn.Binding>
+						<Binding Path="PrintPolicy" Converter="{StaticResource LocalizedEnumConverter}" ConverterParameter="Users.PrintPolicy" />
+					</DataGridTextColumn.Binding>
+				</DataGridTextColumn>
+				<DataGridCheckBoxColumn Header="{loc:Loc Settings.Active}" Binding="{Binding IsActive}" Width="64" IsReadOnly="True" />
+				<DataGridTemplateColumn Header="{loc:Loc Common.Actions}" Width="70">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+								<Button Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{StaticResource EditActionButton}"
+                                        ToolTip="{loc:Loc Common.Edit}">
+									<fa:IconImage Icon="Pen" Foreground="{DynamicResource Warning}" Width="16" Height="16" />
+								</Button>
+							</StackPanel>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+			</DataGrid.Columns>
+		</DataGrid>
+
+		<!-- Sidebar form -->
+		<Border Grid.Column="1"
+                Style="{StaticResource CardBorder}"
+                VerticalAlignment="Stretch">
+			<ScrollViewer VerticalScrollBarVisibility="Auto">
+				<StackPanel>
+					<ContentControl Content="{Binding IsEditing}">
+						<ContentControl.Style>
+							<Style TargetType="ContentControl">
+								<Setter Property="ContentTemplate">
+									<Setter.Value>
+										<DataTemplate>
+											<TextBlock Text="{loc:Loc Settings.AddNew}" Style="{StaticResource SubtitleText}" Margin="0,0,0,15" />
+										</DataTemplate>
+									</Setter.Value>
+								</Setter>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding IsEditing}" Value="True">
+										<Setter Property="ContentTemplate">
+											<Setter.Value>
+												<DataTemplate>
+													<TextBlock Text="{loc:Loc Common.Edit}" Style="{StaticResource SubtitleText}" Margin="0,0,0,15" />
+												</DataTemplate>
+											</Setter.Value>
+										</Setter>
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</ContentControl.Style>
+					</ContentControl>
+
+					<TextBlock Text="{loc:Loc Users.Username}" Style="{StaticResource FieldLabel}" />
+					<TextBox Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource ModernTextBox}"
+                             IsEnabled="{Binding IsEditing, Converter={StaticResource InverseBoolToBoolConverter}}"
+                             Margin="0,0,0,12" />
+
+					<TextBlock Text="{loc:Loc Common.Name}" Style="{StaticResource FieldLabel}" />
+					<TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource ModernTextBox}"
+                             Margin="0,0,0,12" />
+
+					<TextBlock Text="{loc:Loc Settings.Phone}" Style="{StaticResource FieldLabel}" />
+					<TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource ModernTextBox}"
+                             Margin="0,0,0,12" />
+
+					<TextBlock Text="{loc:Loc Users.Role}" Style="{StaticResource FieldLabel}" />
+					<ComboBox ItemsSource="{Binding Roles}"
+                              SelectedItem="{Binding Role}"
+                              Style="{StaticResource ModernCombo}"
+                              AutomationProperties.Name="{loc:Loc Users.Role}"
+                              Margin="0,0,0,12">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Converter={StaticResource LocalizedEnumConverter}, ConverterParameter=Users.Role}"
+                                           AutomationProperties.Name="{Binding Converter={StaticResource LocalizedEnumConverter}, ConverterParameter=Users.Role}" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+
+					<TextBlock Text="{loc:Loc Users.Branch}" Style="{StaticResource FieldLabel}" />
+					<ComboBox ItemsSource="{Binding Branches}"
+                              SelectedItem="{Binding SelectedBranch}"
+                              Style="{StaticResource ModernCombo}"
+                              AutomationProperties.Name="{loc:Loc Users.Branch}"
+                              Margin="0,0,0,12">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Name}" AutomationProperties.Name="{Binding Name}" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+
+					<TextBlock Text="{loc:Loc Users.PrintPolicy}" Style="{StaticResource FieldLabel}" />
+					<ComboBox ItemsSource="{Binding PrintPolicies}"
+                              SelectedItem="{Binding PrintPolicy}"
+                              Style="{StaticResource ModernCombo}"
+                              AutomationProperties.Name="{loc:Loc Users.PrintPolicy}"
+                              Margin="0,0,0,12">
+						<ComboBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding Converter={StaticResource LocalizedEnumConverter}, ConverterParameter=Users.PrintPolicy}"
+                                           AutomationProperties.Name="{Binding Converter={StaticResource LocalizedEnumConverter}, ConverterParameter=Users.PrintPolicy}" />
+							</DataTemplate>
+						</ComboBox.ItemTemplate>
+					</ComboBox>
+
+					<CheckBox Content="{loc:Loc Settings.Active}" IsChecked="{Binding IsActive}" Style="{StaticResource ModernCheck}" Margin="0,0,0,12" />
+
+					<!-- Password: create -->
+					<StackPanel Visibility="{Binding IsEditing, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+						<TextBlock Text="{loc:Loc Login.Password}" Style="{StaticResource FieldLabel}" />
+						<PasswordBox x:Name="PasswordBox"
+                                     Style="{StaticResource ModernPasswordBox}"
+                                     PasswordChanged="PasswordBox_PasswordChanged"
+                                     Margin="0,0,0,12" />
+					</StackPanel>
+
+					<!-- Password: edit -->
+					<StackPanel Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,12">
+						<StackPanel Orientation="Horizontal" Visibility="{Binding IsSettingPassword, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+							<Button Content="{loc:Loc Users.SetPassword}"
+                                    Style="{StaticResource SecondaryButton}"
+                                    Command="{Binding StartSetPasswordCommand}" />
+						</StackPanel>
+						<StackPanel Visibility="{Binding IsSettingPassword, Converter={StaticResource BooleanToVisibilityConverter}}">
+							<TextBlock Text="{loc:Loc Users.NewPassword}" Style="{StaticResource FieldLabel}" />
+							<PasswordBox x:Name="NewPasswordBox"
+                                         Style="{StaticResource ModernPasswordBox}"
+                                         PasswordChanged="NewPasswordBox_PasswordChanged"
+                                         Margin="0,0,0,8" />
+							<Button Content="{loc:Loc Common.Save}"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding SavePasswordCommand}"
+                                    HorizontalAlignment="Left"
+                                    Width="120" />
+						</StackPanel>
+					</StackPanel>
+
+					<TextBlock Text="{loc:Loc Users.Permissions}" Style="{StaticResource SubtitleText}" Margin="0,4,0,8" />
+					<TextBlock Text="{loc:Loc Users.AdminHasAll}"
+                               Foreground="{DynamicResource TextSecondary}"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,10"
+                               Visibility="{Binding IsAdminRole, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+					<ItemsControl ItemsSource="{Binding PermissionGroups}"
+                                  IsEnabled="{Binding IsAdminRole, Converter={StaticResource InverseBoolToBoolConverter}}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<StackPanel Margin="0,0,0,10">
+									<TextBlock Text="{Binding Group, Converter={StaticResource LocalizedEnumConverter}, ConverterParameter=Permissions.Group}"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimary}"
+                                               Margin="0,0,0,6" />
+									<ItemsControl ItemsSource="{Binding Items}">
+										<ItemsControl.ItemsPanel>
+											<ItemsPanelTemplate>
+												<WrapPanel />
+											</ItemsPanelTemplate>
+										</ItemsControl.ItemsPanel>
+										<ItemsControl.ItemTemplate>
+											<DataTemplate>
+												<CheckBox Content="{Binding Key, Converter={StaticResource LocalizedEnumConverter}, ConverterParameter=Permissions}"
+                                                          IsChecked="{Binding IsChecked}"
+                                                          Style="{StaticResource ModernCheck}"
+                                                          Margin="0,0,15,6" />
+											</DataTemplate>
+										</ItemsControl.ItemTemplate>
+									</ItemsControl>
+								</StackPanel>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+
+					<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+						<Button Content="{loc:Loc Common.Cancel}"
+                                Style="{StaticResource SecondaryButton}"
+                                Command="{Binding CancelCommand}"
+                                Margin="0,0,10,0"
+                                Width="100" />
+
+						<Button Content="{loc:Loc Common.Save}"
+                                Style="{StaticResource PrimaryButton}"
+                                Command="{Binding SaveCommand}"
+                                Width="100" />
+					</StackPanel>
+				</StackPanel>
+			</ScrollViewer>
+		</Border>
+
+		<uc:BusyOverlay Grid.ColumnSpan="2"
+                        IsBusy="{Binding IsLoading}"
+                        Message="{loc:Loc Common.Loading}" />
+	</Grid>
+</UserControl>

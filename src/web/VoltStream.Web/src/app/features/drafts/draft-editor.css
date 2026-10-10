@@ -1,0 +1,44 @@
+.stepper {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-xs);
+}
+
+.stepper app-number-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.stepper .btn {
+  min-width: var(--touch);
+  padding: 0;
+  font-size: var(--fs-subtitle);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
+.item-actions {
+  display: flex;
+}
+
+@media (min-width: 768px) {
+  .col {
+    container-type: inline-size;
+  }
+}
+
+@media (max-width: 639.98px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@container (max-width: 420px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}

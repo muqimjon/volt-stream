@@ -1,11 +1,13 @@
-﻿namespace VoltStream.Application.Features.Products.Commands;
+namespace VoltStream.Application.Features.Products.Commands;
 
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.SettingsProducts)]
 public record DeleteProductCommand(long Id) : IRequest<bool>;
 
 public class DeleteProductCommandHandler(IAppDbContext context)
@@ -22,6 +24,9 @@ public class DeleteProductCommandHandler(IAppDbContext context)
 
         if (isSold)
             throw new ForbiddenException("Ushbu mahsulotni o'chirib bo'lmaydi: U bilan bog'liq savdo operatsiyalari mavjud.");
+
+        if (await context.SaleDraftItems.AnyAsync(i => i.ProductId == request.Id, cancellationToken))
+            throw new ConflictException("Ushbu mahsulotni o'chirib bo'lmaydi: U yuk ro'yxatlarida ishlatilgan.");
 
         context.Products.Remove(product);
         await context.SaveAsync(cancellationToken);

@@ -3,7 +3,6 @@
 public record AccountCommandDto(
     long Id,
     decimal OpeningBalance,
-    decimal Balance,
     decimal Discount,
     long CustomerId,
     long CurrencyId);

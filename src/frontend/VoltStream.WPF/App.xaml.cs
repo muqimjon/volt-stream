@@ -76,8 +76,11 @@ public partial class App : Application
 
         mainShown = true;
         var mainWindow = Services!.GetRequiredService<MainWindow>();
+        MainWindow = mainWindow;
         mainWindow.Show();
         loginWindow.Close();
+
+        _ = Services!.GetRequiredService<PrintAgentService>().StartAsync();
     }
 
     private void RegisterGlobalExceptionHandlers()
@@ -104,6 +107,9 @@ public partial class App : Application
 
     protected override async void OnExit(ExitEventArgs e)
     {
+        if (Services?.GetService<PrintAgentService>() is { } agent)
+            await agent.StopAsync();
+
         if (host is not null)
             await host.StopAsync();
 
@@ -141,7 +147,17 @@ public partial class App : Application
         services.AddSingleton<ConnectionRecovery>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<ISessionService, SessionService>();
+        services.AddSingleton<BranchContext>();
+        services.AddTransient<SalePolicy>();
         services.AddSingleton<NamozTimeService>();
+
+        var printerStore = new PrinterSettingsStore();
+        var printerSettings = printerStore.Load();
+        printerStore.BindAutoSave(printerSettings);
+        services.AddSingleton(printerStore);
+        services.AddSingleton(printerSettings);
+        services.AddSingleton<PrintAgentService>();
+
         ApiService.ConfigureServices(services);
     }
 }

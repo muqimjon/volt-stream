@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
+using VoltStream.WPF.Commons.Utils;
 using VoltStream.WPF.Supplies.ViewModels;
 
 public partial class SuppliesPage : Page
@@ -13,6 +14,12 @@ public partial class SuppliesPage : Page
     {
         InitializeComponent();
         DataContext = new SuppliesPageViewModel(services);
+
+        if (!Permission.Has("sales.view_prices"))
+        {
+            priceLabelCell.Visibility = Visibility.Collapsed;
+            priceInputCell.Visibility = Visibility.Collapsed;
+        }
 
         WeakReferenceMessenger.Default.Register<FocusControlMessage>(this, (r, m) =>
         {

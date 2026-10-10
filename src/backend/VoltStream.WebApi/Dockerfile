@@ -1,49 +1,33 @@
-﻿# Base image for runtime
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-USER $APP_UID
-WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
-
-# Build stage
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-ARG BUILD_CONFIGURATION=Release
+# Angular SPA va framework-dependent publish arxitekturaga bog'liq emas — multi-arch'da faqat bir marta, build mashinasida yig'iladi.
+FROM --platform=$BUILDPLATFORM node:24-alpine AS web
 WORKDIR /src
+COPY src/web/VoltStream.Web/package.json src/web/VoltStream.Web/package-lock.json src/web/VoltStream.Web/
+RUN cd src/web/VoltStream.Web && npm ci
+COPY src/web/VoltStream.Web/ src/web/VoltStream.Web/
+RUN cd src/web/VoltStream.Web && npm run build
 
-# ✅ wait-for-it.sh faylni nusxalab, bajariladigan qilamiz
-COPY src/backend/VoltStream.WebApi/wait-for-it.sh /wait-for-it.sh
-RUN chmod +x /wait-for-it.sh
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+COPY VoltStream.sln Directory.Build.props ./
+COPY src/backend/VoltStream.WebApi/VoltStream.WebApi.csproj src/backend/VoltStream.WebApi/
+COPY src/backend/VoltStream.Application/VoltStream.Application.csproj src/backend/VoltStream.Application/
+COPY src/backend/VoltStream.Domain/VoltStream.Domain.csproj src/backend/VoltStream.Domain/
+COPY src/backend/VoltStream.Infrastructure/VoltStream.Infrastructure.csproj src/backend/VoltStream.Infrastructure/
+RUN dotnet restore src/backend/VoltStream.WebApi/VoltStream.WebApi.csproj
+COPY src/backend/ src/backend/
+RUN dotnet publish src/backend/VoltStream.WebApi/VoltStream.WebApi.csproj \
+    -c Release -o /app/publish -p:BuildWeb=false -p:UseAppHost=false
 
-# ✅ Project fayllarni nusxalash
-COPY ["src/backend/VoltStream.WebApi/VoltStream.WebApi.csproj", "src/backend/VoltStream.WebApi/"]
-COPY ["src/backend/VoltStream.Application/VoltStream.Application.csproj", "src/backend/VoltStream.Application/"]
-COPY ["src/backend/VoltStream.Domain/VoltStream.Domain.csproj", "src/backend/VoltStream.Domain/"]
-COPY ["src/backend/VoltStream.Infrastructure/VoltStream.Infrastructure.csproj", "src/backend/VoltStream.Infrastructure/"]
-
-# ✅ Restore
-RUN dotnet restore "src/backend/VoltStream.WebApi/VoltStream.WebApi.csproj"
-
-# ✅ Source fayllarni nusxalash
-COPY . .
-
-# ✅ Build
-WORKDIR "/src/src/backend/VoltStream.WebApi"
-RUN dotnet build "VoltStream.WebApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
-
-# Publish stage
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "VoltStream.WebApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-# Final runtime stage
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+RUN apt-get update && apt-get install -y --no-install-recommends curl tzdata \
+    && rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /home/app/.aspnet/DataProtection-Keys && chown -R $APP_UID:$APP_UID /home/app/.aspnet
 WORKDIR /app
-
-# ✅ Faylni build stage’dan nusxalaymiz (chmod allaqachon bajarilgan)
-COPY --from=build /wait-for-it.sh /wait-for-it.sh
-
-# ✅ Publish qilingan fayllarni nusxalaymiz
-COPY --from=publish /app/publish .
-
-# ❗ ENTRYPOINT o‘zgartirilmaydi — docker-compose.yml orqali command beriladi
-# ENTRYPOINT ["dotnet", "VoltStream.WebApi.dll"]
+COPY --from=build /app/publish .
+COPY --from=web /src/src/backend/VoltStream.WebApi/wwwroot ./wwwroot
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+USER $APP_UID
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=5 \
+    CMD curl -fsS http://localhost:8080/api/health || exit 1
+ENTRYPOINT ["dotnet", "VoltStream.WebApi.dll"]

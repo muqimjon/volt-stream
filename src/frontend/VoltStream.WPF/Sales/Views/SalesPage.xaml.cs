@@ -7,10 +7,13 @@ using ApiServices.Models.Requests;
 using ApiServices.Models.Responses;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
@@ -27,11 +30,16 @@ public partial class SalesPage : Page
     private readonly ICustomersApi customersApi;
     private readonly ICurrenciesApi currenciesApi;
     private readonly ISaleApi salesApi;
+    private readonly BranchContext branchContext;
+    private readonly INavigationService navigationService;
+    private readonly SalePolicy policy;
 
     private readonly SaleSession saleSession;
+    private readonly bool canViewPrices;
     public Sale sale;
     private long? loadedProductCategoryId;
     private bool productsLoaded;
+    private long? lastSaleId;
 
     public SalesPage(IServiceProvider services)
     {
@@ -46,6 +54,9 @@ public partial class SalesPage : Page
         customersApi = services.GetRequiredService<ICustomersApi>();
         salesApi = services.GetRequiredService<ISaleApi>();
         currenciesApi = services.GetRequiredService<ICurrenciesApi>();
+        branchContext = services.GetRequiredService<BranchContext>();
+        navigationService = services.GetRequiredService<INavigationService>();
+        policy = services.GetRequiredService<SalePolicy>();
 
         CustomerName.GotFocus += CustomerName_GotFocus;
 
@@ -74,7 +85,30 @@ public partial class SalesPage : Page
 
 
         CurrencyType.SelectionChanged += CurrencyType_SelectionChanged;
+        ((INotifyCollectionChanged)dataGrid.Items).CollectionChanged += (_, _) => CalcSaleSum();
 
+        canViewPrices = Permission.Has("sales.view_prices");
+        if (!canViewPrices)
+            HidePriceFields();
+    }
+
+    private void HidePriceFields()
+    {
+        foreach (var element in new UIElement[]
+        {
+            lblTotalSum, TotalSum, lblDiscountRow, discountPanel,
+            lbPrice, txtPrice, lbSum, txtSum, lbPerDiscount, txtPerDiscount,
+            lbDiscount, txtDiscount, lbFinalSum, txtFinalSumProduct
+        })
+            element.Visibility = Visibility.Collapsed;
+
+        foreach (var column in new[] { colPrice, colSum, colPerDiscount, colDiscount, colFinalSum })
+            column.Width = new GridLength(0);
+
+        foreach (var column in new DataGridColumn[] { priceColumn, sumColumn, perDiscountColumn, discountColumn, finalSumColumn })
+            column.Visibility = Visibility.Collapsed;
+
+        weightColumn.Visibility = Visibility.Visible;
     }
 
     private void CurrencyType_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -88,8 +122,7 @@ public partial class SalesPage : Page
         {
             if ((decimal.TryParse(txtRollCount.Text, out decimal value) ? value : 0) > sale.WarehouseCountRoll)
             {
-                if (MessageBox.Show(string.Format(TranslationSource.T("Sales.RollStockWarning"), cbxProductName.Text, sale.WarehouseCountRoll),
-                    TranslationSource.T("Sales.SaleCaption"), MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.No)
+                if (!ConfirmRollStock(cbxProductName.Text, sale.WarehouseCountRoll))
                 {
                     e.Handled = true;
                     txtRollCount.Text = null;
@@ -97,6 +130,31 @@ public partial class SalesPage : Page
             }
         }
     }
+
+    // Yuk ro'yxati tasdiqlanayotganda qoldiq ham, filial ham ro'yxatning filialidan olinadi (admin boshqa filialni tanlab turgan bo'lishi mumkin).
+    private long? SaleBranchId => sale.DraftBranchId ?? branchContext.BranchId;
+
+    private bool ConfirmRollStock(string productName, decimal warehouseRolls) =>
+        policy.AllowNegativeStock
+            ? AppDialog.Confirm(string.Format(TranslationSource.T("Sales.RollStockWarning"), productName, warehouseRolls),
+                TranslationSource.T("Sales.SaleCaption"), Window.GetWindow(this))
+            : RefuseStock(string.Format(TranslationSource.T("Turnovers.WarehouseRollsLeft"), productName, warehouseRolls));
+
+    private bool ConfirmMeterStock(string productName, object perRoll, decimal warehouseQuantity) =>
+        policy.AllowNegativeStock
+            ? AppDialog.Confirm(string.Format(TranslationSource.T("Sales.MeterStockWarning"), productName, perRoll, warehouseQuantity),
+                TranslationSource.T("Sales.SaleCaption"), Window.GetWindow(this))
+            : RefuseStock(string.Format(TranslationSource.T("Turnovers.WarehouseMetersLeft"), productName, perRoll, warehouseQuantity.ToString("N2")));
+
+    private bool RefuseStock(string left)
+    {
+        sale.Warning = $"{TranslationSource.T("Sales.StockNotEnough")} {left}";
+        return false;
+    }
+
+    private bool ConfirmRollCut(string productName, object perRoll, decimal quantity, decimal cut, decimal leftover) =>
+        AppDialog.Confirm(string.Format(TranslationSource.T("Sales.RollCutWarning"), productName, perRoll, quantity, cut, leftover),
+            TranslationSource.T("Sales.SaleCaption"), Window.GetWindow(this));
 
     private async void CustomerName_PreviewLostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
     {
@@ -175,22 +233,12 @@ public partial class SalesPage : Page
         {
             var customer = response.Data!.First();
 
-            beginBalans.Text = GetAccountsSumInUzsString(customer);
+            beginBalans.Text = canViewPrices ? CustomerBalance.Current(customer.Accounts?.Select(a => a.Balance) ?? []).ToString("F0") : string.Empty;
             tel.Text = customer.Phone;
             CalcSaleSum();
         }
         else sale.Error = response.Message ?? TranslationSource.T("Sales.CustomerInfoLoadError");
 
-    }
-
-
-    private static string GetAccountsSumInUzsString(CustomerResponse customer)
-    {
-        if (customer?.Accounts == null) return "0";
-
-        var totalUzs = customer.Accounts.Where(a => a != null).Sum(a => a.Balance);
-
-        return Math.Round(totalUzs, 0, MidpointRounding.AwayFromZero).ToString("F0");
     }
 
 
@@ -320,8 +368,7 @@ public partial class SalesPage : Page
         {
             if ((decimal.TryParse(txtQuantity.Text, out decimal value) ? value : 0) > sale.WarehouseQuantity)
             {
-                if (MessageBox.Show(string.Format(TranslationSource.T("Sales.MeterStockWarning"), cbxProductName.Text, cbxPerRollCount.Text, sale.WarehouseQuantity),
-                    TranslationSource.T("Sales.SaleCaption"), MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.No)
+                if (!ConfirmMeterStock(cbxProductName.Text, cbxPerRollCount.Text, sale.WarehouseQuantity))
                 {
                     e.Handled = true;
                     txtQuantity.Text = null;
@@ -335,9 +382,7 @@ public partial class SalesPage : Page
                 decimal _quantity = quantity - _q;
                 decimal q_quantity = perRollCount - _quantity;
                 sale.NewQuantity = q_quantity;
-                if (MessageBox.Show(string.Format(TranslationSource.T("Sales.RollCutWarning"), cbxProductName.Text, cbxPerRollCount.Text, quantity, _quantity, q_quantity),
-                    TranslationSource.T("Sales.SaleCaption"), MessageBoxButton.YesNo, MessageBoxImage.Question,
-                    MessageBoxResult.No) == MessageBoxResult.No)
+                if (!ConfirmRollCut(cbxProductName.Text, cbxPerRollCount.Text, quantity, _quantity, q_quantity))
                 {
                     e.Handled = true;
                     txtQuantity.Text = _q.ToString();
@@ -464,7 +509,7 @@ public partial class SalesPage : Page
         var response = await categoriesApi.GetAllAsync().Handle();
         if (response.IsSuccess)
         {
-            List<CategoryResponse> categories = response.Data!;
+            List<CategoryResponse> categories = [.. response.Data!.Where(c => policy.ShowCategory(c.Id))];
             cbxCategoryName.ItemsSource = categories;
             cbxCategoryName.DisplayMemberPath = "Name";
             cbxCategoryName.SelectedValuePath = "Id";
@@ -490,7 +535,7 @@ public partial class SalesPage : Page
 
         if (response.IsSuccess)
         {
-            var products = response.Data;
+            var products = response.Data!.Where(p => policy.ShowProduct(p.Id)).ToList();
             cbxProductName.ItemsSource = products;
             cbxProductName.DisplayMemberPath = "Name";
             cbxProductName.SelectedValuePath = "Id";
@@ -515,10 +560,10 @@ public partial class SalesPage : Page
             return;
         }
 
-        response = await warehouseItemsApi.GetProductDetailsFromWarehouseAsync(productId.Value).Handle();
+        response = await warehouseItemsApi.GetProductDetailsFromWarehouseAsync(productId.Value, SaleBranchId).Handle();
         if (response.IsSuccess)
         {
-            var warehouseItems = response.Data;
+            var warehouseItems = response.Data!.Where(policy.ShowStock).ToList();
             cbxPerRollCount.ItemsSource = warehouseItems;
             cbxPerRollCount.DisplayMemberPath = "LengthPerRoll";
             cbxPerRollCount.SelectedValuePath = "LengthPerRoll";
@@ -543,6 +588,7 @@ public partial class SalesPage : Page
             RollCount = int.TryParse(txtRollCount.Text, out int rollCount) ? rollCount : 0,
             WarehouseCountRoll = sale.WarehouseCountRoll,
             Quantity = decimal.TryParse(txtQuantity.Text, out decimal quantity) ? quantity : 0,
+            Weight = (cbxProductName.SelectedItem as ProductResponse)?.WeightPerUnit * quantity,
             NewQuantity = sale.NewQuantity,
             WarehouseQuantity = sale.WarehouseQuantity,
             Price = decimal.TryParse(txtPrice.Text, out decimal price) ? price : 0,
@@ -554,7 +600,6 @@ public partial class SalesPage : Page
 
         sale.SaleItems.Insert(0, saleItem);
 
-        CalcSaleSum();
         cbxCategoryName.SelectedValue = null;
         cbxProductName.SelectedValue = null;
         cbxPerRollCount.SelectedValue = null;
@@ -571,36 +616,88 @@ public partial class SalesPage : Page
         sale.WarehouseQuantity = 0;
     }
 
-    private async void DataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    private void DataGrid_CellEditEnding(object? sender, DataGridCellEditEndingEventArgs e)
     {
-        if (dataGrid.SelectedItem is not SaleItem item)
+        if (e.EditAction != DataGridEditAction.Commit || e.Row.Item is not SaleItem item || e.EditingElement is not TextBox box
+            || DataGridExcelEditing.IsUnchanged(box))
             return;
 
-        await LoadCategoryAsync();
-        await LoadProductAsync(null);
-        cbxProductName.SelectedValue = item.ProductId;
+        var column = e.Column;
+        bool accepted = decimal.TryParse(NumericInput.Normalize(box.Text), NumberStyles.Number, CultureInfo.InvariantCulture, out decimal value)
+            ? column == rollCountColumn ? ApplyRollCount(item, value)
+                : column == quantityColumn ? ApplyQuantity(item, value)
+                : column == priceColumn ? ApplyPrice(item, value)
+                : ApplyPerDiscount(item, value)
+            : Reject(column == rollCountColumn ? "Sales.RollCountRequired"
+                : column == quantityColumn ? "Sales.TotalQuantityRequired"
+                : column == priceColumn ? "Sales.PriceRequired"
+                : "Sales.DiscountPercentInvalid");
 
-        await LoadWarehouseItemsAsync(item.ProductId);
-        if (item.PerRollCount.HasValue)
-            cbxPerRollCount.SelectedValue = item.PerRollCount.Value;
+        if (accepted)
+        {
+            CalcSaleSum();
+            return;
+        }
 
-        sale.WarehouseCountRoll = item.WarehouseCountRoll;
-        sale.WarehouseQuantity = item.WarehouseQuantity;
-        sale.NewQuantity = item.NewQuantity;
+        e.Cancel = true;
+        Dispatcher.BeginInvoke(() => dataGrid.CancelEdit(DataGridEditingUnit.Row), DispatcherPriority.Background);
+    }
 
-        txtRollCount.Text = item.RollCount?.ToString();
-        txtQuantity.Text = item.Quantity?.ToString();
-        txtPrice.Text = item.Price?.ToString();
-        txtSum.Text = item.Sum?.ToString();
-        txtPerDiscount.Text = item.PerDiscount?.ToString();
-        txtDiscount.Text = item.Discount?.ToString();
-        txtFinalSumProduct.Text = item.FinalSumProduct?.ToString();
+    private bool Reject(string messageKey)
+    {
+        sale.Warning = TranslationSource.T(messageKey);
+        return false;
+    }
 
-        sale.SaleItems.Remove(item);
-        CalcSaleSum();
+    private bool ApplyRollCount(SaleItem item, decimal value)
+    {
+        if (value <= 0 || value != Math.Truncate(value) || item.PerRollCount is not > 0)
+            return Reject("Sales.RollCountRequired");
 
-        txtQuantity.Focus();
-        txtQuantity.SelectAll();
+        if (value > item.WarehouseCountRoll && !ConfirmRollStock(item.ProductName, item.WarehouseCountRoll))
+            return false;
+
+        item.SetQuantity((int)value, value * item.PerRollCount.Value, 0);
+        return true;
+    }
+
+    private bool ApplyQuantity(SaleItem item, decimal quantity)
+    {
+        if (quantity <= 0 || item.PerRollCount is not > 0)
+            return Reject("Sales.TotalQuantityRequired");
+
+        decimal perRoll = item.PerRollCount.Value;
+        if (quantity > item.WarehouseQuantity && !ConfirmMeterStock(item.ProductName, perRoll, item.WarehouseQuantity))
+            return false;
+
+        decimal cut = quantity % perRoll;
+        decimal leftover = cut == 0 ? 0 : perRoll - cut;
+        if (cut != 0 && !ConfirmRollCut(item.ProductName, perRoll, quantity, cut, leftover))
+            return false;
+
+        item.SetQuantity((int)Math.Ceiling(quantity / perRoll), quantity, leftover);
+        return true;
+    }
+
+    private bool ApplyPrice(SaleItem item, decimal price)
+    {
+        if (price <= 0)
+            return Reject("Sales.PriceRequired");
+
+        item.SetPrice(price);
+        return true;
+    }
+
+    private bool ApplyPerDiscount(SaleItem item, decimal percent)
+    {
+        if (percent < 0)
+            return Reject("Sales.DiscountPercentRange");
+
+        if (percent >= 100)
+            return Reject("Sales.DiscountOver100");
+
+        item.PerDiscount = percent;
+        return true;
     }
 
     private bool IsSaleItemCompleted()
@@ -610,7 +707,7 @@ public partial class SalesPage : Page
 
         if (cbxCategoryName.SelectedValue == null)
         {
-            MessageBox.Show(TranslationSource.T("Sales.CategoryNotSelected"), TranslationSource.T("Sales.ErrorTitle"), MessageBoxButton.OK, MessageBoxImage.Error);
+            AppDialog.Error(TranslationSource.T("Sales.CategoryNotSelected"), TranslationSource.T("Sales.ErrorTitle"), Window.GetWindow(this));
             cbxCategoryName.Focus();
             isSuccess = false;
         }
@@ -643,21 +740,21 @@ public partial class SalesPage : Page
             isSuccess = false;
         }
 
-        else if (!decimal.TryParse(txtPrice.Text, out decimal price) || price <= 0)
+        else if (canViewPrices && (!decimal.TryParse(txtPrice.Text, out decimal price) || price <= 0))
         {
             txtPrice.Focus();
             sale.Warning = TranslationSource.T("Sales.PriceRequired");
             isSuccess = false;
         }
 
-        else if (!decimal.TryParse(txtSum.Text, out decimal sum) || sum <= 0)
+        else if (canViewPrices && (!decimal.TryParse(txtSum.Text, out decimal sum) || sum <= 0))
         {
             sale.Warning = TranslationSource.T("Sales.TotalSumRequired");
             txtSum.Focus();
             isSuccess = false;
         }
 
-        else if (!decimal.TryParse(txtFinalSumProduct.Text, out decimal finalSumProduct) || finalSumProduct <= 0)
+        else if (canViewPrices && (!decimal.TryParse(txtFinalSumProduct.Text, out decimal finalSumProduct) || finalSumProduct <= 0))
         {
             sale.Warning = TranslationSource.T("Sales.GrandTotalRequired");
             txtFinalSumProduct.Focus();
@@ -707,10 +804,8 @@ public partial class SalesPage : Page
             }
         }
         decimal beginSum = decimal.TryParse(beginBalans.Text, out decimal value) ? value : 0;
-        var rate = (CurrencyType.SelectedItem as CurrencyResponse)?.ExchangeRate ?? 1m;
-        if (rate == 0m) rate = 1m;
-        decimal endSum = beginSum - finalSum * rate;
-        lastBalans.Text = endSum.ToString();
+        decimal endSum = CustomerBalance.After(beginSum, finalSum, (CurrencyType.SelectedItem as CurrencyResponse)?.ExchangeRate ?? 1m);
+        lastBalans.Text = canViewPrices ? endSum.ToString() : string.Empty;
 
     }
 
@@ -747,12 +842,20 @@ public partial class SalesPage : Page
             return;
         }
 
+        if (branchContext.CanSelect && SaleBranchId is null)
+        {
+            sale.Warning = TranslationSource.T("Header.SelectBranch");
+            return;
+        }
+
         if (!Confirm(string.Format(TranslationSource.T("Sales.SubmitConfirm"), sale.OperationDate, sale.SaleItems.Select(si => si.ProductId).Distinct().Count())))
             return;
 
         var saleRequest = new SaleRequest
         {
             Date = sale.OperationDate,
+            BranchId = SaleBranchId,
+            SaleDraftId = sale.SaleDraftId,
             CustomerId = sale.CustomerId,
             Amount = sale.FinalSum ?? 0,
             Discount = sale.TotalDiscount ?? 0,
@@ -761,7 +864,7 @@ public partial class SalesPage : Page
             Length = (decimal)sale.SaleItems.Sum(si => si.Quantity)!,
             RollCount = (int)sale.SaleItems.Sum(si => si.RollCount)!,
             IsDiscountApplied = sale.IsDiscountApplied,
-            Items = [.. sale.SaleItems.Select(i => new SaleItemRequest
+            Items = [.. sale.SaleItems.AsEnumerable().Reverse().Select(i => new SaleItemRequest
             {
                 ProductId = i.ProductId,
                 RollCount = i.RollCount ?? 0,
@@ -780,21 +883,49 @@ public partial class SalesPage : Page
 
         if (response.IsSuccess)
         {
+            bool fromDraft = sale.SaleDraftId is not null;
+            lastSaleId = response.Data;
+            receiptButton.IsEnabled = true;
+            receiptButtonText.Text = string.IsNullOrWhiteSpace(sale.CustomerName)
+                ? TranslationSource.T("Receipt.Show")
+                : string.Format(TranslationSource.T("Receipt.LastSale"), sale.CustomerName);
             sale.Success = TranslationSource.T("Sales.SaveSuccess");
             saleSession.Reset();
             sale = saleSession.Current;
             await ClearUI();
             CustomerName.Focus();
             WeakReferenceMessenger.Default.Send(new EntityUpdatedMessage<string>("OperationUpdated"));
+
+            if (fromDraft)
+            {
+                WeakReferenceMessenger.Default.Send(new EntityUpdatedMessage<string>("DraftsUpdated"));
+                navigationService.GoBack();
+            }
         }
         else
         {
-            sale.Error = $"{TranslationSource.T("Sales.ServerError")}: {response.StatusCode}";
+            sale.Error = response.Message ?? $"{TranslationSource.T("Sales.ServerError")}: {response.StatusCode}";
         }
+    }
+
+    private async void ReceiptButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (lastSaleId is not long saleId) return;
+
+        var response = await salesApi.GetReceipt(saleId).Handle(isLoading => sale.IsLoading = isLoading);
+
+        if (!response.IsSuccess)
+        {
+            sale.Error = response.Message ?? TranslationSource.T("Receipt.LoadError");
+            return;
+        }
+
+        ReceiptDocumentBuilder.Preview(response.Data, canViewPrices, services);
     }
 
     private async void Page_Loaded(object sender, RoutedEventArgs e)
     {
+        await policy.LoadAsync(SaleBranchId);
         await LoadCategoryAsync();
         await LoadCurrencyAsync();
         RegisterFocusNavigation();
@@ -922,9 +1053,6 @@ public partial class SalesPage : Page
         }
     }
 
-    private static bool Confirm(string message, MessageBoxImage image = MessageBoxImage.Question)
-    {
-        var result = MessageBox.Show(message, TranslationSource.T("Sales.ConfirmTitle"), MessageBoxButton.YesNo, image);
-        return result == MessageBoxResult.Yes;
-    }
+    private bool Confirm(string message)
+        => AppDialog.Confirm(message, TranslationSource.T("Sales.ConfirmTitle"), Window.GetWindow(this));
 }

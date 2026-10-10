@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Features.WarehouseStocks.DTOs;
+namespace VoltStream.Application.Features.WarehouseStocks.DTOs;
 
 using VoltStream.Application.Features.Products.DTOs;
 
@@ -11,5 +11,6 @@ public record WarehouseStockDto
     public decimal UnitPrice { get; set; }
     public decimal DiscountRate { get; set; }
     public long WarehouseId { get; set; }
+    public string WarehouseName { get; set; } = string.Empty;
     public ProductForWarehouseDto Product { get; set; } = default!;
 };

@@ -1,13 +1,15 @@
 ﻿namespace VoltStream.Application.Features.Payments.Commands;
 
-using AutoMapper;
-using MediatR;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Domain.Entities;
 using VoltStream.Domain.Enums;
 
+[RequirePermission(Permissions.PaymentsManage)]
 public record CreatePaymentCommand(
     DateTimeOffset PaidAt,
     long CustomerId,
@@ -56,7 +58,7 @@ public class CreatePaymentCommandHandler(
                 ? await EnsureCashExists(currency.Id, cancellationToken)
                 : null;
 
-            ApplyBalances(account, currency, cash, request);
+            ApplyBalances(currency, cash, request);
 
             var payment = CreatePayment(request, customer, account, currency);
 
@@ -90,9 +92,8 @@ public class CreatePaymentCommandHandler(
         return newCash;
     }
 
-    private static void ApplyBalances(Account account, Currency currency, Cash? cash, CreatePaymentCommand request)
+    private static void ApplyBalances(Currency currency, Cash? cash, CreatePaymentCommand request)
     {
-        account.Balance += request.Amount;
         currency.ExchangeRate = request.ExchangeRate;
 
         if (currency.IsCash && cash is not null)

@@ -1,14 +1,20 @@
 ﻿namespace VoltStream.Application.Features.Sales.Commands;
 
-using AutoMapper;
-using MediatR;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
+using System.Text.Json.Serialization;
 using VoltStream.Application.Commons.Exceptions;
+using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
+using VoltStream.Application.Commons.Security;
+using VoltStream.Application.Commons.Services;
+using VoltStream.Application.Features.SaleDrafts;
 using VoltStream.Domain.Entities;
 using VoltStream.Domain.Enums;
 
+[RequirePermission(Permissions.SalesCreate)]
 public record CreateSaleCommand(
     DateTimeOffset Date,
     long? CustomerId,
@@ -19,26 +25,52 @@ public record CreateSaleCommand(
     bool IsDiscountApplied,
     decimal Discount,
     string Description,
-    List<SaleItemCommand> Items)
-    : IRequest<long>;
+    List<SaleItemCommand> Items,
+    long? BranchId = null,
+    long? SaleDraftId = null)
+    : IRequest<long>
+{
+    // Faqat UpdateSaleCommand beradi: tahrirlangan savdo asl omborida qolsin.
+    // So'rov tanasidan bog'lanmaydi — klient omborni tanlay olmaydi.
+    [JsonIgnore]
+    public long? WarehouseId { get; init; }
+}
 
 public class CreateSaleCommandHandler(
     IAppDbContext context,
+    BranchContext branches,
+    ICurrentUser user,
     IMapper mapper) : IRequestHandler<CreateSaleCommand, long>
 {
     public async Task<long> Handle(CreateSaleCommand request, CancellationToken cancellationToken)
     {
+        if (request.Items.Any(item => !RollComposition.IsConsistent(item.RollCount, item.LengthPerRoll, item.TotalLength)))
+            throw new AppException("Savdo qatori noto'g'ri: soni va uzunligi musbat, jami (soni − 1) × uzunlikdan katta va soni × uzunlikdan oshmasin.");
+
+        foreach (var item in request.Items)
+            PriceValidation.Ensure(item.UnitPrice, item.DiscountRate);
+
         await context.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var warehouse = await GetWarehouseAsync(cancellationToken);
+            var branchId = await branches.ResolveAsync(request.BranchId, cancellationToken);
+            var draft = request.SaleDraftId is long draftId ? await ClaimDraftAsync(draftId, branchId, cancellationToken) : null;
+            var warehouse = await GetWarehouseAsync(
+                request.WarehouseId ?? await branches.WarehouseOfAsync(branchId, cancellationToken), cancellationToken);
             var customer = await GetCustomerAsync(request.CustomerId, cancellationToken);
 
             var descriptionBuilder = new StringBuilder();
+            ApplyStockPrices(request.Items, warehouse);
+            CalculateAmounts(request.Items);
 
-            await ProcessSaleItemsAsync(request.Items, warehouse, descriptionBuilder, cancellationToken);
+            var allowNegativeStock = await context.AppSettings.AllAsync(s => s.AllowNegativeStock, cancellationToken);
+            await ProcessSaleItemsAsync(request.Items, warehouse, allowNegativeStock, descriptionBuilder, cancellationToken);
             var sale = mapper.Map<Sale>(request);
+            sale.BranchId = branchId;
+            sale.WarehouseId = warehouse.Id;
+
+            RecalculateTotals(sale, request.Items, request.IsDiscountApplied);
 
             if (customer is not null)
             {
@@ -50,9 +82,12 @@ public class CreateSaleCommandHandler(
                         CurrencyId = request.CurrencyId
                     });
 
-                UpdateAccountBalance(account, sale.Amount, sale.Discount, request.IsDiscountApplied);
+                AccumulateDiscount(account, sale.Discount, request.IsDiscountApplied);
                 sale.CustomerOperation = CreateCustomerOperation(sale, account, request.Description, descriptionBuilder, request.IsDiscountApplied);
             }
+
+            if (draft is not null)
+                draft.ConfirmedSale = sale;
 
             context.Sales.Add(sale);
             await context.CommitTransactionAsync(cancellationToken);
@@ -66,12 +101,90 @@ public class CreateSaleCommandHandler(
         }
     }
 
-    private async Task<Warehouse> GetWarehouseAsync(CancellationToken cancellationToken)
+    // Shartli UPDATE ro'yxat qatorini tranzaksiya oxirigacha qulflaydi: parallel ikkinchi tasdiq kutib turadi,
+    // keyin holat Open emasligini ko'rib 409 oladi.
+    private async Task<SaleDraft> ClaimDraftAsync(long draftId, long branchId, CancellationToken cancellationToken)
+    {
+        if (!user.Has(Permissions.DraftsConfirm))
+            throw new ForbiddenException($"Ruxsat yetarli emas: {Permissions.DraftsConfirm}");
+
+        var claimed = await context.SaleDrafts
+            .Where(d => d.Id == draftId && d.BranchId == branchId && d.Status == SaleDraftStatus.Open)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(d => d.Status, SaleDraftStatus.Confirmed)
+                .SetProperty(d => d.UpdatedAt, DateTimeOffset.UtcNow), cancellationToken);
+
+        if (claimed == 0)
+        {
+            var draftBranchId = await context.SaleDrafts
+                .Where(d => d.Id == draftId)
+                .Select(d => (long?)d.BranchId)
+                .FirstOrDefaultAsync(cancellationToken)
+                ?? throw new NotFoundException(nameof(SaleDraft), nameof(SaleDraft.Id), draftId);
+
+            if (draftBranchId != branchId)
+                throw user.Has(Permissions.BranchesAll)
+                    ? new ConflictException("Ro'yxat boshqa filialga tegishli.")
+                    : new NotFoundException(nameof(SaleDraft), nameof(SaleDraft.Id), draftId);
+
+            throw new ConflictException(SaleDraftExtensions.NotOpenMessage);
+        }
+
+        return await context.SaleDrafts.FirstAsync(d => d.Id == draftId, cancellationToken);
+    }
+
+    private async Task<Warehouse> GetWarehouseAsync(long warehouseId, CancellationToken cancellationToken)
     {
         return await context.Warehouses
             .Include(w => w.Stocks)
-            .FirstOrDefaultAsync(cancellationToken)
+            .FirstOrDefaultAsync(w => w.Id == warehouseId, cancellationToken)
             ?? throw new NotFoundException(nameof(Warehouse));
+    }
+
+    private void ApplyStockPrices(List<SaleItemCommand> items, Warehouse warehouse)
+    {
+        var canSeePrices = user.Has(Permissions.SalesViewPrices);
+
+        foreach (var item in items)
+        {
+            if (canSeePrices && item.UnitPrice != 0)
+                continue;
+
+            var stock = warehouse.Stocks
+                .FirstOrDefault(s => s.ProductId == item.ProductId && s.LengthPerRoll == item.LengthPerRoll);
+
+            if (stock is null)
+                continue;
+
+            item.UnitPrice = stock.UnitPrice;
+            item.DiscountRate = stock.DiscountRate;
+            item.DiscountAmount = item.TotalLength * item.UnitPrice * item.DiscountRate / 100;
+        }
+    }
+
+    // Qarz shu summalardan yoziladi, shuning uchun klient arifmetikasiga ishonilmaydi. Chegirma summasi esa
+    // klientdan olinadi: desktopda "summa bilan chegirma" bor, foizdan qayta hisoblash foydalanuvchi niyatini buzadi.
+    // Pul 2 xonaga yaxlitlanadi (klientlar ham half-up): aks holda qarzda 0,005 qoldiq qoladi.
+    private static void CalculateAmounts(List<SaleItemCommand> items)
+    {
+        foreach (var item in items)
+        {
+            item.TotalAmount = Math.Round(item.TotalLength * item.UnitPrice, 2, MidpointRounding.AwayFromZero);
+            item.DiscountAmount = Math.Round(item.DiscountAmount, 2, MidpointRounding.AwayFromZero);
+
+            if (item.DiscountAmount < 0 || item.DiscountAmount > item.TotalAmount)
+                throw new AppException("Chegirma summasi manfiy yoki qator summasidan katta bo'lishi mumkin emas.");
+
+            item.FinalAmount = item.TotalAmount - item.DiscountAmount;
+        }
+    }
+
+    private static void RecalculateTotals(Sale sale, List<SaleItemCommand> items, bool isDiscountApplied)
+    {
+        sale.Discount = items.Sum(i => i.DiscountAmount);
+        sale.Amount = items.Sum(i => i.TotalAmount) - (isDiscountApplied ? sale.Discount : 0);
+        sale.Length = items.Sum(i => i.TotalLength);
+        sale.RollCount = items.Sum(i => i.RollCount);
     }
 
     private async Task<Customer?> GetCustomerAsync(long? customerId, CancellationToken cancellationToken)
@@ -88,6 +201,7 @@ public class CreateSaleCommandHandler(
     private async Task ProcessSaleItemsAsync(
         List<SaleItemCommand> saleItems,
         Warehouse warehouse,
+        bool allowNegativeStock,
         StringBuilder descriptionBuilder,
         CancellationToken cancellationToken)
     {
@@ -107,6 +221,13 @@ public class CreateSaleCommandHandler(
             var product = await context.Products.FirstOrDefaultAsync(p => p.Id == item.ProductId, cancellationToken)
                 ?? throw new NotFoundException(nameof(Product), nameof(item.Id), item.ProductId);
 
+            if (!allowNegativeStock && (residue.RollCount < 0 || residue.TotalLength < 0))
+                throw new ConflictException($"Omborda yetarli qoldiq yo'q: {product.Name} ({item.LengthPerRoll:0.###} {product.Unit}).");
+
+            item.Weight = product.IsWeightTracked && product.WeightPerUnit is decimal weight
+                ? item.TotalLength * weight
+                : 0;
+
             descriptionBuilder.Append($"{product.Name} - {item.TotalLength:N2} x {item.UnitPrice:N2} = {item.TotalAmount:N2}");
 
             if (item.DiscountAmount != 0)
@@ -119,11 +240,15 @@ public class CreateSaleCommandHandler(
 
     private async Task HandleResidueAsync(SaleItemCommand item, Warehouse warehouse, CancellationToken cancellationToken)
     {
-        if (item.LengthPerRoll * item.RollCount != item.TotalLength)
+        var detail = item.LengthPerRoll * item.RollCount - item.TotalLength;
+
+        // Uzunlik 3 xonada yaxlitlangani uchun to'liq rulondan biroz oshishi mumkin — bunda bo'lak qaytmaydi.
+        if (detail > 0)
         {
-            var detail = item.LengthPerRoll * item.RollCount - item.TotalLength;
             var existStock = await context.WarehouseStocks
-                .FirstOrDefaultAsync(i => i.ProductId == item.ProductId && i.LengthPerRoll == detail, cancellationToken);
+                .FirstOrDefaultAsync(i => i.WarehouseId == warehouse.Id
+                                       && i.ProductId == item.ProductId
+                                       && i.LengthPerRoll == detail, cancellationToken);
 
             if (existStock is null)
                 context.WarehouseStocks.Add(new WarehouseStock
@@ -144,9 +269,8 @@ public class CreateSaleCommandHandler(
         }
     }
 
-    private static void UpdateAccountBalance(Account account, decimal amount, decimal discount, bool isApplied)
+    private static void AccumulateDiscount(Account account, decimal discount, bool isApplied)
     {
-        account.Balance -= amount;
         if (!isApplied)
             account.Discount += discount;
     }

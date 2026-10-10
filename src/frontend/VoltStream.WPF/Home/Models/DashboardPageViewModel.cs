@@ -1,6 +1,7 @@
-namespace VoltStream.WPF.Home.Models;
+﻿namespace VoltStream.WPF.Home.Models;
 
 using ApiServices.Extensions;
+using System.ComponentModel;
 using ApiServices.Interfaces;
 using ApiServices.Models.Responses;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -11,12 +12,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using VoltStream.WPF.Commons;
 using VoltStream.WPF.Commons.Localization;
+using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Home.Controls;
 
 public partial class DashboardPageViewModel : ViewModelBase
 {
     private readonly IDashboardApi dashboardApi;
     private readonly IMarketDataApi marketDataApi;
+    private readonly BranchContext branchContext;
 
     [ObservableProperty] private decimal todaySalesAmount;
     [ObservableProperty] private int todaySalesCount;
@@ -62,6 +65,8 @@ public partial class DashboardPageViewModel : ViewModelBase
     {
         dashboardApi = services.GetRequiredService<IDashboardApi>();
         marketDataApi = services.GetRequiredService<IMarketDataApi>();
+        branchContext = services.GetRequiredService<BranchContext>();
+        PropertyChangedEventManager.AddHandler(branchContext, (_, _) => _ = LoadAsync(), nameof(BranchContext.BranchId));
         _ = LoadAsync();
         _ = LoadMarketAsync();
     }
@@ -87,7 +92,7 @@ public partial class DashboardPageViewModel : ViewModelBase
 
     private async Task LoadAsync()
     {
-        var response = await dashboardApi.GetAsync(beginDate, endDate).Handle(loading => IsLoading = loading);
+        var response = await dashboardApi.GetAsync(beginDate, endDate, branchContext.BranchId).Handle(loading => IsLoading = loading);
         if (!response.IsSuccess || response.Data is null)
         {
             Error = response.Message ?? TranslationSource.T("Dashboard.LoadError");

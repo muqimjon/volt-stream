@@ -18,6 +18,9 @@ public partial class Sale : ViewModelBase
     [ObservableProperty] private long currencyId;
     [ObservableProperty] private bool isDiscountApplied = false;
     [ObservableProperty] private string description = string.Empty;
+    [ObservableProperty] private long? saleDraftId;
+    [ObservableProperty] private long? draftBranchId;
+    [ObservableProperty] private string draftLabel = string.Empty;
     [ObservableProperty] private string categoryName = string.Empty;
     [ObservableProperty] private long categoryId;
     [ObservableProperty] private long productId;

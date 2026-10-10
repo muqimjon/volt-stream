@@ -1,6 +1,7 @@
-namespace VoltStream.WPF.Supplies.ViewModels;
+﻿namespace VoltStream.WPF.Supplies.ViewModels;
 
 using ApiServices.Extensions;
+using System.ComponentModel;
 using ApiServices.Interfaces;
 using ApiServices.Models;
 using ApiServices.Models.Requests;
@@ -11,10 +12,11 @@ using CommunityToolkit.Mvvm.Messaging;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
-using System.Windows;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
+using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.ViewModels;
 using VoltStream.WPF.Sales.ViewModels;
 
@@ -25,6 +27,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
     private readonly ISuppliesApi suppliesApi;
     private readonly IWarehouseStocksApi warehouseItemsApi;
     private readonly IMapper mapper;
+    private readonly BranchContext branchContext;
 
     public PaginationViewModel Pagination { get; }
 
@@ -35,6 +38,8 @@ public partial class SuppliesPageViewModel : ViewModelBase
         suppliesApi = services.GetRequiredService<ISuppliesApi>();
         warehouseItemsApi = services.GetRequiredService<IWarehouseStocksApi>();
         mapper = services.GetRequiredService<IMapper>();
+        branchContext = services.GetRequiredService<BranchContext>();
+        PropertyChangedEventManager.AddHandler(branchContext, (_, _) => _ = LoadPageAsync(), nameof(BranchContext.BranchId));
 
         Pagination = new PaginationViewModel(LoadPageAsync);
 
@@ -50,8 +55,10 @@ public partial class SuppliesPageViewModel : ViewModelBase
     [ObservableProperty] private string categoryText = string.Empty;
 
     [ObservableProperty] private ObservableCollection<ProductViewModel> products = [];
-    [ObservableProperty] private ProductViewModel? selectedProduct;
-    [ObservableProperty] private string productText = string.Empty;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsNewProduct))] private ProductViewModel? selectedProduct;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsNewProduct))] private string productText = string.Empty;
+    [ObservableProperty] private bool isWeightTracked;
+    [ObservableProperty] private decimal? weightPerUnit;
 
     [ObservableProperty] private ObservableCollection<WarehouseStockViewModel> warehouseStocks = [];
     [ObservableProperty] private WarehouseStockViewModel? selectedWarehouseStock;
@@ -69,6 +76,8 @@ public partial class SuppliesPageViewModel : ViewModelBase
     private bool _isFilingForm;
 
     public decimal? TotalQuantity => WarehouseStockValue * RollCount;
+
+    public bool IsNewProduct => !string.IsNullOrWhiteSpace(ProductText) && (SelectedProduct?.Id ?? 0) <= 0;
 
     #region Property Change Handlers
 
@@ -102,6 +111,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
         if (_isFilingForm || value == null) return;
         ProductText = value.Name;
         Unit = value.Unit ?? "metr";
+        if (value.Id > 0) { IsWeightTracked = false; WeightPerUnit = null; }
         _ = LoadWarehouseStocksAsync(value.Id);
     }
 
@@ -196,15 +206,20 @@ public partial class SuppliesPageViewModel : ViewModelBase
         }
     }
 
-    private FilteringRequest BuildFilters() => new()
+    private FilteringRequest BuildFilters()
     {
-        Filters = new()
+        var request = new FilteringRequest
         {
-            ["date"] = [$"{SelectedDate:yyyy-MM-dd}"],
-            ["product"] = ["include:category"]
-        },
-        Descending = true
-    };
+            Filters = new()
+            {
+                ["date"] = [$"{SelectedDate:yyyy-MM-dd}"],
+                ["product"] = ["include:category"]
+            },
+            Descending = true
+        };
+        branchContext.ApplyTo(request);
+        return request;
+    }
 
     private async Task ReloadAsync()
     {
@@ -229,6 +244,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
     private async Task LoadWarehouseStocksAsync(long productId)
     {
         FilteringRequest request = new() { Filters = new() { ["productId"] = [productId.ToString()] } };
+        branchContext.ApplyTo(request);
         var response = await warehouseItemsApi.Filter(request).Handle(isLoading => IsLoading = isLoading);
         if (response.IsSuccess) WarehouseStocks = mapper.Map<ObservableCollection<WarehouseStockViewModel>>(response.Data);
         else Error = response.Message ?? TranslationSource.T("Supplies.LoadWarehouseStocksError");
@@ -259,10 +275,23 @@ public partial class SuppliesPageViewModel : ViewModelBase
             return;
         }
 
+        if (IsNewProduct && IsWeightTracked && WeightPerUnit is not > 0)
+        {
+            Warning = TranslationSource.T("Supplies.WeightRequired");
+            return;
+        }
+
+        if (branchContext.CanSelect && branchContext.BranchId is null)
+        {
+            Warning = TranslationSource.T("Header.SelectBranch");
+            return;
+        }
+
         var request = new SupplyRequest
         {
             Id = IsEditing && EditingItemBackup is not null ? EditingItemBackup.Id : 0,
             Date = (SelectedDate.Date == DateTime.Today ? DateTime.Now : SelectedDate).ToUniversalTime(),
+            BranchId = branchContext.BranchId,
             CategoryId = SelectedCategory?.Id ?? 0,
             ProductId = SelectedProduct?.Id ?? 0,
             RollCount = RollCount ?? 0,
@@ -272,7 +301,9 @@ public partial class SuppliesPageViewModel : ViewModelBase
             ProductName = ProductText,
             CategoryName = CategoryText,
             UnitPrice = UnitPrice ?? 0,
-            DiscountRate = DiscountRate ?? 0
+            DiscountRate = DiscountRate ?? 0,
+            IsWeightTracked = IsNewProduct && IsWeightTracked,
+            WeightPerUnit = IsNewProduct && IsWeightTracked ? WeightPerUnit : null
         };
 
         var isSuccess = false;
@@ -399,6 +430,8 @@ public partial class SuppliesPageViewModel : ViewModelBase
         UnitPrice = null;
         DiscountRate = null;
         Unit = null!;
+        IsWeightTracked = false;
+        WeightPerUnit = null;
         OnPropertyChanged(nameof(TotalQuantity));
     }
 
@@ -412,7 +445,7 @@ public partial class SuppliesPageViewModel : ViewModelBase
     }
 
     private static bool Confirm(string message) =>
-        MessageBox.Show(message, TranslationSource.T("Supplies.ConfirmTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
+        AppDialog.Confirm(message, TranslationSource.T("Supplies.ConfirmTitle"));
 
     #endregion Helper Methods
 }

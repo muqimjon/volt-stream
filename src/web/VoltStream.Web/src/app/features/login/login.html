@@ -1,0 +1,48 @@
+<div class="wrap">
+  <form class="card" (submit)="submit($event)">
+    <div class="head">
+      <span class="brand">Volt Stream</span>
+      <select class="lang" [value]="translate.lang()" (change)="setLang($any($event.target).value)">
+        @for (lang of languages; track lang.code) {
+          <option [value]="lang.code">{{ lang.label }}</option>
+        }
+      </select>
+    </div>
+
+    <h1>{{ 'Login.Welcome' | t }}</h1>
+    <p class="muted">{{ 'Login.Subtitle' | t }}</p>
+
+    <div class="field">
+      <label for="u">{{ 'Login.Username' | t }}</label>
+      <input
+        id="u"
+        class="input"
+        type="text"
+        autocomplete="username"
+        autocapitalize="none"
+        [value]="username()"
+        (input)="username.set($any($event.target).value)"
+      />
+    </div>
+
+    <div class="field">
+      <label for="p">{{ 'Login.Password' | t }}</label>
+      <input
+        id="p"
+        class="input"
+        type="password"
+        autocomplete="current-password"
+        [value]="password()"
+        (input)="password.set($any($event.target).value)"
+      />
+    </div>
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <button type="submit" class="btn btn-primary btn-block" [disabled]="busy()">
+      {{ (busy() ? 'Common.Loading' : 'Login.SignIn') | t }}
+    </button>
+  </form>
+</div>

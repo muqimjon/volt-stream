@@ -1,10 +1,10 @@
 ﻿namespace VoltStream.Application.Features.Products.Queries;
 
-using AutoMapper;
-using MediatR;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Features.Products.DTOs;
 using VoltStream.Domain.Entities;
 
@@ -15,7 +15,11 @@ public class GetProductByIdQueryHandler(
     IMapper mapper) : IRequestHandler<GetProductByIdQuery, ProductDto>
 {
     public async Task<ProductDto> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
-        => mapper.Map<ProductDto>(await context.Products
-                                .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken))
+    {
+        var product = await context.Products
+            .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(Product), nameof(request.Id), request.Id);
+
+        return mapper.Map<ProductDto>(product);
+    }
 }

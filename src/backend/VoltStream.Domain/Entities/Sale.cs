@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Domain.Entities;
+namespace VoltStream.Domain.Entities;
 
 public class Sale : Auditable
 {
@@ -9,6 +9,11 @@ public class Sale : Auditable
     public decimal Discount { get; set; }
     public string Description { get; set; } = string.Empty;
     public bool IsDiscountApplied { get; set; }
+
+    public long BranchId { get; set; }
+    public Branch Branch { get; set; } = default!;
+    public long? WarehouseId { get; set; }
+    public Warehouse? Warehouse { get; set; }
 
     public long CurrencyId { get; set; }
     public Currency Currency { get; set; } = default!;

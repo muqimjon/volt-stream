@@ -9,6 +9,7 @@ public record WarehouseStockResponse
     public decimal UnitPrice { get; set; }
     public decimal DiscountRate { get; set; }
     public long WarehouseId { get; set; }
+    public string WarehouseName { get; set; } = string.Empty;
 
     public long ProductId { get; set; }
     public ProductResponse Product { get; set; } = default!;

@@ -1,13 +1,15 @@
 ﻿namespace VoltStream.Application.Features.Monitoring.Queries;
 
-using AutoMapper;
-using MediatR;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Features.Monitoring.DTOs;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.SettingsUsers)]
 public record GetAllowedClientByIdQuery(long Id) : IRequest<AllowedClientDto>;
 
 public class GetAllowedClientByIdQueryHandler(
@@ -16,7 +18,11 @@ public class GetAllowedClientByIdQueryHandler(
     : IRequestHandler<GetAllowedClientByIdQuery, AllowedClientDto>
 {
     public async Task<AllowedClientDto> Handle(GetAllowedClientByIdQuery request, CancellationToken cancellationToken)
-         => mapper.Map<AllowedClientDto>(await context.AllowedClients
-             .FirstOrDefaultAsync(ac => ac.Id == request.Id, cancellationToken: cancellationToken))
-        ?? throw new NotFoundException(nameof(AllowedClient), nameof(request.Id), request.Id);
+    {
+        var client = await context.AllowedClients
+            .FirstOrDefaultAsync(ac => ac.Id == request.Id, cancellationToken)
+            ?? throw new NotFoundException(nameof(AllowedClient), nameof(request.Id), request.Id);
+
+        return mapper.Map<AllowedClientDto>(client);
+    }
 }

@@ -62,7 +62,7 @@
                 <Border.Background>
                     <ImageBrush ImageSource="/Commons/Source/Images/oramkabel.png" Stretch="UniformToFill" />
                 </Border.Background>
-                <Border>
+                <Border CornerRadius="14,0,0,14">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                             <GradientStop Color="{DynamicResource BrandPressedColor}" Offset="0" />

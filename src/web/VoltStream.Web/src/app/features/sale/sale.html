@@ -1,0 +1,346 @@
+<div class="page">
+  <app-page-header [title]="'Nav.Sales' | t">
+    <button type="button" class="btn btn-ghost" (click)="clearAll()">
+      {{ 'Common.Clear' | t }}
+    </button>
+  </app-page-header>
+
+  <div class="split">
+    <div class="col">
+      <section class="card stack">
+        <app-date-field
+          [label]="'Common.Date' | t"
+          [value]="store.draft().date"
+          (valueChange)="store.patch({ date: $event })"
+        />
+
+        <app-search-select
+          [label]="'Sales.Buyer' | t"
+          [placeholder]="'Common.Select' | t"
+          [items]="customers()"
+          [labelOf]="nameOf"
+          [subLabelOf]="customerHint"
+          [selected]="customer()"
+          [clearable]="true"
+          [allowCreate]="true"
+          (opened)="loadCustomers()"
+          (selectedChange)="pickCustomer($event)"
+          (create)="createCustomer($event)"
+        />
+
+        @if (balance(); as b) {
+          <dl class="sums">
+            <div>
+              <dt>{{ 'Web.BalanceCurrent' | t }}</dt>
+              <dd>{{ fmt(b.current, 0) }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'Web.BalanceResult' | t }}</dt>
+              <dd>{{ fmt(b.after, 0) }}</dd>
+            </div>
+          </dl>
+        }
+
+        @if (!bp.phone() || noteOpen() || store.draft().description) {
+          <div class="field">
+            <label for="note">{{ 'Common.Note' | t }}</label>
+            <input
+              id="note"
+              class="input"
+              type="text"
+              [value]="store.draft().description"
+              (input)="store.patch({ description: $any($event.target).value })"
+            />
+          </div>
+        } @else {
+          <button type="button" class="btn btn-ghost" (click)="noteOpen.set(true)">
+            + {{ 'Common.Note' | t }}
+          </button>
+        }
+      </section>
+
+      @if (!bp.phone()) {
+        <section class="card stack" appStockFlow (rowSubmit)="addItem()">
+          <app-search-select
+            [label]="'Sales.ProductType' | t"
+            [placeholder]="'Common.Select' | t"
+            [items]="sel.shownCategories()"
+            [labelOf]="nameOf"
+            [selected]="sel.category()"
+            [clearable]="true"
+            (selectedChange)="sel.onCategory($event)"
+          />
+
+          <app-search-select
+            [label]="'Sales.Product' | t"
+            [placeholder]="'Common.Select' | t"
+            [items]="sel.shownProducts()"
+            [labelOf]="nameOf"
+            [subLabelOf]="sel.productHint"
+            [selected]="sel.product()"
+            (opened)="sel.loadProducts()"
+            (selectedChange)="sel.onProduct($event)"
+          />
+
+          <app-search-select
+            data-step="length"
+            [label]="'Sales.RollLength' | t"
+            [placeholder]="'Common.Select' | t"
+            [items]="sel.stocks()"
+            [labelOf]="sel.stockLabel"
+            [subLabelOf]="sel.stockHint"
+            [selected]="sel.stock()"
+            [disabled]="!sel.product()"
+            [hint]="sel.stock() ? sel.stockHint(sel.stock()!) : ''"
+            (selectedChange)="sel.onStock($event)"
+          />
+
+          <div class="grid-2">
+            <app-number-field
+              data-step="count"
+              [label]="'Sales.RollCount' | t"
+              [value]="sel.rollCount()"
+              [disabled]="!sel.stock()"
+              (valueChange)="sel.rollCount.set($event)"
+              (commit)="sel.onRollCountCommit($event)"
+            />
+            <app-number-field
+              [label]="'Web.TotalLength' | t"
+              [value]="sel.length()"
+              [disabled]="!sel.stock()"
+              (valueChange)="sel.length.set($event)"
+              (commit)="sel.onLengthCommit($event)"
+            />
+          </div>
+
+          @if (canViewPrices()) {
+            <div class="grid-2">
+              <app-number-field
+                [label]="'Common.Price' | t"
+                [value]="unitPrice()"
+                [disabled]="!sel.stock()"
+                (valueChange)="unitPrice.set($event)"
+              />
+              <app-number-field
+                [label]="'Sales.DiscountPercent' | t"
+                [value]="discountRate()"
+                [disabled]="!sel.stock()"
+                (valueChange)="discountRate.set($event)"
+              />
+            </div>
+            <dl class="sums">
+              <div>
+                <dt>{{ 'Sales.TotalSum' | t }}</dt>
+                <dd>{{ fmt(totalAmount()) }}</dd>
+              </div>
+              <div>
+                <dt>{{ 'Sales.DiscountAmount' | t }}</dt>
+                <dd>{{ fmt(discountAmount()) }}</dd>
+              </div>
+              <div>
+                <dt>{{ 'Sales.GrandTotal' | t }}</dt>
+                <dd>{{ fmt(finalAmount()) }}</dd>
+              </div>
+            </dl>
+          }
+
+          @if (weight()) {
+            <p class="muted">{{ 'Web.Weight' | t }}: {{ fmt(weight(), 3) }}</p>
+          }
+
+          <button type="button" class="btn btn-primary btn-block" (click)="addItem()">
+            <app-icon name="plus" />
+            {{ 'Common.Add' | t }}
+          </button>
+        </section>
+      }
+    </div>
+
+    <div class="col">
+      <section class="stack">
+        <h2 class="section-title">{{ 'Web.Items' | t }}</h2>
+        @if (!store.draft().items.length) {
+          <app-empty-state [text]="'Common.NoData' | t" />
+        }
+        @for (item of store.draft().items; track $index) {
+          <article
+            class="card item"
+            [class.tappable]="bp.phone()"
+            (click)="bp.phone() && editItem($index)"
+          >
+            <div class="item-head">
+              <div>
+                <strong>{{ item.productName }}</strong>
+                <small class="muted">{{ item.categoryName }}</small>
+              </div>
+              <button
+                type="button"
+                class="icon-btn danger"
+                (click)="$event.stopPropagation(); removeItem($index)"
+              >
+                <app-icon name="trash" [size]="18" />
+              </button>
+            </div>
+            @if (bp.phone()) {
+              <p class="line">
+                {{
+                  'Web.LineSummary'
+                    | t: fmt(item.rollCount, 0) : fmt(item.lengthPerRoll) : fmt(item.totalLength)
+                }}
+                @if (canViewPrices()) {
+                  · {{ fmt(item.unitPrice) }} · <strong>{{ fmt(item.finalAmount) }}</strong>
+                }
+              </p>
+              @if (item.weight) {
+                <p class="muted">{{ 'Web.Weight' | t }}: {{ fmt(item.weight, 3) }}</p>
+              }
+              <div class="card-stepper">
+                <button
+                  type="button"
+                  class="btn btn-ghost"
+                  (click)="$event.stopPropagation(); adjustItem($index, -1)"
+                >
+                  −
+                </button>
+                <strong>{{ fmt(item.rollCount, 0) }}</strong>
+                <button
+                  type="button"
+                  class="btn btn-ghost"
+                  (click)="$event.stopPropagation(); adjustItem($index, 1)"
+                >
+                  +
+                </button>
+              </div>
+            } @else {
+              <dl class="sums">
+                <div>
+                  <dt>{{ 'Sales.PerRoll' | t }}</dt>
+                  <dd>{{ fmt(item.lengthPerRoll) }}</dd>
+                </div>
+                <div>
+                  <dt>{{ 'Sales.RollCount' | t }}</dt>
+                  <dd>{{ fmt(item.rollCount, 0) }}</dd>
+                </div>
+                <div>
+                  <dt>{{ 'Web.TotalLength' | t }}</dt>
+                  <dd>{{ fmt(item.totalLength) }}</dd>
+                </div>
+                @if (item.weight) {
+                  <div>
+                    <dt>{{ 'Web.Weight' | t }}</dt>
+                    <dd>{{ fmt(item.weight, 3) }}</dd>
+                  </div>
+                }
+                @if (canViewPrices()) {
+                  <div>
+                    <dt>{{ 'Common.Price' | t }}</dt>
+                    <dd>{{ fmt(item.unitPrice) }}</dd>
+                  </div>
+                  <div>
+                    <dt>{{ 'Sales.GrandTotal' | t }}</dt>
+                    <dd>{{ fmt(item.finalAmount) }}</dd>
+                  </div>
+                }
+              </dl>
+            }
+          </article>
+        }
+      </section>
+
+      @if (bp.phone()) {
+        <button type="button" class="btn btn-primary btn-block add-product" (click)="openSheet()">
+          <app-icon name="plus" />
+          {{ 'Web.AddProduct' | t }}
+        </button>
+      }
+
+      <section class="card stack totals" [class.pinned]="!!store.draft().items.length">
+        <dl class="sums">
+          <div>
+            <dt>{{ 'Web.TotalRolls' | t }}</dt>
+            <dd>{{ fmt(store.totals().rollCount, 0) }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'Web.TotalLength' | t }}</dt>
+            <dd>{{ fmt(store.totals().length) }}</dd>
+          </div>
+          @if (hasWeight()) {
+            <div class="detail">
+              <dt>{{ 'Web.TotalWeight' | t }}</dt>
+              <dd>{{ fmt(store.totals().weight, 3) }}</dd>
+            </div>
+          }
+          @if (canViewPrices()) {
+            <div class="detail">
+              <dt>{{ 'Sales.TotalSum' | t }}</dt>
+              <dd>{{ fmt(store.totals().amount) }}</dd>
+            </div>
+            <div class="detail">
+              <dt>{{ 'Sales.DiscountLabel' | t }}</dt>
+              <dd>{{ fmt(store.totals().discount) }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'Sales.GrandTotal' | t }}</dt>
+              <dd>{{ fmt(store.totals().final) }}</dd>
+            </div>
+          }
+        </dl>
+        <button
+          type="button"
+          class="btn btn-primary btn-block"
+          [disabled]="submitting() || !pwa.online() || !store.draft().items.length"
+          (click)="submit()"
+        >
+          {{ (submitting() ? 'Web.Submitting' : 'Sales.Submit') | t }}
+        </button>
+      </section>
+    </div>
+  </div>
+</div>
+
+@if (bp.phone()) {
+  <app-product-sheet
+    [(open)]="sheetOpen"
+    [start]="sheetStart()"
+    [priced]="canViewPrices()"
+    [(unitPrice)]="unitPrice"
+    [(discountRate)]="discountRate"
+    [total]="finalAmount()"
+    [adder]="adder"
+  />
+}
+
+@if (savedSaleId(); as saleId) {
+  <div class="overlay">
+    <div class="sheet card stack">
+      <h2>{{ 'Sales.SaveSuccess' | t }}</h2>
+      <p class="muted">{{ 'Web.SaleNumber' | t: saleId }}</p>
+      <p class="notice">{{ 'Web.SendCustomerToOffice' | t }}</p>
+
+      @if (printJob(); as job) {
+        <div class="print-row">
+          <app-status-badge [status]="job.status" />
+          @if (job.error) {
+            <small class="muted">{{ job.error }}</small>
+          }
+        </div>
+      }
+
+      @if (canPrint()) {
+        <button
+          type="button"
+          class="btn btn-block"
+          [disabled]="print.isBusy(saleId) || !pwa.online()"
+          (click)="requestPrint()"
+        >
+          <app-icon name="print" />
+          {{ 'Common.Print' | t }}
+        </button>
+      }
+
+      <button type="button" class="btn btn-primary btn-block" (click)="closeSuccess()">
+        {{ 'Web.NewSale' | t }}
+      </button>
+    </div>
+  </div>
+}

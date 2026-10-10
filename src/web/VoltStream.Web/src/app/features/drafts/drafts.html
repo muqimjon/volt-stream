@@ -1,0 +1,205 @@
+<div class="page">
+  <app-page-header [title]="'Web.Drafts' | t">
+    <div class="foot-actions">
+      <button type="button" class="btn btn-ghost" [disabled]="loading()" (click)="load()">
+        <app-icon name="refresh" [size]="18" />
+      </button>
+      @if (canCreate()) {
+        <a class="btn btn-primary" routerLink="/drafts/new">
+          <app-icon name="plus" [size]="18" />
+          {{ 'Web.DraftNew' | t }}
+        </a>
+      }
+    </div>
+  </app-page-header>
+
+  @if (!drafts().length && !loading()) {
+    <app-empty-state [text]="'Common.NoData' | t" />
+  } @else if (bp.desktop() || bp.tablet()) {
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th></th>
+            <th>{{ 'Common.Date' | t }}</th>
+            <th>{{ 'Sales.Buyer' | t }}</th>
+            @if (showBranch() && bp.desktop()) {
+              <th>{{ 'Web.Branch' | t }}</th>
+            }
+            @if (bp.desktop()) {
+              <th>{{ 'Web.CreatedBy' | t }}</th>
+            }
+            <th class="num">{{ 'Web.TotalRolls' | t }}</th>
+            <th class="num">{{ 'Web.TotalLength' | t }}</th>
+            <th class="num">{{ 'Common.Actions' | t }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (draft of drafts(); track draft.id) {
+            <tr>
+              <td>
+                <button
+                  type="button"
+                  class="btn btn-ghost"
+                  [title]="'Web.RollComposition' | t"
+                  [attr.aria-expanded]="expandedId() === draft.id"
+                  (click)="toggle(draft)"
+                >
+                  <app-icon
+                    name="chevron"
+                    [size]="18"
+                    [class.rotated]="expandedId() === draft.id"
+                  />
+                </button>
+              </td>
+              <td>{{ fmtDateTime(draft.date) }}</td>
+              <td class="clip">{{ draft.customer || '—' }}</td>
+              @if (showBranch() && bp.desktop()) {
+                <td class="muted">{{ draft.branch }}</td>
+              }
+              @if (bp.desktop()) {
+                <td class="muted">{{ draft.createdBy }}</td>
+              }
+              <td class="num">{{ fmt(draft.totalRolls, 0) }}</td>
+              <td class="num">{{ fmt(draft.totalLength) }}</td>
+              <td class="num">
+                @if (statusOf(draft); as status) {
+                  <app-status-badge [status]="status" />
+                }
+                @if (canEdit(draft)) {
+                  <a
+                    class="btn btn-ghost"
+                    [title]="'Common.Edit' | t"
+                    [routerLink]="['/drafts', draft.id]"
+                  >
+                    <app-icon name="edit" [size]="18" />
+                  </a>
+                }
+                @if (canPrint()) {
+                  <button
+                    type="button"
+                    class="btn btn-ghost"
+                    [title]="'Common.Print' | t"
+                    [disabled]="print.isBusy(draft.id, 'draft') || !pwa.online()"
+                    (click)="requestPrint(draft)"
+                  >
+                    <app-icon name="print" [size]="18" />
+                  </button>
+                }
+                @if (canEdit(draft)) {
+                  <button
+                    type="button"
+                    class="btn btn-ghost"
+                    [title]="'Common.Cancel' | t"
+                    [disabled]="!pwa.online()"
+                    (click)="cancel(draft)"
+                  >
+                    <app-icon name="trash" [size]="18" />
+                  </button>
+                }
+              </td>
+            </tr>
+            @if (expandedId() === draft.id) {
+              <tr class="composition-row">
+                <td [attr.colspan]="showBranch() && bp.desktop() ? 8 : bp.desktop() ? 7 : 6">
+                  <ul class="composition">
+                    @for (item of draft.items; track item.id) {
+                      <li class="detailed-item">
+                        <span class="item-name">{{ item.category }} {{ item.product }}</span>
+                        <span>{{ itemLine(item) }}</span>
+                      </li>
+                    }
+                  </ul>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    @for (draft of drafts(); track draft.id) {
+      <article class="card">
+        <div class="row-between">
+          <div>
+            <strong>{{ draft.customer || '—' }}</strong>
+            @if (showBranch()) {
+              <small class="muted block">{{ draft.branch }}</small>
+            }
+            @if (draft.createdBy) {
+              <small class="muted block">{{ draft.createdBy }}</small>
+            }
+          </div>
+          <small class="muted">{{ fmtDateTime(draft.date) }}</small>
+        </div>
+        <dl class="sums">
+          <div>
+            <dt>{{ 'Web.TotalRolls' | t }}</dt>
+            <dd>{{ fmt(draft.totalRolls, 0) }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'Web.TotalLength' | t }}</dt>
+            <dd>{{ fmt(draft.totalLength) }}</dd>
+          </div>
+        </dl>
+        <div class="foot">
+          @if (statusOf(draft); as status) {
+            <app-status-badge [status]="status" />
+          }
+          <div class="foot-actions">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              [title]="'Web.RollComposition' | t"
+              [attr.aria-expanded]="expandedId() === draft.id"
+              (click)="toggle(draft)"
+            >
+              <app-icon name="chevron" [size]="18" [class.rotated]="expandedId() === draft.id" />
+            </button>
+            @if (canEdit(draft)) {
+              <a
+                class="btn btn-ghost"
+                [title]="'Common.Edit' | t"
+                [routerLink]="['/drafts', draft.id]"
+              >
+                <app-icon name="edit" [size]="18" />
+              </a>
+            }
+            @if (canPrint()) {
+              <button
+                type="button"
+                class="btn btn-ghost"
+                [title]="'Common.Print' | t"
+                [disabled]="print.isBusy(draft.id, 'draft') || !pwa.online()"
+                (click)="requestPrint(draft)"
+              >
+                <app-icon name="print" [size]="18" />
+              </button>
+            }
+            @if (canEdit(draft)) {
+              <button
+                type="button"
+                class="btn btn-ghost"
+                [title]="'Common.Cancel' | t"
+                [disabled]="!pwa.online()"
+                (click)="cancel(draft)"
+              >
+                <app-icon name="trash" [size]="18" />
+              </button>
+            }
+          </div>
+        </div>
+        @if (expandedId() === draft.id) {
+          <ul class="composition">
+            @for (item of draft.items; track item.id) {
+              <li class="detailed-item">
+                <span class="item-name">{{ item.category }} {{ item.product }}</span>
+                <span>{{ itemLine(item) }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+    }
+  }
+</div>

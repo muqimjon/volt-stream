@@ -1,7 +1,7 @@
 ﻿namespace VoltStream.WebApi.Controllers.Common;
 
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.WebApi.Models;
 
 public abstract class WriteOnlyController<TResponse, TCreateCommand, TUpdateCommand, TDeleteCommand>

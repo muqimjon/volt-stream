@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Application.Features.Supplies.DTOs;
+namespace VoltStream.Application.Features.Supplies.DTOs;
 
 using VoltStream.Application.Features.Categories.DTOs;
 using VoltStream.Application.Features.Products.DTOs;
@@ -12,6 +12,8 @@ public record SupplyDto
     public decimal TotalLength { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal DiscountRate { get; set; }
+
+    public long BranchId { get; set; }
 
     public long ProductId { get; set; }
     public ProductDto Product { get; set; } = default!;

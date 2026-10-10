@@ -8,7 +8,7 @@ public partial class PaymentViewModel : ViewModelBase
     public long CurrencyId { get; set; }
     public long CustomerId { get; set; }
 
-    [ObservableProperty] private DateTime? paidAt;
+    [ObservableProperty] private DateTime? paidAt = DateTime.Now;
     [ObservableProperty] private decimal amount;
     [ObservableProperty] private decimal exchangeRate;
     [ObservableProperty] private decimal netAmount;

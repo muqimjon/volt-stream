@@ -2,10 +2,12 @@
 
 using ApiServices.Models.Responses;
 using Microsoft.Extensions.DependencyInjection;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
+using System.Windows.Threading;
 using VoltStream.WPF.Commons.Services;
+using VoltStream.WPF.Commons.Utils;
 using VoltStream.WPF.Sales.ViewModels;
 using VoltStream.WPF.Turnovers.Models;
 
@@ -27,12 +29,28 @@ public partial class SaleEditPage : Page
         RegisterFocusNavigation();
     }
 
-    private async void DataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+    private void DataGrid_CellEditEnding(object? sender, DataGridCellEditEndingEventArgs e)
     {
-        if (dataGrid.SelectedItem is SaleItemViewModel item)
-        {
-            await viewModel.EditItem(item);
-        }
+        if (e.EditAction != DataGridEditAction.Commit || e.Row.Item is not SaleItemViewModel item || e.EditingElement is not TextBox box
+            || DataGridExcelEditing.IsUnchanged(box))
+            return;
+
+        var column = e.Column;
+        bool accepted = decimal.TryParse(NumericInput.Normalize(box.Text), NumberStyles.Number, CultureInfo.InvariantCulture, out decimal value)
+            ? column == rollCountColumn ? viewModel.ApplyRollCount(item, value)
+                : column == totalLengthColumn ? viewModel.ApplyTotalLength(item, value)
+                : column == unitPriceColumn ? viewModel.ApplyUnitPrice(item, value)
+                : viewModel.ApplyDiscountRate(item, value)
+            : viewModel.Reject(column == rollCountColumn ? "Sales.RollCountRequired"
+                : column == totalLengthColumn ? "Sales.TotalQuantityRequired"
+                : column == unitPriceColumn ? "Sales.PriceRequired"
+                : "Sales.DiscountPercentRange");
+
+        if (accepted)
+            return;
+
+        e.Cancel = true;
+        Dispatcher.BeginInvoke(() => dataGrid.CancelEdit(DataGridEditingUnit.Row), DispatcherPriority.Background);
     }
 
     private void RegisterFocusNavigation()
@@ -57,8 +75,7 @@ public partial class SaleEditPage : Page
                 txtDiscountRate,
                 txtDiscountAmount,
                 txtFinalAmount,
-                btnAdd,
-                btnCancel
+                btnAdd
             ]);
 
         FocusNavigator.SetFocusRedirect(btnAdd, cbxCategory);

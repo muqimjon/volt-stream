@@ -1,12 +1,14 @@
 ﻿namespace VoltStream.Application.Features.Monitoring.Commands;
 
-using AutoMapper;
-using MediatR;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.SettingsUsers)]
 public record CreateAllowedClientCommand(
     string IpAddress,
     string? DeviceName,

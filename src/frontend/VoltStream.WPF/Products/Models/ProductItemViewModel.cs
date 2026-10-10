@@ -7,6 +7,7 @@ public partial class ProductItemViewModel : ViewModelBase
 {
     [ObservableProperty] private string? category = string.Empty;
     [ObservableProperty] private string? name = string.Empty;
+    [ObservableProperty] private string? warehouse;
     [ObservableProperty] private decimal? rollLength;
     [ObservableProperty] private decimal? quantity;
     [ObservableProperty] private decimal? totalCount;

@@ -6,4 +6,8 @@ public record AuthResponse(
     long Id,
     string Username,
     string Token,
-    UserRole Role);
+    UserRole Role,
+    long? BranchId,
+    string? BranchName,
+    string[] Permissions,
+    PrintPolicy PrintPolicy);

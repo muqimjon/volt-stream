@@ -1,0 +1,304 @@
+<UserControl
+    x:Class="VoltStream.WPF.Settings.Views.Modules.PrinterSettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+    xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:uc="clr-namespace:VoltStream.WPF.Commons.UserControls"
+    d:DesignHeight="450"
+    d:DesignWidth="900"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <Style x:Key="Segment" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
+            <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="18,5" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd" Background="Transparent"
+                                CornerRadius="{DynamicResource RadiusSm}" Padding="{TemplateBinding Padding}">
+                            <TextBlock x:Name="txt" Text="{TemplateBinding Content}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextSecondary}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Brand}" />
+                                <Setter TargetName="txt" Property="Foreground" Value="{DynamicResource OnBrand}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="20" Background="{DynamicResource Canvas}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="360" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border
+            Grid.Column="0"
+            Margin="0,0,20,0"
+            VerticalAlignment="Top"
+            Style="{StaticResource CardBorder}">
+            <StackPanel>
+                <TextBlock
+                    Margin="0,0,0,15"
+                    Style="{StaticResource SubtitleText}"
+                    Text="{loc:Loc Settings.TabPrinter}" />
+
+                <TextBlock
+                    Margin="0,0,0,12"
+                    Foreground="{DynamicResource Warning}"
+                    Text="{loc:Loc Printer.PermissionMissing}"
+                    TextWrapping="Wrap">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasAgentPermission}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Printer.Branch}" />
+                <ComboBox
+                    Margin="0,0,0,6"
+                    ItemsSource="{Binding Branches}"
+                    SelectedItem="{Binding SelectedBranch}"
+                    Style="{StaticResource ModernCombo}"
+                    ToolTip="{loc:Loc Printer.BranchHint}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <TextBlock
+                    Margin="0,0,0,12"
+                    Foreground="{DynamicResource Danger}"
+                    Text="{loc:Loc Printer.NoBranch}"
+                    TextWrapping="Wrap">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasBranch}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <CheckBox
+                    Margin="0,0,0,15"
+                    Content="{loc:Loc Printer.Enabled}"
+                    IsChecked="{Binding Settings.Enabled}"
+                    Style="{StaticResource ModernCheck}" />
+
+                <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Printer.Printer}" />
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ComboBox
+                        ItemsSource="{Binding Printers}"
+                        SelectedItem="{Binding Settings.PrinterName}"
+                        Style="{StaticResource ModernCombo}" />
+                    <Button
+                        Grid.Column="1"
+                        Margin="6,0,0,0"
+                        Command="{Binding RefreshPrintersCommand}"
+                        Style="{StaticResource IconButton}"
+                        ToolTip="{loc:Loc Common.Refresh}">
+                        <fa:IconImage
+                            Width="14"
+                            Height="14"
+                            Foreground="{DynamicResource TextSecondary}"
+                            Icon="ArrowsRotate" />
+                    </Button>
+                </Grid>
+
+                <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Printer.Copies}" />
+                <ComboBox
+                    Margin="0,0,0,15"
+                    ItemsSource="{Binding CopyOptions}"
+                    SelectedItem="{Binding Settings.Copies}"
+                    Style="{StaticResource ModernCombo}" />
+
+                <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Printer.Paper}" />
+                <ComboBox
+                    Margin="0,0,0,15"
+                    ItemsSource="{Binding PaperOptions}"
+                    SelectedItem="{Binding Settings.Paper}"
+                    Style="{StaticResource ModernCombo}" />
+
+                <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Loc Printer.Layout}" />
+                <Border
+                    Margin="0,0,0,15"
+                    HorizontalAlignment="Left"
+                    Background="{DynamicResource SurfaceAlt}"
+                    BorderBrush="{DynamicResource Border}"
+                    BorderThickness="1"
+                    CornerRadius="{DynamicResource RadiusMd}"
+                    Padding="3">
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton
+                            Content="{loc:Loc Receipt.LayoutCompact}"
+                            GroupName="ReceiptLayout"
+                            IsChecked="{Binding Settings.Layout, Converter={StaticResource EnumToBoolean}, ConverterParameter=Compact}"
+                            Style="{StaticResource Segment}" />
+                        <RadioButton
+                            Content="{loc:Loc Receipt.LayoutExpanded}"
+                            GroupName="ReceiptLayout"
+                            IsChecked="{Binding Settings.Layout, Converter={StaticResource EnumToBoolean}, ConverterParameter=Expanded}"
+                            Style="{StaticResource Segment}" />
+                    </StackPanel>
+                </Border>
+
+                <TextBlock
+                    Style="{StaticResource FieldLabel}"
+                    Text="{loc:Loc Printer.Priority}"
+                    ToolTip="{loc:Loc Printer.PriorityHint}" />
+                <ComboBox
+                    Margin="0,0,0,15"
+                    ItemsSource="{Binding PriorityOptions}"
+                    SelectedItem="{Binding Settings.Priority}"
+                    Style="{StaticResource ModernCombo}"
+                    ToolTip="{loc:Loc Printer.PriorityHint}" />
+
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                    <Button
+                        Width="150"
+                        Margin="0,0,10,0"
+                        Command="{Binding TestPrintCommand}"
+                        Content="{loc:Loc Printer.TestPrint}"
+                        Style="{StaticResource SecondaryButton}" />
+                    <Button
+                        Width="110"
+                        Command="{Binding SaveCommand}"
+                        Content="{loc:Loc Common.Save}"
+                        Style="{StaticResource PrimaryButton}" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Margin="0,0,0,15" Style="{StaticResource CardBorder}">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse
+                        Width="12"
+                        Height="12"
+                        Margin="0,0,10,0"
+                        VerticalAlignment="Center">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="{DynamicResource TextTertiary}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Agent.Status}" Value="Connected">
+                                        <Setter Property="Fill" Value="{DynamicResource Success}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Agent.Status}" Value="Connecting">
+                                        <Setter Property="Fill" Value="{DynamicResource Warning}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Agent.Status}" Value="Reconnecting">
+                                        <Setter Property="Fill" Value="{DynamicResource Warning}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock
+                        VerticalAlignment="Center"
+                        FontWeight="SemiBold"
+                        Foreground="{DynamicResource TextPrimary}"
+                        Text="{Binding Agent.Status, Converter={StaticResource LocalizedEnumConverter}, ConverterParameter=Printer.Status}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="1" Style="{StaticResource CardBorder}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock
+                        Margin="0,0,0,12"
+                        Style="{StaticResource SubtitleText}"
+                        Text="{loc:Loc Printer.RecentJobs}" />
+
+                    <DataGrid
+                        Grid.Row="1"
+                        CanUserAddRows="False"
+                        CanUserDeleteRows="False"
+                        IsReadOnly="True"
+                        ItemsSource="{Binding Agent.RecentJobs}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn
+                                Width="165"
+                                Binding="{Binding CreatedAt.LocalDateTime, StringFormat={}{0:dd.MM.yyyy HH:mm:ss}}"
+                                ElementStyle="{StaticResource CenterCellText}"
+                                Header="{loc:Loc Logs.Time}" />
+                            <DataGridTextColumn
+                                Width="80"
+                                Binding="{Binding SaleId}"
+                                ElementStyle="{StaticResource CenterCellText}"
+                                Header="{loc:Loc Printer.SaleId}" />
+                            <DataGridTextColumn
+                                Width="110"
+                                Binding="{Binding SaleDraftId}"
+                                ElementStyle="{StaticResource CenterCellText}"
+                                Header="{loc:Loc Printer.DraftId}" />
+                            <DataGridTextColumn
+                                Width="110"
+                                Binding="{Binding Status}"
+                                ElementStyle="{StaticResource CenterCellText}"
+                                Header="{loc:Loc Logs.Status}" />
+                            <DataGridTextColumn
+                                Width="70"
+                                Binding="{Binding Copies}"
+                                ElementStyle="{StaticResource CenterCellText}"
+                                Header="{loc:Loc Printer.Copies}" />
+                            <DataGridTextColumn
+                                Width="*"
+                                Binding="{Binding Error}"
+                                Header="{loc:Loc Printer.Error}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <uc:EmptyState
+                        Grid.Row="1"
+                        Message="{loc:Loc Printer.NoJobs}"
+                        Visibility="{Binding Agent.RecentJobs.Count, Converter={StaticResource CountToEmptyVisibility}}" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <uc:BusyOverlay
+            Grid.ColumnSpan="2"
+            IsBusy="{Binding IsLoading}"
+            Message="{loc:Loc Common.Loading}" />
+    </Grid>
+</UserControl>

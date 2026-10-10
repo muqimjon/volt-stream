@@ -4,6 +4,8 @@ public record SaleRequest
 {
     public long Id { get; set; }
     public DateTimeOffset Date { get; set; }
+    public long? BranchId { get; set; }
+    public long? SaleDraftId { get; set; }
     public long? CustomerId { get; set; }
     public long CurrencyId { get; set; }
     public int RollCount { get; set; }

@@ -417,6 +417,23 @@ FodyWeavers.xsd
 *.msm
 *.msp
 /src/backend/VoltStream.WebApi/appsettings.Development.json
-/src/backend/VoltStream.Infrastructure/Migrations/*
-src/backend/VoltStream.Infrastructure/Persistence/Migrations/*
+/src/backend/VoltStream.WebApi/appsettings.Production.json
 /src/frontend/VoltStream.WPF/Commons/Services/DevKeyService.Secrets.cs
+
+# Web (Angular) build output and tooling
+src/backend/VoltStream.WebApi/wwwroot/
+.angular/
+src/web/VoltStream.Web/dist/
+src/web/VoltStream.Web/node_modules/
+
+# Angular feature folder wrongly matched by the [Ll]ogs/ rule above
+!src/web/VoltStream.Web/src/app/features/logs/
+
+# Docker deploy: maxfiy qiymatlar va baza nusxalari
+.env
+backups/
+
+# Mobile: release imzo kaliti va build natijalari
+*.keystore
+*.apk
+*.aab

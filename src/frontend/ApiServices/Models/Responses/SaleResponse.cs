@@ -4,6 +4,7 @@ public record SaleResponse
 {
     public long Id { get; set; }
     public DateTimeOffset Date { get; set; }
+    public long? BranchId { get; set; }
     public int RollCount { get; set; }
     public decimal Length { get; set; }
     public decimal Amount { get; set; }
@@ -22,4 +23,5 @@ public record SaleResponse
 
     public ICollection<SaleItemResponse> Items { get; set; } = default!;
 
+    public PrintJobResponse? PrintJob { get; set; }
 }

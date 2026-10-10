@@ -19,6 +19,7 @@ using System.Windows.Documents;
 using System.Windows.Markup;
 using System.Windows.Media;
 using VoltStream.WPF.Commons;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
@@ -30,6 +31,8 @@ public partial class TurnoversPageViewModel : ViewModelBase
 {
     private readonly ICustomersApi customersApi;
     private readonly ICustomerOperationsApi customerOperationsApi;
+    private readonly ISaleApi salesApi;
+    private readonly ISessionService session;
     private readonly IMapper mapper;
     private readonly IServiceProvider services;
     private readonly INavigationService navigationService;
@@ -47,6 +50,8 @@ public partial class TurnoversPageViewModel : ViewModelBase
         this.navigationService = navigationService;
         customersApi = services.GetRequiredService<ICustomersApi>();
         customerOperationsApi = services.GetRequiredService<ICustomerOperationsApi>();
+        salesApi = services.GetRequiredService<ISaleApi>();
+        session = services.GetRequiredService<ISessionService>();
         mapper = services.GetRequiredService<IMapper>();
 
         Pagination = new PaginationViewModel(LoadPageAsync);
@@ -226,17 +231,13 @@ public partial class TurnoversPageViewModel : ViewModelBase
             return;
         }
 
-        var result = MessageBox.Show(
+        if (!AppDialog.Confirm(
             $"{TranslationSource.T("Turnovers.ConfirmDeleteOperation")}\n\n" +
             $"{TranslationSource.T("Turnovers.DateLabel")} {operation.Date:dd.MM.yyyy}\n" +
             $"{TranslationSource.T("Turnovers.Debit")}: {operation.Debit:N2}\n" +
             $"{TranslationSource.T("Turnovers.Credit")}: {operation.Credit:N2}\n" +
             $"{TranslationSource.T("Common.Description")}: {operation.Description}",
-            TranslationSource.T("Turnovers.ConfirmDeleteTitle"),
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-
-        if (result == MessageBoxResult.No)
+            TranslationSource.T("Turnovers.ConfirmDeleteTitle")))
             return;
 
         var response = await customerOperationsApi.Delete(operation.Id)
@@ -284,6 +285,36 @@ public partial class TurnoversPageViewModel : ViewModelBase
         {
             Error = $"{TranslationSource.T("Turnovers.OpenEditPageError")}: {ex.Message}";
         }
+    }
+
+    [RelayCommand]
+    private async Task Receipt(CustomerOperationForDisplayViewModel? operation)
+    {
+        if (operation is null || operation.OperationType != OperationType.Sale)
+        {
+            Warning = TranslationSource.T("Turnovers.NoOperationToEdit");
+            return;
+        }
+
+        var operationResponse = await customerOperationsApi.GetById(operation.Id)
+            .Handle(isLoading => IsLoading = isLoading);
+
+        if (!operationResponse.IsSuccess || operationResponse.Data.Sale is null)
+        {
+            Error = operationResponse.Message ?? TranslationSource.T("Turnovers.SaleDataNotFound");
+            return;
+        }
+
+        var receipt = await salesApi.GetReceipt(operationResponse.Data.Sale.Id)
+            .Handle(isLoading => IsLoading = isLoading);
+
+        if (!receipt.IsSuccess)
+        {
+            Error = receipt.Message ?? TranslationSource.T("Receipt.LoadError");
+            return;
+        }
+
+        ReceiptDocumentBuilder.Preview(receipt.Data, session.Has("sales.view_prices"), services);
     }
 
     [RelayCommand]

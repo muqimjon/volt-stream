@@ -53,11 +53,18 @@
                         <ComboBox
                             x:Name="cbxCustomer"
                             Width="200"
+                            AutomationProperties.Name="{loc:Loc SalesHistory.SelectCustomer}"
                             DisplayMemberPath="Name"
                             IsEditable="True"
                             ItemsSource="{Binding Customers}"
                             SelectedItem="{Binding SelectedCustomer}"
-                            Style="{StaticResource ModernCombo}" />
+                            Style="{StaticResource ModernCombo}">
+                            <ComboBox.ItemContainerStyle>
+                                <Style TargetType="ComboBoxItem" BasedOn="{StaticResource ModernComboItem}">
+                                    <Setter Property="AutomationProperties.Name" Value="{Binding Name}" />
+                                </Style>
+                            </ComboBox.ItemContainerStyle>
+                        </ComboBox>
                     </StackPanel>
 
                     <StackPanel Margin="0,0,14,8">
@@ -136,6 +143,7 @@
                     Width="*"
                     Binding="{Binding RollLength, StringFormat={}{0:N0}}"
                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                     Header="{loc:Loc SalesHistory.InRoll}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
@@ -149,6 +157,7 @@
                     Width="*"
                     Binding="{Binding Quantity, StringFormat={}{0:N0}}"
                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                     Header="{loc:Loc SalesHistory.RollCount}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
@@ -162,6 +171,7 @@
                     Width="*"
                     Binding="{Binding TotalCount, StringFormat={}{0:N0}}"
                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                     Header="{loc:Loc Common.Total}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
@@ -170,6 +180,11 @@
                         </Style>
                     </DataGridTextColumn.EditingElementStyle>
                 </DataGridTextColumn>
+
+                <DataGridTextColumn
+                    Width="1.8*"
+                    Binding="{Binding Composition}"
+                    Header="{loc:Loc SalesHistory.Composition}" />
 
                 <DataGridTextColumn
                     Width="*"
@@ -188,6 +203,7 @@
                     Width="*"
                     Binding="{Binding Price, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                     Header="{loc:Loc Common.Price}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
@@ -201,6 +217,7 @@
                     Width="1.5*"
                     Binding="{Binding TotalAmount, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                     Header="{loc:Loc SalesHistory.TotalAmount}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">

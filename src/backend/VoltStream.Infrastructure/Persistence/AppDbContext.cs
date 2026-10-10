@@ -23,6 +23,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<WarehouseStock> WarehouseStocks { get; set; }
     public DbSet<Warehouse> Warehouses { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Branch> Branches { get; set; }
+    public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<PrintJob> PrintJobs { get; set; }
+    public DbSet<AppSettings> AppSettings { get; set; }
+    public DbSet<SaleDraft> SaleDrafts { get; set; }
+    public DbSet<SaleDraftItem> SaleDraftItems { get; set; }
 
     private IDbContextTransaction? currentTransaction;
     private int transactionDepth;
@@ -30,6 +36,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
         base.OnModelCreating(modelBuilder);
     }
 

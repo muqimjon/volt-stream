@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Domain.Entities;
+namespace VoltStream.Domain.Entities;
 
 public class Product : Auditable
 {
@@ -6,6 +6,9 @@ public class Product : Auditable
     public string NormalizedName { get; set; } = string.Empty;
 
     public string Unit { get; set; } = string.Empty;
+    public bool IsWeightTracked { get; set; }
+    public decimal? WeightPerUnit { get; set; }
+
     public long CategoryId { get; set; }
     public Category Category { get; set; } = default!;
 

@@ -1,14 +1,18 @@
-﻿namespace VoltStream.Infrastructure;
+namespace VoltStream.Infrastructure;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Infrastructure.Authentication;
 using VoltStream.Infrastructure.Persistence;
 using VoltStream.Infrastructure.Persistence.Interceptors;
+using VoltStream.Infrastructure.Printing;
 using VoltStream.Infrastructure.Web;
 
 public static class DependencyInjection
@@ -16,9 +20,13 @@ public static class DependencyInjection
     public static void AddInfrastructureServices(this IServiceCollection services, IConfiguration conf)
     {
         services.AddHttpContextAccessor();
-        services.AddSingleton<AuditInterceptor>();
+        services.AddMemoryCache();
+        services.AddScoped<ICurrentUser, HttpCurrentUser>();
+        services.AddScoped<AuditInterceptor>();
         services.AddScoped<ExcelDataSeeder>();
+        services.AddScoped<IAuditLogWriter, AuditLogWriter>();
         services.AddHostedService<DatabaseInitializer>();
+        services.AddHostedService<PrintJobWatchdog>();
         services.AddSingleton<IMarketDataService, Web.MarketDataService>();
 
         services.AddDbContext<IAppDbContext, AppDbContext>((sp, opt) =>
@@ -34,6 +42,7 @@ public static class DependencyInjection
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
+                options.MapInboundClaims = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -42,10 +51,48 @@ public static class DependencyInjection
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = conf["Jwt:Issuer"] ?? "VoltStream",
                     ValidAudience = conf["Jwt:Audience"] ?? "VoltStreamUser",
-                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    RoleClaimType = ClaimTypes.Role,
+                    NameClaimType = "unique_name"
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = ctx =>
+                    {
+                        var token = ctx.Request.Query["access_token"];
+                        if (!string.IsNullOrEmpty(token) && ctx.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                            ctx.Token = token;
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = async ctx =>
+                    {
+                        if (!long.TryParse(ctx.Principal?.FindFirstValue("sub"), out var userId))
+                        {
+                            ctx.Fail("Foydalanuvchi aniqlanmadi.");
+                            return;
+                        }
+
+                        var cache = ctx.HttpContext.RequestServices.GetRequiredService<IMemoryCache>();
+
+                        var active = await cache.GetOrCreateAsync($"user-active-{userId}", async entry =>
+                        {
+                            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(60);
+
+                            return await ctx.HttpContext.RequestServices
+                                .GetRequiredService<IAppDbContext>().Users
+                                .AsNoTracking()
+                                .Where(user => user.Id == userId)
+                                .Select(user => (bool?)user.IsActive)
+                                .FirstOrDefaultAsync();
+                        });
+
+                        if (active != true)
+                            ctx.Fail("Foydalanuvchi faol emas.");
+                    }
                 };
             });
 
-        services.AddAuthorization();
+        services.AddAuthorization(o =>
+            o.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
     }
 }

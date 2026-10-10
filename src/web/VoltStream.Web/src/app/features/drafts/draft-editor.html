@@ -1,0 +1,288 @@
+<div class="page">
+  <app-page-header [title]="(id === null ? 'Web.DraftNew' : 'Web.DraftEdit') | t">
+    <a class="btn btn-ghost" routerLink="/drafts">{{ 'Web.Back' | t }}</a>
+  </app-page-header>
+
+  <div class="split">
+    <div class="col">
+      <section class="card stack">
+        <app-date-field
+          [label]="'Common.Date' | t"
+          [value]="date()"
+          (valueChange)="date.set($event)"
+        />
+
+        <app-search-select
+          [label]="'Sales.Buyer' | t"
+          [placeholder]="'Common.Select' | t"
+          [items]="customers()"
+          [labelOf]="nameOf"
+          [subLabelOf]="customerHint"
+          [selected]="customer()"
+          [clearable]="true"
+          (opened)="loadCustomers()"
+          (selectedChange)="customer.set($event)"
+        />
+
+        @if (!bp.phone() || noteOpen() || description()) {
+          <div class="field">
+            <label for="note">{{ 'Common.Note' | t }}</label>
+            <input
+              id="note"
+              class="input"
+              type="text"
+              [value]="description()"
+              (input)="description.set($any($event.target).value)"
+            />
+          </div>
+        } @else {
+          <button type="button" class="btn btn-ghost" (click)="noteOpen.set(true)">
+            + {{ 'Common.Note' | t }}
+          </button>
+        }
+      </section>
+
+      @if (!bp.phone()) {
+        <section #picker class="card stack" appStockFlow (rowSubmit)="addItem()">
+          <app-search-select
+            [label]="'Sales.ProductType' | t"
+            [placeholder]="'Common.Select' | t"
+            [items]="sel.shownCategories()"
+            [labelOf]="nameOf"
+            [selected]="sel.category()"
+            [clearable]="true"
+            (selectedChange)="sel.onCategory($event)"
+          />
+
+          <app-search-select
+            [label]="'Sales.Product' | t"
+            [placeholder]="'Common.Select' | t"
+            [items]="sel.shownProducts()"
+            [labelOf]="nameOf"
+            [subLabelOf]="sel.productHint"
+            [selected]="sel.product()"
+            (opened)="sel.loadProducts()"
+            (selectedChange)="sel.onProduct($event)"
+          />
+
+          <app-search-select
+            data-step="length"
+            [label]="'Sales.RollLength' | t"
+            [placeholder]="'Common.Select' | t"
+            [items]="sel.stocks()"
+            [labelOf]="sel.stockLabel"
+            [subLabelOf]="sel.stockHint"
+            [selected]="sel.stock()"
+            [disabled]="!sel.product()"
+            [hint]="sel.stock() ? sel.stockHint(sel.stock()!) : ''"
+            (selectedChange)="sel.onStock($event)"
+          />
+
+          <div class="grid-2">
+            <div class="stepper">
+              <button
+                type="button"
+                class="btn btn-ghost"
+                [disabled]="!sel.stock()"
+                (click)="sel.step(-1)"
+              >
+                −
+              </button>
+              <app-number-field
+                data-step="count"
+                [label]="'Sales.RollCount' | t"
+                [value]="sel.rollCount()"
+                [disabled]="!sel.stock()"
+                (valueChange)="sel.rollCount.set($event)"
+                (commit)="sel.onRollCountCommit($event)"
+              />
+              <button
+                type="button"
+                class="btn btn-ghost"
+                [disabled]="!sel.stock()"
+                (click)="sel.step(1)"
+              >
+                +
+              </button>
+            </div>
+            <app-number-field
+              [label]="'Web.TotalLength' | t"
+              [value]="sel.length()"
+              [disabled]="!sel.stock()"
+              (valueChange)="sel.length.set($event)"
+              (commit)="sel.onLengthCommit($event)"
+            />
+          </div>
+
+          <button type="button" class="btn btn-primary btn-block" (click)="addItem()">
+            <app-icon name="plus" />
+            {{ 'Common.Add' | t }}
+          </button>
+        </section>
+      }
+    </div>
+
+    <div class="col">
+      <section class="stack">
+        <h2 class="section-title">{{ 'Web.Items' | t }}</h2>
+        @if (!items().length) {
+          <app-empty-state [text]="'Common.NoData' | t" />
+        }
+        @for (item of items(); track $index) {
+          <article
+            class="card item"
+            [class.tappable]="bp.phone()"
+            (click)="bp.phone() && editInSheet($index)"
+          >
+            <div class="item-head">
+              <div>
+                <strong>{{ item.product }}</strong>
+                <small class="muted">{{ item.category }}</small>
+              </div>
+              <div class="item-actions">
+                @if (!bp.phone()) {
+                  <button type="button" class="icon-btn" (click)="editItem($index)">
+                    <app-icon name="edit" [size]="18" />
+                  </button>
+                }
+                <button
+                  type="button"
+                  class="icon-btn danger"
+                  (click)="$event.stopPropagation(); removeItem($index)"
+                >
+                  <app-icon name="trash" [size]="18" />
+                </button>
+              </div>
+            </div>
+            <dl class="sums">
+              <div>
+                <dt>{{ 'Sales.PerRoll' | t }}</dt>
+                <dd>{{ fmt(item.lengthPerRoll) }}</dd>
+              </div>
+              <div>
+                <dt>{{ 'Sales.RollCount' | t }}</dt>
+                <dd>{{ fmt(item.rollCount, 0) }}</dd>
+              </div>
+              <div>
+                <dt>{{ 'Web.TotalLength' | t }}</dt>
+                <dd>{{ fmt(item.totalLength) }}</dd>
+              </div>
+            </dl>
+            @if (bp.phone()) {
+              <div class="card-stepper">
+                <button
+                  type="button"
+                  class="btn btn-ghost"
+                  (click)="$event.stopPropagation(); adjustItem($index, -1)"
+                >
+                  −
+                </button>
+                <strong>{{ fmt(item.rollCount, 0) }}</strong>
+                <button
+                  type="button"
+                  class="btn btn-ghost"
+                  (click)="$event.stopPropagation(); adjustItem($index, 1)"
+                >
+                  +
+                </button>
+              </div>
+            }
+          </article>
+        }
+      </section>
+
+      @if (bp.phone()) {
+        <button type="button" class="btn btn-primary btn-block add-product" (click)="openSheet()">
+          <app-icon name="plus" />
+          {{ 'Web.AddProduct' | t }}
+        </button>
+      }
+
+      @if (id !== null) {
+        <section class="card actions">
+          @if (canPrint()) {
+            <button
+              type="button"
+              class="btn"
+              [disabled]="print.isBusy(id, 'draft') || !pwa.online()"
+              (click)="requestPrint()"
+            >
+              <app-icon name="print" />
+              {{ 'Common.Print' | t }}
+            </button>
+            @if (printJob(); as job) {
+              <app-status-badge [status]="job.status" />
+            }
+          }
+          <button
+            type="button"
+            class="btn btn-danger"
+            [disabled]="!pwa.online()"
+            (click)="cancel()"
+          >
+            {{ 'Common.Cancel' | t }}
+          </button>
+        </section>
+      }
+
+      <section class="card stack totals" [class.pinned]="!!items().length">
+        <dl class="sums">
+          <div>
+            <dt>{{ 'Web.TotalRolls' | t }}</dt>
+            <dd>{{ fmt(totals().rolls, 0) }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'Web.TotalLength' | t }}</dt>
+            <dd>{{ fmt(totals().length) }}</dd>
+          </div>
+        </dl>
+        <button
+          type="button"
+          class="btn btn-primary btn-block"
+          [disabled]="saving() || !pwa.online() || !items().length"
+          (click)="save()"
+        >
+          {{ (saving() ? 'Web.Submitting' : 'Common.Save') | t }}
+        </button>
+      </section>
+    </div>
+  </div>
+</div>
+
+@if (bp.phone()) {
+  <app-product-sheet [(open)]="sheetOpen" [start]="sheetStart()" [adder]="adder" />
+}
+
+@if (savedId(); as saved) {
+  <div class="overlay">
+    <div class="sheet card stack">
+      <h2>{{ 'Web.DraftSaved' | t }}</h2>
+
+      @if (printJob(); as job) {
+        <div class="print-row">
+          <app-status-badge [status]="job.status" />
+          @if (job.error) {
+            <small class="muted">{{ job.error }}</small>
+          }
+        </div>
+      }
+
+      @if (canPrint()) {
+        <button
+          type="button"
+          class="btn btn-block"
+          [disabled]="print.isBusy(saved, 'draft') || !pwa.online()"
+          (click)="requestPrint()"
+        >
+          <app-icon name="print" />
+          {{ 'Common.Print' | t }}
+        </button>
+      }
+
+      <button type="button" class="btn btn-primary btn-block" (click)="startNew()">
+        {{ 'Web.DraftNew' | t }}
+      </button>
+      <a class="btn btn-ghost btn-block" routerLink="/drafts">{{ 'Web.Drafts' | t }}</a>
+    </div>
+  </div>
+}

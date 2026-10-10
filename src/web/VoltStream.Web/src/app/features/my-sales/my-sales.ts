@@ -1,0 +1,193 @@
+import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
+import { ApiClient } from '../../core/api/api-client';
+import { AuthService } from '../../core/auth/auth';
+import { BranchStore } from '../../core/branches';
+import { TranslatePipe, TranslateService } from '../../core/i18n/translate';
+import { PrintJobStatus, SaleListItem, SaleReceipt, SaleReceiptItem } from '../../core/models';
+import { HasPermissionDirective, PermissionService } from '../../core/permissions/permission';
+import { PwaService } from '../../core/pwa/pwa';
+import { PrintService } from '../../core/realtime/print';
+import { PrintHubService } from '../../core/realtime/print-hub';
+import { BreakpointService } from '../../core/ui/breakpoint';
+import { fmtDateTime, toDateInput } from '../../core/utils/date';
+import { fmtNum } from '../../core/utils/number';
+import { DateField } from '../../shared/date-field';
+import { EmptyState } from '../../shared/empty-state';
+import { Icon } from '../../shared/icon';
+import { PageHeader } from '../../shared/page-header';
+import { StatusBadge } from '../../shared/status-badge';
+
+const REFRESH_MS = 30000;
+const PAGE_SIZE = 20;
+const RECEIPT_VIEW_KEY = 'vs.receiptView';
+
+type ReceiptView = 'compact' | 'detailed';
+
+function weightOf(sale: SaleListItem): number {
+  return (sale.items ?? []).reduce((sum, i) => sum + (i.weight ?? 0), 0);
+}
+
+function readReceiptView(): ReceiptView {
+  try {
+    return localStorage.getItem(RECEIPT_VIEW_KEY) === 'detailed' ? 'detailed' : 'compact';
+  } catch {
+    return 'compact';
+  }
+}
+
+@Component({
+  selector: 'app-my-sales',
+  imports: [
+    TranslatePipe,
+    DateField,
+    PageHeader,
+    EmptyState,
+    StatusBadge,
+    Icon,
+    HasPermissionDirective,
+  ],
+  templateUrl: './my-sales.html',
+  styleUrl: './my-sales.css',
+})
+export class MySalesPage {
+  private readonly api = inject(ApiClient);
+  private readonly hub = inject(PrintHubService);
+  private readonly translate = inject(TranslateService);
+  protected readonly auth = inject(AuthService);
+  protected readonly branches = inject(BranchStore);
+  private readonly permissions = inject(PermissionService);
+
+  protected readonly print = inject(PrintService);
+  protected readonly pwa = inject(PwaService);
+  protected readonly bp = inject(BreakpointService);
+  protected readonly fmt = fmtNum;
+  protected readonly fmtDateTime = fmtDateTime;
+
+  protected readonly showBranch = computed(
+    () => this.auth.isAdmin() && this.auth.selectedBranchId() === null,
+  );
+
+  protected readonly date = signal(toDateInput(new Date()));
+  protected readonly sales = signal<SaleListItem[]>([]);
+  protected readonly page = signal(1);
+  protected readonly totalPages = signal(1);
+  protected readonly loading = signal(false);
+
+  protected readonly canPrint = computed(
+    () => this.permissions.has('print.request') && this.auth.printPolicy() !== 'Deny',
+  );
+  protected readonly showAmount = computed(() => this.permissions.has('sales.view_prices'));
+  protected readonly columnCount = computed(
+    () =>
+      5 +
+      (this.showBranch() && this.bp.desktop() ? 1 : 0) +
+      (this.showWeight() && this.bp.desktop() ? 1 : 0) +
+      (this.showAmount() ? 1 : 0) +
+      (this.canPrint() ? 1 : 0),
+  );
+
+  protected readonly expandedId = signal<number | null>(null);
+  protected readonly receiptLoadingId = signal<number | null>(null);
+  protected readonly receiptView = signal<ReceiptView>(readReceiptView());
+  private readonly receiptById = signal<Record<number, SaleReceipt>>({});
+
+  constructor() {
+    void this.branches.load();
+    effect(() => {
+      this.auth.branchId();
+      untracked(() => void this.load(1));
+    });
+    const timer = setInterval(() => void this.load(1), REFRESH_MS);
+    inject(DestroyRef).onDestroy(() => clearInterval(timer));
+  }
+
+  protected readonly showWeight = computed(() => this.sales().some((s) => weightOf(s) > 0));
+
+  protected readonly weightOf = weightOf;
+
+  protected statusOf(sale: SaleListItem): PrintJobStatus | null {
+    return this.hub.jobFor(sale.id)?.status ?? sale.printJob?.status ?? null;
+  }
+
+  protected onDate(value: string): void {
+    this.date.set(value);
+    void this.load(1);
+  }
+
+  protected async load(page: number): Promise<void> {
+    if (this.loading()) return;
+    this.loading.set(true);
+    try {
+      const result = await this.api.filter<SaleListItem>(
+        'sales/filter',
+        {
+          filters: { date: [this.date()], customer: ['include'], items: ['include'] },
+          page,
+          pageSize: PAGE_SIZE,
+          sortBy: 'Date',
+          descending: true,
+        },
+        { silent: true, branchScoped: true },
+      );
+      this.page.set(page);
+      this.totalPages.set(result.paging?.totalPages ?? 1);
+      this.sales.set(page === 1 ? result.items : [...this.sales(), ...result.items]);
+      for (const sale of result.items)
+        this.hub.track(sale.printJob ? { ...sale.printJob, saleId: sale.id } : null);
+    } catch {
+      /* keep the current list */
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  protected loadMore(): void {
+    void this.load(this.page() + 1);
+  }
+
+  protected requestPrint(sale: SaleListItem): void {
+    void this.print.request(sale.id, sale.branchId ?? null);
+  }
+
+  protected receiptOf(saleId: number): SaleReceipt | null {
+    return this.receiptById()[saleId] ?? null;
+  }
+
+  protected async toggleReceipt(sale: SaleListItem): Promise<void> {
+    if (this.expandedId() === sale.id) {
+      this.expandedId.set(null);
+      return;
+    }
+    this.expandedId.set(sale.id);
+    if (this.receiptById()[sale.id]) return;
+
+    this.receiptLoadingId.set(sale.id);
+    try {
+      const receipt = await this.api.get<SaleReceipt>(`sales/${sale.id}/receipt`);
+      this.receiptById.update((map) => ({ ...map, [sale.id]: receipt }));
+    } catch {
+      /* interceptor already reported the error */
+    } finally {
+      this.receiptLoadingId.set(null);
+    }
+  }
+
+  protected setReceiptView(view: ReceiptView): void {
+    this.receiptView.set(view);
+    try {
+      localStorage.setItem(RECEIPT_VIEW_KEY, view);
+    } catch {}
+  }
+
+  protected stockInfo(item: SaleReceiptItem): string {
+    return this.translate.t('Web.StockInfo', this.fmt(item.rollCount, 0), this.fmt(item.totalLength));
+  }
+
+  protected rollsBreakdown(item: SaleReceiptItem): string {
+    const rolls = item.rolls ?? [];
+    const total = `${this.fmt(item.totalLength)} ${item.unit}`;
+    if (!rolls.length) return total;
+    const parts = rolls.map((r) => `${this.fmt(r.count, 0)} × ${this.fmt(r.length)}`);
+    return `${parts.join(' + ')} = ${total}`;
+  }
+}

@@ -1,11 +1,14 @@
 ﻿namespace VoltStream.Application.Features.CustomerOperations.Queries;
 
-using AutoMapper;
-using MediatR;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Features.CustomerOperations.DTOs;
 
+[RequirePermission(Permissions.ReportsView)]
 public record GetCustomerOperationByCustomerIdQuery(
     long CustomerId,
     DateTime? BeginDate,
@@ -15,6 +18,7 @@ public record GetCustomerOperationByCustomerIdQuery(
 
 public class GetCustomerOperationByCustomerIdQueryHandler(
     IAppDbContext _context,
+    ICurrentUser user,
     IMapper _mapper)
     : IRequestHandler<GetCustomerOperationByCustomerIdQuery, CustomerOperationSummaryDto>
 {
@@ -72,12 +76,13 @@ public class GetCustomerOperationByCustomerIdQueryHandler(
             .ToListAsync(cancellationToken);
 
         var operationDtos = _mapper.Map<IReadOnlyCollection<CustomerOperationDto>>(operations);
+        await _context.FillBalancesAsync(operationDtos.Accounts(), cancellationToken);
 
-        return new CustomerOperationSummaryDto
+        return user.Apply(new CustomerOperationSummaryDto
         {
             BeginBalance = beginBalance,
             EndBalance = endBalance,
             Operations = operationDtos
-        };
+        });
     }
 }

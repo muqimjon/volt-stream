@@ -1,4 +1,4 @@
-﻿namespace VoltStream.Domain.Entities;
+namespace VoltStream.Domain.Entities;
 
 public abstract class Auditable
 {
@@ -6,4 +6,5 @@ public abstract class Auditable
     public bool IsDeleted { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+    public long? CreatedByUserId { get; set; }
 }

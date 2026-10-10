@@ -8,6 +8,7 @@ public class AuthHeaderHandler(ISessionService session, ConnectionRecovery recov
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        request.Headers.TryAddWithoutValidation("X-Client", "Desktop");
         var authenticated = !string.IsNullOrEmpty(session.Token);
         if (authenticated)
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", session.Token);

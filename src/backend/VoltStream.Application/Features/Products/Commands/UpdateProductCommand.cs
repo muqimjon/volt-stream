@@ -1,18 +1,22 @@
 ﻿namespace VoltStream.Application.Features.Products.Commands;
 
-using AutoMapper;
-using MediatR;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.SettingsProducts)]
 public record UpdateProductCommand(
     long Id,
     string Unit,
     string Name,
-    long CategoryId)
+    long CategoryId,
+    bool IsWeightTracked = false,
+    decimal? WeightPerUnit = null)
     : IRequest<bool>;
 
 public class UpdateProductCommandHandler(

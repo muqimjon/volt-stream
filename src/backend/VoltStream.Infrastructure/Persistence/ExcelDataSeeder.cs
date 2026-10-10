@@ -1,11 +1,11 @@
-﻿namespace VoltStream.Infrastructure.Persistence;
+namespace VoltStream.Infrastructure.Persistence;
 
 using ClosedXML.Excel;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Features.Currencies.Commands;
 using VoltStream.Application.Features.Users.Commands;
 using VoltStream.Domain.Enums;
@@ -63,15 +63,21 @@ public class ExcelDataSeeder(
         {
             if (await context.Users.AnyAsync(u => u.Username == username)) return;
 
+            var role = Enum.TryParse<UserRole>(GetValue(row, headers, "Role"), out var parsed) ? parsed : UserRole.Seller;
+
             var command = new CreateUserCommand(
                 Username: username,
                 Password: GetValue(row, headers, "Password") ?? "123",
                 Name: GetValue(row, headers, "Name"),
-                Role: Enum.TryParse<UserRole>(GetValue(row, headers, "Role"), out var role) ? role : UserRole.Seller,
+                Role: role,
                 Phone: GetValue(row, headers, "Phone"),
                 Email: GetValue(row, headers, "Email"),
                 Address: GetValue(row, headers, "Address"),
-                DateOfBirth: DateTime.TryParse(GetValue(row, headers, "DateOfBirth"), out var dob) ? dob : null
+                DateOfBirth: DateTime.TryParse(GetValue(row, headers, "DateOfBirth"), out var dob) ? dob : null,
+                IsActive: !bool.TryParse(GetValue(row, headers, "IsActive"), out var isActive) || isActive,
+                BranchId: role == UserRole.Admin
+                    ? null
+                    : await context.Branches.OrderBy(b => b.Id).Select(b => (long?)b.Id).FirstOrDefaultAsync()
             );
 
             await mediator.Send(command);

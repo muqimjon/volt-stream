@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Sales_history.Models;
@@ -52,7 +53,7 @@ public partial class SalesHistoryPage : Page
         }
         else
         {
-            MessageBox.Show(TranslationSource.T("SalesHistory.InvalidDateFormat"), TranslationSource.T("SalesHistory.Error"), MessageBoxButton.OK, MessageBoxImage.Error);
+            AppDialog.Error(TranslationSource.T("SalesHistory.InvalidDateFormat"), TranslationSource.T("SalesHistory.Error"), Window.GetWindow(this));
             beginDate.Focus();
             return;
         }
@@ -79,7 +80,7 @@ public partial class SalesHistoryPage : Page
         }
         else
         {
-            MessageBox.Show(TranslationSource.T("SalesHistory.InvalidDateFormat"), TranslationSource.T("SalesHistory.Error"), MessageBoxButton.OK, MessageBoxImage.Error);
+            AppDialog.Error(TranslationSource.T("SalesHistory.InvalidDateFormat"), TranslationSource.T("SalesHistory.Error"), Window.GetWindow(this));
             endDate.Focus();
             return;
         }

@@ -1,10 +1,11 @@
-﻿namespace VoltStream.Infrastructure.Persistence.Interceptors;
+namespace VoltStream.Infrastructure.Persistence.Interceptors;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Domain.Entities;
 
-public class AuditInterceptor : SaveChangesInterceptor
+public class AuditInterceptor(ICurrentUser user) : SaveChangesInterceptor
 {
     public override InterceptionResult<int> SavingChanges(
         DbContextEventData eventData,
@@ -23,7 +24,7 @@ public class AuditInterceptor : SaveChangesInterceptor
         return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
-    private static void UpdateAuditFields(DbContext? context)
+    private void UpdateAuditFields(DbContext? context)
     {
         if (context is null) return;
 
@@ -33,7 +34,10 @@ public class AuditInterceptor : SaveChangesInterceptor
         foreach (var entry in entries)
         {
             if (entry.State == EntityState.Added)
+            {
                 entry.Entity.CreatedAt = now;
+                entry.Entity.CreatedByUserId ??= user.UserId;
+            }
             else if (entry.State == EntityState.Modified)
                 entry.Entity.UpdatedAt = now;
         }

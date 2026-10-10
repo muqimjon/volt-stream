@@ -1,11 +1,9 @@
-﻿namespace VoltStream.WebApi.Controllers.Common;
+namespace VoltStream.WebApi.Controllers.Common;
 
-using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.WebApi.Models;
 
-[AllowAnonymous]
 public abstract class ReadOnlyController<TEntity, TGetAllQuery, TGetByIdQuery>
     : BaseController
     where TGetAllQuery : IRequest<IReadOnlyCollection<TEntity>>

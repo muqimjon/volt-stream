@@ -1,12 +1,14 @@
 ﻿namespace VoltStream.Application.Features.Payments.Queries;
 
-using AutoMapper;
-using MediatR;
+using MapsterMapper;
 using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Models;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Features.Payments.DTOs;
 
+[RequirePermission(Permissions.ReportsView)]
 public record PaymentFilterQuery : FilteringRequest, IRequest<IReadOnlyCollection<PaymentDto>>;
 
 public class PaymentFilterQueryHandler(

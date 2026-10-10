@@ -1,12 +1,14 @@
-﻿namespace VoltStream.Application.Features.Payments.Commands;
+namespace VoltStream.Application.Features.Payments.Commands;
 
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Domain.Entities;
 using VoltStream.Domain.Enums;
 
+[RequirePermission(Permissions.PaymentsManage)]
 public record ApplyDiscountCommand(
     DateTimeOffset Date,
     long CustomerId,
@@ -92,10 +94,6 @@ public class ApplyDiscountCommandHandler(
                     Type = PaymentType.Cash,
                 };
                 context.Payments.Add(paymentOperation);
-            }
-            else
-            {
-                account.Balance += request.DiscountAmount;
             }
 
 

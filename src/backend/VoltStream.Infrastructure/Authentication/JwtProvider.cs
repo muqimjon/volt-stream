@@ -4,19 +4,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Domain.Entities;
 
 public static class JwtSecretResolver
 {
-    private static string? cached;
-
     public static byte[] Resolve(IConfiguration configuration)
     {
-        cached ??= configuration["Jwt:Secret"] ?? Convert.ToBase64String(RandomNumberGenerator.GetBytes(48));
-        return Encoding.UTF8.GetBytes(cached);
+        var secret = configuration["Jwt:Secret"];
+        if (string.IsNullOrWhiteSpace(secret) || secret.Length < 32)
+            throw new InvalidOperationException("Jwt:Secret sozlanmagan (kamida 32 belgi).");
+        return Encoding.UTF8.GetBytes(secret);
     }
 }
 
@@ -24,12 +23,17 @@ public class JwtProvider(IConfiguration configuration) : IJwtProvider
 {
     public string Generate(User user)
     {
-        var claims = new Claim[]
+        var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.UniqueName, user.Username),
             new(ClaimTypes.Role, user.Role.ToString())
         };
+
+        if (user.BranchId is long branchId)
+            claims.Add(new Claim("branch", branchId.ToString()));
+
+        claims.AddRange(user.Permissions.Select(p => new Claim("permission", p)));
 
         var key = new SymmetricSecurityKey(JwtSecretResolver.Resolve(configuration));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

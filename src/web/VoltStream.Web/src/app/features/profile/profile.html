@@ -1,0 +1,95 @@
+<div class="page">
+  <app-page-header [title]="'Web.Profile' | t" />
+
+  <section class="card rows">
+    <div class="row">
+      <span class="muted">{{ 'Web.User' | t }}</span>
+      <strong>{{ auth.session()?.username }}</strong>
+    </div>
+    <div class="row">
+      <span class="muted">{{ 'Web.Role' | t }}</span>
+      <strong>{{ auth.session()?.role }}</strong>
+    </div>
+    @if (auth.branchName()) {
+      <div class="row">
+        <span class="muted">{{ 'Web.Branch' | t }}</span>
+        <strong>{{ auth.branchName() }}</strong>
+      </div>
+    }
+  </section>
+
+  <section class="card rows">
+    <label class="row" for="lang">
+      <span>{{ 'Web.Language' | t }}</span>
+      <select
+        id="lang"
+        class="picker"
+        [value]="actions.translate.lang()"
+        (change)="actions.setLang($any($event.target).value)"
+      >
+        @for (lang of actions.languages; track lang.code) {
+          <option [value]="lang.code">{{ lang.label }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="row" for="theme">
+      <span>{{ 'Web.Theme' | t }}</span>
+      <select
+        id="theme"
+        class="picker"
+        [value]="actions.theme.mode()"
+        (change)="actions.setTheme($any($event.target).value)"
+      >
+        @for (mode of actions.themes; track mode) {
+          <option [value]="mode">{{ actions.themeKey[mode] | t }}</option>
+        }
+      </select>
+    </label>
+
+    <div class="row">
+      <span class="muted">{{ 'Web.Version' | t }}</span>
+      <strong>{{ version }}</strong>
+    </div>
+  </section>
+
+  @if (nav.allowed().length > max) {
+    <section class="card rows bottom-menu">
+      <div class="row head">
+        <strong>{{ 'Web.BottomMenu' | t }}</strong>
+      </div>
+      <p class="hint muted">{{ 'Web.BottomMenuHint' | t }}</p>
+      @for (item of nav.allowed(); track item.path) {
+        <label class="row">
+          <span class="item">
+            <app-icon [name]="item.icon" [size]="20" />
+            {{ item.key | t }}
+          </span>
+          <span class="pin">
+            <input
+              type="checkbox"
+              [checked]="nav.isPinned(item.path)"
+              [disabled]="
+                nav.isPinned(item.path) ? nav.pinned().length === 1 : nav.pinned().length >= max
+              "
+              (change)="nav.toggle(item.path)"
+            />
+            {{ 'Web.Pinned' | t }}
+          </span>
+        </label>
+      }
+    </section>
+  }
+
+  @if (pwa.canInstall()) {
+    <button type="button" class="btn btn-block" (click)="pwa.install()">
+      <app-icon name="download" />
+      {{ 'Web.Install' | t }}
+    </button>
+  }
+
+  <button type="button" class="btn btn-danger btn-block" (click)="actions.logout()">
+    <app-icon name="logout" />
+    {{ 'Nav.Logout' | t }}
+  </button>
+</div>

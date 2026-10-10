@@ -3,7 +3,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
     xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
-    xmlns:uc="clr-namespace:VoltStream.WPF.Commons.UserControls">
+    xmlns:uc="clr-namespace:VoltStream.WPF.Commons.UserControls"
+    xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils">
 
     <!--  ===== Typography ===== -->
     <Style TargetType="TextBlock">
@@ -245,7 +246,7 @@
     <Style x:Key="RightCellText" TargetType="TextBlock">
         <Setter Property="TextAlignment" Value="Right" />
         <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="Margin" Value="8,0" />
+        <Setter Property="Margin" Value="8,0,16,0" />
     </Style>
     <Style x:Key="CenterCellText" TargetType="TextBlock">
         <Setter Property="TextAlignment" Value="Center" />
@@ -272,11 +273,16 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         Padding="{TemplateBinding Padding}">
-                        <ContentPresenter VerticalAlignment="Center" />
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style x:Key="RightColumnHeader" TargetType="DataGridColumnHeader" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}">
+        <Setter Property="HorizontalContentAlignment" Value="Right" />
+        <Setter Property="Padding" Value="10,0,16,0" />
     </Style>
 
     <Style TargetType="DataGridRowHeader">
@@ -369,6 +375,16 @@
         <Setter Property="VerticalGridLinesBrush" Value="Transparent" />
     </Style>
 
+    <Style x:Key="GridEditText" TargetType="TextBox" BasedOn="{StaticResource RoundedTextBox}">
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="Padding" Value="6,0" />
+        <Setter Property="utils:NumericTextBox.IsNumeric" Value="True" />
+    </Style>
+
+    <Style x:Key="GridEditInteger" TargetType="TextBox" BasedOn="{StaticResource GridEditText}">
+        <Setter Property="utils:NumericTextBox.DecimalDigits" Value="0" />
+    </Style>
+
     <!--  ===== Read-only / computed value field ===== -->
     <Style x:Key="ReadOnlyValue" TargetType="TextBox">
         <Setter Property="IsReadOnly" Value="True" />
@@ -452,9 +468,9 @@
                                 <TextBlock Margin="12,0,18,0" VerticalAlignment="Center" FontSize="{DynamicResource FontSizeTitle}" FontWeight="Bold" Text="{TemplateBinding Title}" />
                             </StackPanel>
 
-                            <ContentPresenter Grid.Column="1" VerticalAlignment="Center" Content="{TemplateBinding Filters}" />
+                            <ContentPresenter Grid.Column="1" VerticalAlignment="Bottom" Content="{TemplateBinding Filters}" />
 
-                            <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal">
+                            <StackPanel Grid.Column="2" VerticalAlignment="Bottom" Orientation="Horizontal">
                                 <Button Height="40" Margin="8,0,0,0" Padding="14,0" Command="{TemplateBinding ClearCommand}" Style="{DynamicResource SecondaryButton}" ToolTip="{loc:Loc Common.ClearFilters}">
                                     <StackPanel Orientation="Horizontal">
                                         <fa:IconImage Width="13" Height="13" Margin="0,0,7,0" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondary}" Icon="Broom" />

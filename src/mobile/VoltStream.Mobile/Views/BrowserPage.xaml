@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:VoltStream.Mobile"
+             x:Class="VoltStream.Mobile.Views.BrowserPage"
+             Shell.NavBarIsVisible="False">
+    <Grid BackgroundColor="{AppThemeBinding Light=White, Dark=#0F1420}">
+        <WebView x:Name="web" Navigated="OnNavigated" />
+
+        <Grid x:Name="busy" BackgroundColor="{AppThemeBinding Light=White, Dark=#0F1420}">
+            <ActivityIndicator IsRunning="True" Color="{AppThemeBinding Light=#4F46E5, Dark=#818CF8}"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+        </Grid>
+
+        <Grid x:Name="error" BackgroundColor="{AppThemeBinding Light=White, Dark=#0F1420}" IsVisible="False">
+            <VerticalStackLayout Padding="32" Spacing="16"
+                                 HorizontalOptions="Center" VerticalOptions="Center">
+                <Label Text="{x:Static local:Texts.ServerNotFound}" FontSize="20"
+                       TextColor="{AppThemeBinding Light=#1F2937, Dark=#E6E9F0}"
+                       HorizontalTextAlignment="Center" />
+                <Button Text="{x:Static local:Texts.Retry}" Clicked="OnRetry"
+                        BackgroundColor="#4F46E5" TextColor="White" />
+                <Button Text="{x:Static local:Texts.Settings}" Clicked="OnSettings"
+                        BackgroundColor="Transparent"
+                        TextColor="{AppThemeBinding Light=#4F46E5, Dark=#818CF8}" />
+            </VerticalStackLayout>
+        </Grid>
+    </Grid>
+</ContentPage>

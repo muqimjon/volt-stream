@@ -1,9 +1,9 @@
 ﻿namespace VoltStream.Application.Features.Currencies.Queries;
 
-using AutoMapper;
-using MediatR;
+using MapsterMapper;
 using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Models;
 using VoltStream.Application.Features.Currencies.DTOs;
 

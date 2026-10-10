@@ -1,22 +1,27 @@
 ﻿namespace VoltStream.Application.Features.CustomerOperations.Queries;
 
-using AutoMapper;
-using MediatR;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Features.CustomerOperations.DTOs;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.ReportsView)]
 public record GetCustomerOperationByIdQuery(long Id) : IRequest<CustomerOperationDto>;
 
 public class GetCustomerOperationByIdQueryHandler(
     IAppDbContext context,
+    ICurrentUser user,
     IMapper mapper)
     : IRequestHandler<GetCustomerOperationByIdQuery, CustomerOperationDto>
 {
     public async Task<CustomerOperationDto> Handle(GetCustomerOperationByIdQuery request, CancellationToken cancellationToken)
-        => mapper.Map<CustomerOperationDto>(await context.CustomerOperations
+    {
+        var operation = await context.CustomerOperations
             .Include(co => co.Account)
                 .ThenInclude(a => a.Customer)
             .Include(co => co.Account)
@@ -27,7 +32,12 @@ public class GetCustomerOperationByIdQueryHandler(
                         .ThenInclude(p => p.Category)
             .Include(co => co.Payment)
                 .ThenInclude(p => p!.Currency)
-            .FirstOrDefaultAsync(co => co.Id == request.Id, cancellationToken))
-        ?? throw new NotFoundException(nameof(CustomerOperation), nameof(request.Id), request.Id);
+            .FirstOrDefaultAsync(co => co.Id == request.Id, cancellationToken)
+            ?? throw new NotFoundException(nameof(CustomerOperation), nameof(request.Id), request.Id);
+
+        var dto = mapper.Map<CustomerOperationDto>(operation);
+        await context.FillBalancesAsync(new[] { dto }.Accounts(), cancellationToken);
+        return user.Apply(dto);
+    }
 }
 

@@ -89,8 +89,14 @@
 
                 <DataGridTextColumn
                     Width="*"
+                    Binding="{Binding Warehouse}"
+                    Header="{loc:Loc Products.Warehouse}" />
+
+                <DataGridTextColumn
+                    Width="*"
                     Binding="{Binding RollLength, StringFormat={}{0:N0}}"
                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                     Header="{loc:Loc Products.PerRoll}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
@@ -104,6 +110,7 @@
                     Width="*"
                     Binding="{Binding Quantity, StringFormat={}{0:N0}}"
                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                     Header="{loc:Loc Products.RollCount}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
@@ -117,6 +124,7 @@
                     Width="*"
                     Binding="{Binding TotalCount, StringFormat={}{0:N0}}"
                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                     Header="{loc:Loc Common.Total}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
@@ -133,9 +141,11 @@
                     Header="{loc:Loc Products.UnitOfMeasure}" />
 
                 <DataGridTextColumn
+                    x:Name="priceColumn"
                     Width="*"
                     Binding="{Binding Price, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                     Header="{loc:Loc Common.Price}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">
@@ -146,9 +156,11 @@
                 </DataGridTextColumn>
 
                 <DataGridTextColumn
+                    x:Name="totalAmountColumn"
                     Width="1.5*"
                     Binding="{Binding TotalAmount, StringFormat={}{0:N2}}"
                     ElementStyle="{StaticResource RightCellText}"
+                                    HeaderStyle="{StaticResource RightColumnHeader}"
                     Header="{loc:Loc Products.TotalAmount}">
                     <DataGridTextColumn.EditingElementStyle>
                         <Style TargetType="TextBox">

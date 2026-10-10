@@ -63,7 +63,7 @@
                                 </Setter.Value>
                             </Setter>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding}" Value="True">
+                                <DataTrigger Binding="{Binding IsEditing}" Value="True">
                                     <Setter Property="ContentTemplate">
                                         <Setter.Value>
                                             <DataTemplate>

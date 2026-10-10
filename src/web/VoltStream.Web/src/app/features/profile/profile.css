@@ -1,0 +1,56 @@
+.rows {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-md);
+  min-height: var(--touch);
+  padding: var(--sp-md) var(--sp-lg);
+}
+
+.row + .row {
+  border-top: 1px solid var(--border);
+}
+
+.picker {
+  min-height: 38px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  padding: 0 var(--sp-sm);
+}
+
+.item,
+.pin {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
+.pin {
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+}
+
+.pin input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--brand);
+}
+
+.hint {
+  margin: 0;
+  padding: 0 var(--sp-lg) var(--sp-sm);
+  font-size: var(--fs-caption);
+}
+
+@media (min-width: 640px) {
+  .bottom-menu {
+    display: none;
+  }
+}

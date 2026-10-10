@@ -1,12 +1,16 @@
 ﻿namespace VoltStream.Application.Features.Supplies.Commands;
 
-using AutoMapper;
-using MediatR;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
+using VoltStream.Application.Commons.Security;
+using VoltStream.Application.Commons.Services;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.SuppliesCreate)]
 public record CreateSupplyCommand(
     DateTimeOffset Date,
     long CategoryId,
@@ -17,26 +21,34 @@ public record CreateSupplyCommand(
     string Unit,
     decimal LengthPerRoll,
     decimal TotalLength,
-    decimal UnitPrice,
-    decimal DiscountRate)
+    decimal? UnitPrice,
+    decimal? DiscountRate,
+    long? BranchId = null,
+    bool IsWeightTracked = false,
+    decimal? WeightPerUnit = null)
     : IRequest<long>;
 
 public class CreateSupplyCommandHandler(
     IAppDbContext context,
+    BranchContext branches,
+    ICurrentUser user,
     IMapper mapper)
     : IRequestHandler<CreateSupplyCommand, long>
 {
     public async Task<long> Handle(CreateSupplyCommand request, CancellationToken cancellationToken)
     {
+        PriceValidation.Ensure(request.UnitPrice, request.DiscountRate);
+
+        var branchId = await branches.ResolveAsync(request.BranchId, cancellationToken);
+        var canSetPrice = user.Has(Permissions.SalesViewPrices);
+        var requestedPrice = canSetPrice ? request.UnitPrice : null;
+        var requestedDiscount = canSetPrice ? request.DiscountRate : null;
+
+        var warehouseId = await branches.WarehouseOfAsync(branchId, cancellationToken);
         var warehouse = await context.Warehouses
             .Include(w => w.Stocks)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (warehouse is null)
-        {
-            context.Warehouses.Add(warehouse = new());
-            warehouse.Stocks = [];
-        }
+            .FirstOrDefaultAsync(w => w.Id == warehouseId, cancellationToken)
+            ?? throw new NotFoundException(nameof(Warehouse));
 
         await context.BeginTransactionAsync(cancellationToken);
 
@@ -61,7 +73,9 @@ public class CreateSupplyCommandHandler(
                 Name = request.ProductName.Trim(),
                 NormalizedName = request.ProductName.Trim().ToUpper(),
                 CategoryId = newCategoryId,
-                Unit = request.Unit
+                Unit = request.Unit,
+                IsWeightTracked = request.IsWeightTracked,
+                WeightPerUnit = request.IsWeightTracked ? request.WeightPerUnit : null
             };
 
             context.Products.Add(product);
@@ -73,22 +87,37 @@ public class CreateSupplyCommandHandler(
             => wh.ProductId == newProductId && wh.LengthPerRoll == request.LengthPerRoll);
 
 
+        decimal unitPrice;
+        decimal discountRate;
+
         if (warehouseItem is null)
         {
+            unitPrice = requestedPrice ?? 0;
+            discountRate = requestedDiscount ?? 0;
+
             var stock = mapper.Map<WarehouseStock>(request);
             stock.ProductId = newProductId;
+            stock.UnitPrice = unitPrice;
+            stock.DiscountRate = discountRate;
             warehouse.Stocks.Add(stock);
         }
         else
         {
+            unitPrice = requestedPrice ?? warehouseItem.UnitPrice;
+            discountRate = requestedDiscount ?? warehouseItem.DiscountRate;
+
             warehouseItem.RollCount += request.RollCount;
             warehouseItem.TotalLength += request.TotalLength;
-            warehouseItem.UnitPrice = request.UnitPrice;
-            warehouseItem.DiscountRate = request.DiscountRate;
+            warehouseItem.UnitPrice = unitPrice;
+            warehouseItem.DiscountRate = discountRate;
         }
 
         var supply = mapper.Map<Supply>(request);
         supply.ProductId = newProductId;
+        supply.BranchId = branchId;
+        supply.WarehouseId = warehouse.Id;
+        supply.UnitPrice = unitPrice;
+        supply.DiscountRate = discountRate;
         context.Supplies.Add(supply);
 
         await context.CommitTransactionAsync(cancellationToken);

@@ -1,11 +1,13 @@
-﻿namespace VoltStream.Application.Features.Categories.Commands;
+namespace VoltStream.Application.Features.Categories.Commands;
 
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Domain.Entities;
 
+[RequirePermission(Permissions.SettingsCategories)]
 public record DeleteCategoryCommand(long Id) : IRequest<bool>;
 
 public class DeleteCategoryCommandHandler(IAppDbContext context)
@@ -23,6 +25,9 @@ public class DeleteCategoryCommandHandler(IAppDbContext context)
 
         if (hasSoldProducts)
             throw new ForbiddenException("Kategoriyani o'chirib bo'lmaydi: Undagi ayrim mahsulotlar savdoda ishtirok etgan.");
+
+        if (await context.SaleDraftItems.AnyAsync(i => i.Product.CategoryId == request.Id, cancellationToken))
+            throw new ConflictException("Kategoriyani o'chirib bo'lmaydi: Undagi ayrim mahsulotlar yuk ro'yxatlarida ishlatilgan.");
 
         context.Categories.Remove(category);
         await context.SaveAsync(cancellationToken);

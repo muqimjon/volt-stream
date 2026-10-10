@@ -20,6 +20,7 @@ public partial class ProductItemViewModel : ViewModelBase
     [ObservableProperty] private decimal? price;
     [ObservableProperty] private decimal? totalAmount;
     [ObservableProperty] private string? customer = string.Empty;
+    [ObservableProperty] private string? composition;
 
     partial void OnPriceChanged(decimal? value)
         => ReCalculateTotalAmount();

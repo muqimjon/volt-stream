@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using VoltStream.WPF.Commons;
 using VoltStream.WPF.Commons.Localization;
+using VoltStream.WPF.Commons.Utils;
 using VoltStream.WPF.Commons.ViewModels;
 
 public partial class SettingsPageViewModel : ViewModelBase
@@ -23,19 +24,31 @@ public partial class SettingsPageViewModel : ViewModelBase
         mapper = services.GetRequiredService<IMapper>();
         apiConnection = services.GetRequiredService<ApiConnectionViewModel>();
 
-        CategorySettings = services.GetRequiredService<CategorySettingsViewModel>();
-        ProductSettings = services.GetRequiredService<ProductSettingsViewModel>();
-        CustomerSettings = services.GetRequiredService<CustomerSettingsViewModel>();
+        if (Permission.Has("settings.general")) GeneralSettings = services.GetRequiredService<GeneralSettingsViewModel>();
+        if (Permission.Has("settings.categories")) CategorySettings = services.GetRequiredService<CategorySettingsViewModel>();
+        if (Permission.Has("settings.products")) ProductSettings = services.GetRequiredService<ProductSettingsViewModel>();
+        if (Permission.Has("settings.customers")) CustomerSettings = services.GetRequiredService<CustomerSettingsViewModel>();
+        if (Permission.Has("settings.branches")) BranchSettings = services.GetRequiredService<BranchSettingsViewModel>();
+        if (Permission.Has("settings.branches")) WarehouseSettings = services.GetRequiredService<WarehouseSettingsViewModel>();
+        if (Permission.Has("settings.users")) UserSettings = services.GetRequiredService<UserSettingsViewModel>();
+        if (Permission.Has("settings.printer")) PrinterSettings = services.GetRequiredService<PrinterSettingsViewModel>();
+        if (Permission.Has("settings.audit")) AuditLog = services.GetRequiredService<AuditLogViewModel>();
 
-        _ = LoadData();
+        if (Permission.Has("settings.currencies")) _ = LoadData();
     }
 
     [ObservableProperty] private ApiConnectionViewModel apiConnection;
     [ObservableProperty] private ObservableCollection<CurrencyViewModel> currencies = [];
 
-    [ObservableProperty] private CategorySettingsViewModel categorySettings;
-    [ObservableProperty] private ProductSettingsViewModel productSettings;
-    [ObservableProperty] private CustomerSettingsViewModel customerSettings;
+    [ObservableProperty] private GeneralSettingsViewModel? generalSettings;
+    [ObservableProperty] private CategorySettingsViewModel? categorySettings;
+    [ObservableProperty] private ProductSettingsViewModel? productSettings;
+    [ObservableProperty] private CustomerSettingsViewModel? customerSettings;
+    [ObservableProperty] private BranchSettingsViewModel? branchSettings;
+    [ObservableProperty] private WarehouseSettingsViewModel? warehouseSettings;
+    [ObservableProperty] private UserSettingsViewModel? userSettings;
+    [ObservableProperty] private PrinterSettingsViewModel? printerSettings;
+    [ObservableProperty] private AuditLogViewModel? auditLog;
 
     #region Commands
 

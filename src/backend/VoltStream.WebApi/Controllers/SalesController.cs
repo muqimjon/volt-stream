@@ -1,4 +1,4 @@
-﻿namespace VoltStream.WebApi.Controllers;
+namespace VoltStream.WebApi.Controllers;
 
 using Microsoft.AspNetCore.Mvc;
 using VoltStream.Application.Features.Sales.Commands;
@@ -19,6 +19,10 @@ public class SalesController
     [HttpPut]
     public async Task<IActionResult> Update(UpdateSaleCommand command)
         => Ok(new Response { Data = await Mediator.Send(command) });
+
+    [HttpGet("{id:long}/receipt")]
+    public async Task<IActionResult> GetReceipt(long id)
+        => Ok(new Response { Data = await Mediator.Send(new GetSaleReceiptQuery(id)) });
 
     [HttpPost("filter")]
     public async Task<IActionResult> GetFiltered(SaleFilterQuery query)

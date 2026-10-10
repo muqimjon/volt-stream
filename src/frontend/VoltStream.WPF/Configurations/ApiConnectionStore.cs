@@ -7,7 +7,7 @@ using VoltStream.WPF.Commons.ViewModels;
 
 public class ApiConnectionStore
 {
-    private static readonly string ConfigPath = AppStorage.PathFor("api-connection.json");
+    private static readonly string ConfigPath = AppStorage.PathFor("connection.json");
     private readonly JsonSerializerOptions jsonOptions = new()
     {
         WriteIndented = true,

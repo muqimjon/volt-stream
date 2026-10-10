@@ -1,29 +1,24 @@
-﻿namespace VoltStream.WPF.Settings.Views;
+namespace VoltStream.WPF.Settings.Views;
 
-using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
-using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Settings.ViewModels;
 
 public partial class SettingsPage : Page
 {
-    private readonly ISessionService session;
-
     public SettingsPage(SettingsPageViewModel vm)
     {
         InitializeComponent();
         DataContext = vm;
-        session = App.Services!.GetRequiredService<ISessionService>();
+        Loaded += SettingsPage_Loaded;
     }
 
-    private void SettingsTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void SettingsPage_Loaded(object sender, RoutedEventArgs e)
     {
-        if (e.OriginalSource != SettingsTabControl) return;
-        if (session.IsAdmin) return;
+        if (SettingsTabControl.SelectedItem is TabItem { Visibility: Visibility.Visible }) return;
 
-        if (CurrencyLock != null) CurrencyLock.IsLocked = true;
-        if (CategoryLock != null) CategoryLock.IsLocked = true;
-        if (ProductLock != null) ProductLock.IsLocked = true;
-        if (CustomerLock != null) CustomerLock.IsLocked = true;
+        var firstVisible = SettingsTabControl.Items.OfType<TabItem>().FirstOrDefault(t => t.Visibility == Visibility.Visible);
+        if (firstVisible is not null) SettingsTabControl.SelectedItem = firstVisible;
     }
 }

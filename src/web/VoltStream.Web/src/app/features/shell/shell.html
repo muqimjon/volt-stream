@@ -1,0 +1,113 @@
+<div class="shell" [class.compact]="compact()" [class.rail-open]="railOpen()">
+  <aside class="sidebar">
+    <button
+      type="button"
+      class="sidebar-brand"
+      [attr.aria-expanded]="!compact()"
+      [title]="'Web.ToggleMenu' | t"
+      (click)="toggleSidebar()"
+    >
+      <img src="logo.png" alt="" width="30" height="30" />
+      <span class="brand">Volt Stream</span>
+    </button>
+
+    <nav class="tabs">
+      @for (item of items(); track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          [class.off]="!nav.isPinned(item.path)"
+          [attr.title]="compact() ? (item.key | t) : null"
+        >
+          <app-icon [name]="item.icon" [size]="22" />
+          <span>{{ item.key | t }}</span>
+        </a>
+      }
+      @if (nav.more().length) {
+        <button
+          type="button"
+          class="more"
+          [class.active]="moreActive()"
+          (click)="moreOpen.set(true)"
+        >
+          <app-icon name="more" [size]="22" />
+          <span>{{ 'Web.MoreMenu' | t }}</span>
+        </button>
+      }
+    </nav>
+  </aside>
+
+  @if (moreOpen()) {
+    <div class="more-scrim" (click)="moreOpen.set(false)"></div>
+    <div class="more-sheet">
+      @for (item of nav.more(); track item.path) {
+        <a [routerLink]="item.path" [replaceUrl]="true">
+          <app-icon [name]="item.icon" [size]="22" />
+          <span>{{ item.key | t }}</span>
+        </a>
+      }
+    </div>
+  }
+
+  @if (railOpen()) {
+    <div class="scrim" (click)="railOpen.set(false)"></div>
+  }
+
+  <header class="app-header">
+    <span class="brand mobile-brand">Volt Stream</span>
+    <span class="page-title">{{ title.override() ?? activeTitle() | t }}</span>
+    <app-branch-switcher />
+    <app-user-menu class="profile" />
+    <div class="header-actions">
+      <button
+        type="button"
+        class="icon-btn"
+        [title]="'Web.PaletteTooltip' | t"
+        (click)="palette.toggle()"
+      >
+        <app-icon name="search" [size]="18" />
+      </button>
+      <button
+        type="button"
+        class="icon-btn wide-only"
+        [title]="actions.themeKey[actions.theme.mode()] | t"
+        (click)="cycleTheme()"
+      >
+        <app-icon [name]="actions.theme.effectiveDark() ? 'sun' : 'moon'" [size]="18" />
+      </button>
+      <label class="lang-picker wide-only" [title]="'Web.LanguageTooltip' | t">
+        <app-icon name="globe" [size]="18" />
+        <select
+          [value]="actions.translate.lang()"
+          (change)="actions.setLang($any($event.target).value)"
+        >
+          @for (lang of actions.languages; track lang.code) {
+            <option [value]="lang.code">{{ lang.label }}</option>
+          }
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <div class="banners">
+    @if (!pwa.online()) {
+      <div class="banner warn">{{ 'Web.Offline' | t }}</div>
+    }
+    @if (pwa.updateReady()) {
+      <div class="banner info">
+        <span>{{ 'Web.UpdateAvailable' | t }}</span>
+        <button type="button" class="btn btn-primary" (click)="pwa.applyUpdate()">
+          {{ 'Common.Refresh' | t }}
+        </button>
+      </div>
+    }
+  </div>
+
+  <main>
+    <div class="content">
+      <router-outlet />
+    </div>
+  </main>
+</div>
+
+<app-command-palette />

@@ -9,7 +9,4 @@ public interface ILoginApi
 {
     [Post("/user/login")]
     Task<Response<UserResponse>> LoginAsync(LoginRequest request);
-
-    [Post("/user/verify-admin")]
-    Task<Response<bool>> VerifyAdminAsync([Body] VerifyAdminRequest request);
 }

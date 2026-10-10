@@ -1,11 +1,13 @@
 namespace VoltStream.Application.Features.Customers.Queries;
 
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
+using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Models;
+using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Features.Customers.DTOs;
 
+[RequirePermission(Permissions.ReportsView)]
 public record CustomerBalanceQuery : IRequest<IReadOnlyCollection<CustomerBalanceDto>>
 {
     public long? CustomerId { get; set; }
@@ -24,12 +26,14 @@ public class CustomerBalanceQueryHandler(
     {
         var projected = context.Customers
             .Where(c => customerId == null || c.Id == customerId)
+            .OrderBy(c => c.Id)
             .Select(c => new
             {
                 c.Name,
                 c.Phone,
                 c.Address,
-                Balance = c.Accounts.Sum(a => a.Balance),
+                Balance = c.Accounts.Sum(a => a.OpeningBalance)
+                    + context.CustomerOperations.Where(o => o.Account.CustomerId == c.Id).Sum(o => o.Amount),
                 Discount = c.Accounts.Select(a => a.Discount).FirstOrDefault()
             })
             .Select(x => new CustomerBalanceDto

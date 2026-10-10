@@ -1,0 +1,121 @@
+<Page
+    x:Class="VoltStream.WPF.SaleDrafts.Views.SaleDraftsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:VoltStream.WPF.Commons.UserControls"
+    xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
+    xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
+    xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils"
+    Title="{loc:Loc Nav.Drafts}">
+
+    <Grid Margin="10" Background="{DynamicResource Canvas}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Border Margin="0,0,0,12" Style="{StaticResource CardBorder}">
+            <Grid>
+                <TextBlock
+                    VerticalAlignment="Center"
+                    Style="{StaticResource SubtitleText}"
+                    Text="{loc:Loc Nav.Drafts}" />
+                <Button
+                    HorizontalAlignment="Right"
+                    Padding="14,0"
+                    Command="{Binding LoadCommand}"
+                    Content="{loc:Loc Common.Refresh}"
+                    Style="{StaticResource SecondaryButton}" />
+            </Grid>
+        </Border>
+
+        <DataGrid
+            Grid.Row="1"
+            CanUserAddRows="False"
+            CanUserDeleteRows="False"
+            HeadersVisibility="Column, Row"
+            IsReadOnly="True"
+            ItemsSource="{Binding Drafts}"
+            RowHeaderWidth="48"
+            SelectionMode="Single"
+            utils:DataGridRowNumbering.IsEnabled="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn
+                    Width="1.3*"
+                    Binding="{Binding Date, Converter={StaticResource UtcToUzbekistanTimeConverter}, StringFormat={}{0:dd.MM.yyyy HH:mm}}"
+                    ElementStyle="{StaticResource CenterCellText}"
+                    Header="{loc:Loc Common.Date}" />
+                <DataGridTextColumn
+                    x:Name="branchColumn"
+                    Width="*"
+                    Binding="{Binding Branch}"
+                    Header="{loc:Loc Drafts.Branch}" />
+                <DataGridTextColumn
+                    Width="2*"
+                    Binding="{Binding Customer}"
+                    Header="{loc:Loc SalesJournal.Customer}" />
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding CreatedBy}"
+                    Header="{loc:Loc Drafts.CreatedBy}" />
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding TotalRolls, StringFormat={}{0:N0}}"
+                    ElementStyle="{StaticResource RightCellText}"
+                    HeaderStyle="{StaticResource RightColumnHeader}"
+                    Header="{loc:Loc SalesJournal.RollCount}" />
+                <DataGridTextColumn
+                    Width="*"
+                    Binding="{Binding TotalLength, StringFormat={}{0:N0}}"
+                    ElementStyle="{StaticResource RightCellText}"
+                    HeaderStyle="{StaticResource RightColumnHeader}"
+                    Header="{loc:Loc SalesJournal.TotalLength}" />
+                <DataGridTextColumn
+                    Width="2*"
+                    Binding="{Binding Description}"
+                    Header="{loc:Loc Common.Note}" />
+                <DataGridTemplateColumn Width="150" Header="{loc:Loc Common.Actions}">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+                                <Button
+                                    utils:Permission.Require="drafts.print"
+                                    Command="{Binding DataContext.ReceiptCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}"
+                                    Style="{StaticResource EditActionButton}"
+                                    ToolTip="{loc:Loc Receipt.Show}">
+                                    <fa:IconImage Width="16" Height="16" Foreground="{DynamicResource Brand}" Icon="Receipt" />
+                                </Button>
+                                <Button
+                                    utils:Permission.Require="sales.create"
+                                    Command="{Binding DataContext.ConfirmCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}"
+                                    Style="{StaticResource EditActionButton}"
+                                    ToolTip="{loc:Loc Drafts.Confirm}">
+                                    <fa:IconImage Width="16" Height="16" Foreground="{DynamicResource Success}" Icon="Check" />
+                                </Button>
+                                <Button
+                                    Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                    CommandParameter="{Binding}"
+                                    Style="{StaticResource DeleteActionButton}"
+                                    ToolTip="{loc:Loc Common.Cancel}">
+                                    <fa:IconImage Width="16" Height="16" Foreground="{DynamicResource Danger}" Icon="Xmark" />
+                                </Button>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <controls:EmptyState
+            Grid.Row="1"
+            Message="{loc:Loc Drafts.NotFound}"
+            Visibility="{Binding Drafts.Count, Converter={StaticResource CountToEmptyVisibility}}" />
+
+        <controls:BusyOverlay
+            Grid.RowSpan="2"
+            IsBusy="{Binding IsLoading}"
+            Message="{loc:Loc Common.Loading}" />
+    </Grid>
+</Page>

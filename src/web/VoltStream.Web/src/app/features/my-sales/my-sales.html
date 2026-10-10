@@ -1,0 +1,225 @@
+<div class="page">
+  <div class="filter-bar">
+    <app-page-header [title]="'Web.MySales' | t">
+      <button type="button" class="btn btn-ghost" [disabled]="loading()" (click)="load(1)">
+        <app-icon name="refresh" [size]="18" />
+      </button>
+    </app-page-header>
+
+    <app-date-field
+      [label]="'Common.Date' | t"
+      [stepper]="true"
+      [value]="date()"
+      (valueChange)="onDate($event)"
+    />
+  </div>
+
+  @if (!sales().length && !loading()) {
+    <app-empty-state [text]="'Common.NoData' | t" />
+  } @else if (bp.desktop() || bp.tablet()) {
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th></th>
+            <th>{{ 'Common.Date' | t }}</th>
+            <th>{{ 'Sales.Buyer' | t }}</th>
+            @if (showBranch() && bp.desktop()) {
+              <th>{{ 'Web.Branch' | t }}</th>
+            }
+            <th class="num">{{ 'Web.TotalRolls' | t }}</th>
+            <th class="num">{{ 'Web.TotalLength' | t }}</th>
+            @if (showWeight() && bp.desktop()) {
+              <th class="num">{{ 'Web.Weight' | t }}</th>
+            }
+            @if (showAmount()) {
+              <th class="num">{{ 'Common.Amount' | t }}</th>
+            }
+            @if (canPrint()) {
+              <th class="num">{{ 'Common.Actions' | t }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (sale of sales(); track sale.id) {
+            <tr>
+              <td>
+                <button
+                  type="button"
+                  class="btn btn-ghost"
+                  [title]="'Web.RollComposition' | t"
+                  [attr.aria-expanded]="expandedId() === sale.id"
+                  (click)="toggleReceipt(sale)"
+                >
+                  <app-icon name="chevron" [size]="18" [class.rotated]="expandedId() === sale.id" />
+                </button>
+              </td>
+              <td>{{ fmtDateTime(sale.date) }}</td>
+              <td class="clip">{{ sale.customer?.name || ('Common.NoData' | t) }}</td>
+              @if (showBranch() && bp.desktop()) {
+                <td class="muted">{{ branches.nameOf(sale.branchId) }}</td>
+              }
+              <td class="num">{{ fmt(sale.rollCount, 0) }}</td>
+              <td class="num">{{ fmt(sale.length) }}</td>
+              @if (showWeight() && bp.desktop()) {
+                <td class="num">{{ fmt(weightOf(sale), 3) }}</td>
+              }
+              @if (showAmount()) {
+                <td class="num">{{ fmt(sale.amount) }}</td>
+              }
+              @if (canPrint()) {
+                <td class="num">
+                  @if (statusOf(sale); as status) {
+                    <app-status-badge [status]="status" />
+                  }
+                  <button
+                    type="button"
+                    class="btn btn-ghost"
+                    [title]="'Common.Print' | t"
+                    [disabled]="print.isBusy(sale.id) || !pwa.online()"
+                    (click)="requestPrint(sale)"
+                  >
+                    <app-icon name="print" [size]="18" />
+                  </button>
+                </td>
+              }
+            </tr>
+            @if (expandedId() === sale.id) {
+              <tr class="composition-row">
+                <td [attr.colspan]="columnCount() + 1">
+                  @if (receiptLoadingId() === sale.id) {
+                    {{ 'Common.Loading' | t }}
+                  } @else if (receiptOf(sale.id); as receipt) {
+                    <div class="segmented view-toggle">
+                      <button
+                        type="button"
+                        [class.active]="receiptView() === 'compact'"
+                        (click)="setReceiptView('compact')"
+                      >
+                        {{ 'Web.ReceiptCompact' | t }}
+                      </button>
+                      <button
+                        type="button"
+                        [class.active]="receiptView() === 'detailed'"
+                        (click)="setReceiptView('detailed')"
+                      >
+                        {{ 'Web.ReceiptDetailed' | t }}
+                      </button>
+                    </div>
+                    <ul class="composition">
+                      @for (item of receipt.items; track $index) {
+                        @if (receiptView() === 'compact') {
+                          <li>{{ item.category }} {{ item.product }} — {{ stockInfo(item) }}</li>
+                        } @else {
+                          <li class="detailed-item">
+                            <span class="item-name">{{ item.category }} {{ item.product }}</span>
+                            <span class="item-rolls">{{ rollsBreakdown(item) }}</span>
+                          </li>
+                        }
+                      }
+                    </ul>
+                  }
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    @for (sale of sales(); track sale.id) {
+      <article class="card">
+        <div class="row-between">
+          <div>
+            <strong>{{ sale.customer?.name || ('Common.NoData' | t) }}</strong>
+            @if (showBranch() && branches.nameOf(sale.branchId); as branchName) {
+              <small class="muted block">{{ branchName }}</small>
+            }
+          </div>
+          <small class="muted">{{ fmtDateTime(sale.date) }}</small>
+        </div>
+        <dl class="sums">
+          <div>
+            <dt>{{ 'Web.TotalRolls' | t }}</dt>
+            <dd>{{ fmt(sale.rollCount, 0) }}</dd>
+          </div>
+          <div>
+            <dt>{{ 'Web.TotalLength' | t }}</dt>
+            <dd>{{ fmt(sale.length) }}</dd>
+          </div>
+          <div *appHasPermission="'sales.view_prices'">
+            <dt>{{ 'Common.Amount' | t }}</dt>
+            <dd>{{ fmt(sale.amount) }}</dd>
+          </div>
+        </dl>
+        <div class="foot">
+          @if (statusOf(sale); as status) {
+            <app-status-badge [status]="status" />
+          }
+          <div class="foot-actions">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              [attr.aria-expanded]="expandedId() === sale.id"
+              (click)="toggleReceipt(sale)"
+            >
+              <app-icon name="chevron" [size]="18" [class.rotated]="expandedId() === sale.id" />
+              {{ 'Web.RollComposition' | t }}
+            </button>
+            @if (canPrint()) {
+              <button
+                type="button"
+                class="btn btn-ghost"
+                [disabled]="print.isBusy(sale.id) || !pwa.online()"
+                (click)="requestPrint(sale)"
+              >
+                <app-icon name="print" [size]="18" />
+                {{ 'Common.Print' | t }}
+              </button>
+            }
+          </div>
+        </div>
+        @if (expandedId() === sale.id) {
+          @if (receiptLoadingId() === sale.id) {
+            <p class="muted composition-loading">{{ 'Common.Loading' | t }}</p>
+          } @else if (receiptOf(sale.id); as receipt) {
+            <div class="segmented view-toggle">
+              <button
+                type="button"
+                [class.active]="receiptView() === 'compact'"
+                (click)="setReceiptView('compact')"
+              >
+                {{ 'Web.ReceiptCompact' | t }}
+              </button>
+              <button
+                type="button"
+                [class.active]="receiptView() === 'detailed'"
+                (click)="setReceiptView('detailed')"
+              >
+                {{ 'Web.ReceiptDetailed' | t }}
+              </button>
+            </div>
+            <ul class="composition">
+              @for (item of receipt.items; track $index) {
+                @if (receiptView() === 'compact') {
+                  <li>{{ item.category }} {{ item.product }} — {{ stockInfo(item) }}</li>
+                } @else {
+                  <li class="detailed-item">
+                    <span class="item-name">{{ item.category }} {{ item.product }}</span>
+                    <span class="item-rolls">{{ rollsBreakdown(item) }}</span>
+                  </li>
+                }
+              }
+            </ul>
+          }
+        }
+      </article>
+    }
+  }
+
+  @if (page() < totalPages()) {
+    <button type="button" class="btn btn-block" [disabled]="loading()" (click)="loadMore()">
+      {{ 'Web.LoadMore' | t }}
+    </button>
+  }
+</div>
