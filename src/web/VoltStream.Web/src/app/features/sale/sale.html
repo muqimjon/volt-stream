@@ -44,49 +44,49 @@
         <app-search-select
           [label]="'Sales.ProductType' | t"
           [placeholder]="'Common.Select' | t"
-          [items]="shownCategories()"
+          [items]="sel.shownCategories()"
           [labelOf]="nameOf"
-          [selected]="category()"
+          [selected]="sel.category()"
           [clearable]="true"
-          (selectedChange)="onCategory($event)"
+          (selectedChange)="sel.onCategory($event)"
         />
 
         <app-search-select
           [label]="'Sales.Product' | t"
           [placeholder]="'Common.Select' | t"
-          [items]="shownProducts()"
+          [items]="sel.shownProducts()"
           [labelOf]="nameOf"
-          [selected]="product()"
-          (opened)="loadProducts()"
-          (selectedChange)="onProduct($event)"
+          [selected]="sel.product()"
+          (opened)="sel.loadProducts()"
+          (selectedChange)="sel.onProduct($event)"
         />
 
         <app-search-select
           [label]="'Sales.RollLength' | t"
           [placeholder]="'Common.Select' | t"
-          [items]="stocks()"
-          [labelOf]="stockLabel"
-          [subLabelOf]="stockHint"
-          [selected]="stock()"
-          [disabled]="!product()"
-          [hint]="stock() ? stockHint(stock()!) : ''"
+          [items]="sel.stocks()"
+          [labelOf]="sel.stockLabel"
+          [subLabelOf]="sel.stockHint"
+          [selected]="sel.stock()"
+          [disabled]="!sel.product()"
+          [hint]="sel.stock() ? sel.stockHint(sel.stock()!) : ''"
           (selectedChange)="onStock($event)"
         />
 
         <div class="grid-2">
           <app-number-field
             [label]="'Sales.RollCount' | t"
-            [value]="rollCount()"
-            [disabled]="!stock()"
-            (valueChange)="rollCount.set($event)"
-            (commit)="onRollCountCommit($event)"
+            [value]="sel.rollCount()"
+            [disabled]="!sel.stock()"
+            (valueChange)="sel.rollCount.set($event)"
+            (commit)="sel.onRollCountCommit($event)"
           />
           <app-number-field
             [label]="'Web.TotalLength' | t"
-            [value]="length()"
-            [disabled]="!stock()"
-            (valueChange)="length.set($event)"
-            (commit)="onLengthCommit($event)"
+            [value]="sel.length()"
+            [disabled]="!sel.stock()"
+            (valueChange)="sel.length.set($event)"
+            (commit)="sel.onLengthCommit($event)"
           />
         </div>
 
@@ -95,13 +95,13 @@
             <app-number-field
               [label]="'Common.Price' | t"
               [value]="unitPrice()"
-              [disabled]="!stock()"
+              [disabled]="!sel.stock()"
               (valueChange)="unitPrice.set($event)"
             />
             <app-number-field
               [label]="'Sales.DiscountPercent' | t"
               [value]="discountRate()"
-              [disabled]="!stock()"
+              [disabled]="!sel.stock()"
               (valueChange)="discountRate.set($event)"
             />
           </div>

@@ -112,7 +112,8 @@ export interface SupplyRequest {
 
 export interface PrintJob {
   id: number;
-  saleId: number;
+  saleId?: number | null;
+  saleDraftId?: number | null;
   status: PrintJobStatus;
   error?: string | null;
   createdAt?: string;
@@ -218,4 +219,44 @@ export interface Paging {
 export interface Paged<T> {
   items: T[];
   paging: Paging | null;
+}
+
+export type SaleDraftStatus = 'Open' | 'Confirmed' | 'Cancelled';
+
+export interface SaleDraftItem {
+  id: number;
+  productId: number;
+  product: string;
+  categoryId: number;
+  category: string;
+  unit: string;
+  lengthPerRoll: number;
+  rollCount: number;
+  totalLength: number;
+  composition: string;
+}
+
+export interface SaleDraft {
+  id: number;
+  date: string;
+  description: string;
+  status: SaleDraftStatus;
+  branchId: number;
+  branch: string;
+  customerId?: number | null;
+  customer?: string | null;
+  createdByUserId?: number | null;
+  createdBy?: string | null;
+  totalRolls: number;
+  totalLength: number;
+  items: SaleDraftItem[];
+}
+
+export interface SaleDraftRequest {
+  id?: number;
+  date: string;
+  customerId: number | null;
+  description: string;
+  items: { productId: number; lengthPerRoll: number; rollCount: number; totalLength: number }[];
+  branchId?: number | null;
 }

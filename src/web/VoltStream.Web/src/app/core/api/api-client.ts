@@ -23,6 +23,10 @@ export class ApiClient {
     return firstValueFrom(this.http.post<T>(url(path), body, { context: ctx(silent) }));
   }
 
+  put<T>(path: string, body: unknown, silent = false): Promise<T> {
+    return firstValueFrom(this.http.put<T>(url(path), body, { context: ctx(silent) }));
+  }
+
   async filter<T>(
     path: string,
     request: Partial<FilterRequest>,

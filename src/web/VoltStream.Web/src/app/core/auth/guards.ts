@@ -16,7 +16,7 @@ export const guestGuard: CanActivateFn = () => {
 };
 
 export const permissionGuard =
-  (permission: string): CanActivateFn =>
+  (permission: string | string[]): CanActivateFn =>
   () => {
     const router = inject(Router);
     return inject(PermissionService).has(permission) || router.createUrlTree(['/']);

@@ -7,7 +7,7 @@ import { TranslateService } from '../i18n/translate';
 import { PrintJob } from '../models';
 import { DialogService } from '../ui/dialog';
 import { ToastService } from '../ui/toast';
-import { PrintHubService } from './print-hub';
+import { PrintHubService, PrintTarget } from './print-hub';
 
 const POLL_MS = 5000;
 
@@ -24,21 +24,31 @@ export class PrintService {
 
   constructor() {
     effect(() => {
-      this.hub.bySale();
+      this.hub.byTarget();
       this.sync();
     });
   }
 
-  isBusy(saleId: number): boolean {
-    const status = this.hub.jobFor(saleId)?.status;
+  isBusy(id: number, target: PrintTarget = 'sale'): boolean {
+    const status = this.hub.jobFor(id, target)?.status;
     return status === 'Pending' || status === 'Printing';
   }
 
-  async request(saleId: number, saleBranchId: number | null = null, copies = 1): Promise<void> {
-    const branchId = await this.pickBranch(saleBranchId);
+  async request(
+    id: number,
+    sourceBranchId: number | null = null,
+    target: PrintTarget = 'sale',
+    copies = 1,
+  ): Promise<void> {
+    const branchId = await this.pickBranch(sourceBranchId);
     if (branchId === undefined) return;
     try {
-      const job = await this.api.post<PrintJob>('print-jobs', { saleId, copies, branchId }, true);
+      const source = target === 'sale' ? { saleId: id } : { saleDraftId: id };
+      const job = await this.api.post<PrintJob>(
+        'print-jobs',
+        { ...source, copies, branchId },
+        true,
+      );
       this.hub.track(job);
       this.toast.success(this.translate.t('Web.PrintRequested'));
       this.sync();
@@ -50,7 +60,7 @@ export class PrintService {
     }
   }
 
-  private async pickBranch(saleBranchId: number | null): Promise<number | null | undefined> {
+  private async pickBranch(sourceBranchId: number | null): Promise<number | null | undefined> {
     if (!this.auth.isAdmin()) return null;
     await this.branches.load();
     const list = this.branches.branches();
@@ -58,13 +68,13 @@ export class PrintService {
     const chosen = await this.dialog.choose(
       'Web.PrintBranchTitle',
       list.map((b) => ({ id: b.id, label: b.name })),
-      saleBranchId,
+      sourceBranchId,
     );
     return chosen === null ? undefined : chosen;
   }
 
   private active(): PrintJob[] {
-    return Object.values(this.hub.bySale()).filter(
+    return Object.values(this.hub.byTarget()).filter(
       (j) => j.status === 'Pending' || j.status === 'Printing',
     );
   }

@@ -5,6 +5,8 @@ export const ICONS: Record<string, string> = {
   supply: 'M3 8l9-5 9 5v8l-9 5-9-5z M3 8l9 5 9-5 M12 13v8',
   list: 'M8 6h13 M8 12h13 M8 18h13 M3 6h.01 M3 12h.01 M3 18h.01',
   archive: 'M3 5h18v4H3z M5 9v10h14V9 M10 13h4',
+  truck:
+    'M1 4h13v11H1z M14 8h4l3 3v4h-7 M5.5 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z M17.5 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z',
   stats: 'M5 20V11 M12 20V5 M19 20v-6 M3 20h18',
   clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 7v5l3 2',
   user: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',

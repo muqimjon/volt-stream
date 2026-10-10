@@ -1,0 +1,22 @@
+.stepper {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-xs);
+}
+
+.stepper app-number-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.stepper .btn {
+  min-width: var(--touch);
+  padding: 0;
+  font-size: var(--fs-subtitle);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}

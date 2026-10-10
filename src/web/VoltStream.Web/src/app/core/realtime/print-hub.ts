@@ -8,12 +8,17 @@ import {
 import { AuthService } from '../auth/auth';
 import { PrintJob } from '../models';
 
+export type PrintTarget = 'sale' | 'draft';
+
+const keyOf = (job: PrintJob) =>
+  job.saleDraftId ? `draft:${job.saleDraftId}` : `sale:${job.saleId}`;
+
 @Injectable({ providedIn: 'root' })
 export class PrintHubService {
   private readonly auth = inject(AuthService);
 
   readonly connected = signal(false);
-  readonly bySale = signal<Record<number, PrintJob>>({});
+  readonly byTarget = signal<Record<string, PrintJob>>({});
 
   private connection: HubConnection | null = null;
   private startedFor: string | null = null;
@@ -32,13 +37,14 @@ export class PrintHubService {
 
   track(job: PrintJob | null | undefined): void {
     if (!job) return;
-    const existing = this.bySale()[job.saleId];
+    const key = keyOf(job);
+    const existing = this.byTarget()[key];
     if (existing?.id === job.id && existing.status === job.status) return;
-    this.bySale.update((map) => ({ ...map, [job.saleId]: job }));
+    this.byTarget.update((map) => ({ ...map, [key]: job }));
   }
 
-  jobFor(saleId: number): PrintJob | null {
-    return this.bySale()[saleId] ?? null;
+  jobFor(id: number, target: PrintTarget = 'sale'): PrintJob | null {
+    return this.byTarget()[`${target}:${id}`] ?? null;
   }
 
   private async start(token: string): Promise<void> {

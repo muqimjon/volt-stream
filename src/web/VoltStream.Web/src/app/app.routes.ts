@@ -43,6 +43,23 @@ export const routes: Routes = [
           import('./features/my-supplies/my-supplies').then((m) => m.MySuppliesPage),
       },
       {
+        path: 'drafts',
+        canActivate: [permissionGuard(['drafts.manage', 'drafts.confirm'])],
+        loadComponent: () => import('./features/drafts/drafts').then((m) => m.DraftsPage),
+      },
+      {
+        path: 'drafts/new',
+        canActivate: [permissionGuard('drafts.manage')],
+        loadComponent: () =>
+          import('./features/drafts/draft-editor').then((m) => m.DraftEditorPage),
+      },
+      {
+        path: 'drafts/:id',
+        canActivate: [permissionGuard(['drafts.manage', 'drafts.confirm'])],
+        loadComponent: () =>
+          import('./features/drafts/draft-editor').then((m) => m.DraftEditorPage),
+      },
+      {
         path: 'stats',
         loadComponent: () => import('./features/stats/stats').then((m) => m.StatsPage),
       },

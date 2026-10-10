@@ -13,8 +13,10 @@ import { AuthService } from '../auth/auth';
 export class PermissionService {
   private readonly auth = inject(AuthService);
 
-  has(permission: string): boolean {
-    return this.auth.isAdmin() || this.auth.permissions().includes(permission);
+  has(permission: string | string[]): boolean {
+    if (this.auth.isAdmin()) return true;
+    const granted = this.auth.permissions();
+    return [permission].flat().some((p) => granted.includes(p));
   }
 }
 
