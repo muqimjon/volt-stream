@@ -1,10 +1,12 @@
 namespace VoltStream.Application.Tests.Ledger;
 
 using System.Net;
+using VoltStream.Application.Features.SaleDrafts.Queries;
 using VoltStream.Application.Features.Sales.Commands;
 using VoltStream.Application.Features.Sales.DTOs;
 using VoltStream.Application.Features.Sales.Queries;
 using VoltStream.Application.Tests.Infrastructure;
+using VoltStream.Domain.Enums;
 
 [Collection(DatabaseCollection.Name)]
 public sealed class SaleTotalsTests(PostgresFixture db)
@@ -37,7 +39,7 @@ public sealed class SaleTotalsTests(PostgresFixture db)
         Assert.Equal(rolls, sale.RollCount);
         Assert.All(sale.Items, item =>
         {
-            Assert.Equal(item.TotalLength * item.UnitPrice, item.TotalAmount);
+            Assert.Equal(Math.Round(item.TotalLength * item.UnitPrice, 2, MidpointRounding.AwayFromZero), item.TotalAmount);
             Assert.Equal(item.TotalAmount - item.DiscountAmount, item.FinalAmount);
         });
     }
@@ -152,5 +154,82 @@ public sealed class SaleTotalsTests(PostgresFixture db)
 
         await Rejection.With(HttpStatusCode.BadRequest,
             () => w.Seller.Send(w.Draft([new Line(product, 3, 100, Length: 150)], customer)));
+    }
+
+    [Fact]
+    public async Task Money_is_rounded_half_up_to_cents_so_a_payment_clears_the_debt()
+    {
+        var (w, product, customer) = await Arrange();
+
+        var saleId = await w.Admin.Send(w.Sale(customer, w.Uzs, [new Line(product, 1, 100, 12_501, Length: 33.335m)]));
+
+        Saved(await w.Admin.Send(new GetSaleByIdQuery(saleId)), 416_720.84m, 0, 33.335m, 1);
+        await w.Admin.Send(World.Payment(customer, w.Uzs, 416_720.84m));
+        await LedgerAssert.Balances(w, customer, (w.Uzs, 0));
+    }
+
+    [Fact]
+    public async Task A_full_discount_rounded_by_the_client_still_fits_the_line()
+    {
+        var (w, product, customer) = await Arrange();
+        var sale = w.Sale(customer, w.Uzs, [new Line(product, 1, 100, 12_501, DiscountRate: 100, Length: 33.335m)], discountApplied: true);
+        sale.Items[0].DiscountAmount = 416_720.84m;
+
+        var saleId = await w.Admin.Send(sale);
+
+        Saved(await w.Admin.Send(new GetSaleByIdQuery(saleId)), 0, 416_720.84m, 33.335m, 1);
+        await LedgerAssert.Balances(w, customer, (w.Uzs, 0));
+    }
+
+    [Fact]
+    public async Task Lengths_are_compared_to_the_rolls_at_three_decimals()
+    {
+        var w = await db.NewWorld();
+        var product = await w.NewProduct();
+        await w.Supply(product, 3, 33.3333m, 5_000);
+        var customer = await w.NewCustomer();
+
+        await Rejection.With(HttpStatusCode.BadRequest,
+            () => w.Admin.Send(w.Sale(customer, w.Uzs, [new Line(product, 2, 33.3333m, 5_000, Length: 66.668m)])));
+        await w.Admin.Send(w.Sale(customer, w.Uzs, [new Line(product, 2, 33.3333m, 5_000, Length: 66.667m)]));
+
+        Assert.Equal([new StockRow(33.3333m, 1, 33.3333m)], await w.Stock(product));
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(150)]
+    public async Task A_discount_rate_outside_zero_and_hundred_is_rejected(decimal rate)
+    {
+        var (w, product, customer) = await Arrange();
+        var sale = w.Sale(customer, w.Uzs, [new Line(product, 2, 100, 5_000)]);
+        sale.Items[0].DiscountRate = rate;
+
+        await Rejection.With(HttpStatusCode.BadRequest, () => w.Admin.Send(sale));
+
+        Assert.Empty(await w.SalesOf(customer));
+        Assert.Equal([new StockRow(100, 10, 1_000)], await w.Stock(product));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task A_rejected_edit_leaves_the_sale_its_stock_ledger_and_list_untouched(bool badDiscount)
+    {
+        var (w, product, customer) = await Arrange();
+        var draft = await w.Seller.Send(w.Draft([new Line(product, 2, 100)], customer));
+        var saleId = await w.Manager.Send(w.Sale(customer, w.Uzs, [new Line(product, 2, 100, 5_000)]) with { SaleDraftId = draft });
+        var edit = w.Sale(customer, w.Uzs, [new Line(product, 3, 100, 5_000, Length: badDiscount ? null : 150)]);
+        if (badDiscount)
+            edit.Items[0].DiscountAmount = 1_500_001;
+
+        await Rejection.With(HttpStatusCode.BadRequest, () => w.Admin.Send(World.Edit(saleId, edit)));
+
+        Assert.Equal(saleId, (await w.LastSale(customer)).Id);
+        Assert.Equal([new StockRow(100, 8, 800)], await w.Stock(product));
+        await LedgerAssert.Balances(w, customer, (w.Uzs, -1_000_000));
+        var list = await w.Manager.Send(new GetSaleDraftByIdQuery(draft));
+        Assert.Equal(SaleDraftStatus.Confirmed, list.Status);
+        Assert.Equal(saleId, list.ConfirmedSaleId);
     }
 }

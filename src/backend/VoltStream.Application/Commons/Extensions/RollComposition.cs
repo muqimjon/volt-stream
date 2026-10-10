@@ -7,12 +7,17 @@ public readonly record struct RollGroup(decimal Length, int Count);
 public static class RollComposition
 {
     // Kesilgan bo'lak = TotalLength − (RollCount − 1) × LengthPerRoll musbat va to'liq rulondan oshmasligi kerak,
-    // aks holda chekdagi tarkib manfiy yoki ortiqcha bo'lak ko'rsatadi.
+    // aks holda chekdagi tarkib manfiy yoki ortiqcha bo'lak ko'rsatadi. Chegaralar 3 xonada solishtiriladi:
+    // klientlar uzunlikni shunday yaxlitlaydi (33,3333 × 2 → 66,667).
     public static bool IsConsistent(int rollCount, decimal lengthPerRoll, decimal totalLength)
-        => rollCount > 0
+    {
+        var length = Math.Round(totalLength, 3, MidpointRounding.AwayFromZero);
+
+        return rollCount > 0
             && lengthPerRoll > 0
-            && totalLength > (rollCount - 1) * lengthPerRoll
-            && totalLength <= rollCount * lengthPerRoll;
+            && length > Math.Round((rollCount - 1) * lengthPerRoll, 3, MidpointRounding.AwayFromZero)
+            && length <= Math.Round(rollCount * lengthPerRoll, 3, MidpointRounding.AwayFromZero);
+    }
 
     public static IReadOnlyList<RollGroup> Of(int rollCount, decimal lengthPerRoll, decimal totalLength)
     {

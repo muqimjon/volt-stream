@@ -47,6 +47,9 @@ public class CreateSaleCommandHandler(
         if (request.Items.Any(item => !RollComposition.IsConsistent(item.RollCount, item.LengthPerRoll, item.TotalLength)))
             throw new AppException("Savdo qatori noto'g'ri: soni va uzunligi musbat, jami (soni − 1) × uzunlikdan katta va soni × uzunlikdan oshmasin.");
 
+        if (request.Items.Any(item => item.DiscountRate is < 0 or > 100))
+            throw new AppException("Chegirma foizi 0 dan 100 gacha bo'lishi kerak.");
+
         await context.BeginTransactionAsync(cancellationToken);
 
         try
@@ -161,11 +164,13 @@ public class CreateSaleCommandHandler(
 
     // Qarz shu summalardan yoziladi, shuning uchun klient arifmetikasiga ishonilmaydi. Chegirma summasi esa
     // klientdan olinadi: desktopda "summa bilan chegirma" bor, foizdan qayta hisoblash foydalanuvchi niyatini buzadi.
+    // Pul 2 xonaga yaxlitlanadi (klientlar ham half-up): aks holda qarzda 0,005 qoldiq qoladi.
     private static void CalculateAmounts(List<SaleItemCommand> items)
     {
         foreach (var item in items)
         {
-            item.TotalAmount = item.TotalLength * item.UnitPrice;
+            item.TotalAmount = Math.Round(item.TotalLength * item.UnitPrice, 2, MidpointRounding.AwayFromZero);
+            item.DiscountAmount = Math.Round(item.DiscountAmount, 2, MidpointRounding.AwayFromZero);
 
             if (item.DiscountAmount < 0 || item.DiscountAmount > item.TotalAmount)
                 throw new AppException("Chegirma summasi manfiy yoki qator summasidan katta bo'lishi mumkin emas.");
@@ -235,9 +240,11 @@ public class CreateSaleCommandHandler(
 
     private async Task HandleResidueAsync(SaleItemCommand item, Warehouse warehouse, CancellationToken cancellationToken)
     {
-        if (item.LengthPerRoll * item.RollCount != item.TotalLength)
+        var detail = item.LengthPerRoll * item.RollCount - item.TotalLength;
+
+        // Uzunlik 3 xonada yaxlitlangani uchun to'liq rulondan biroz oshishi mumkin — bunda bo'lak qaytmaydi.
+        if (detail > 0)
         {
-            var detail = item.LengthPerRoll * item.RollCount - item.TotalLength;
             var existStock = await context.WarehouseStocks
                 .FirstOrDefaultAsync(i => i.WarehouseId == warehouse.Id
                                        && i.ProductId == item.ProductId
