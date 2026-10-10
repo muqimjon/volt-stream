@@ -26,11 +26,11 @@ public class WarehouseStockFilterQueryHandler(
     {
         user.Sanitize(request);
 
-        var branchId = await branches.ResolveFilterAsync(request.BranchId, true, cancellationToken);
+        var warehouseId = await branches.WarehouseFilterAsync(request.BranchId, cancellationToken);
         var query = context.WarehouseStocks.Include(ws => ws.Warehouse).AsQueryable();
 
-        if (branchId is not null)
-            query = query.Where(ws => ws.Warehouse.BranchId == branchId);
+        if (warehouseId is not null)
+            query = query.Where(ws => ws.WarehouseId == warehouseId);
 
         if (!user.Has(Permissions.SalesViewPrices))
             query = query.Include(ws => ws.Product).ThenInclude(product => product.Category);

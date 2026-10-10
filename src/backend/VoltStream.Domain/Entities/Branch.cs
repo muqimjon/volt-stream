@@ -6,5 +6,6 @@ public class Branch : Auditable
     public string NormalizedName { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
 
-    public ICollection<Warehouse> Warehouses { get; set; } = default!;
+    public long? WarehouseId { get; set; }
+    public Warehouse? Warehouse { get; set; }
 }

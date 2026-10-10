@@ -3,6 +3,7 @@
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
+using System.Text.Json.Serialization;
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Mediator;
@@ -24,7 +25,13 @@ public record CreateSaleCommand(
     string Description,
     List<SaleItemCommand> Items,
     long? BranchId = null)
-    : IRequest<long>;
+    : IRequest<long>
+{
+    // Faqat UpdateSaleCommand beradi: tahrirlangan savdo asl omborida qolsin.
+    // So'rov tanasidan bog'lanmaydi — klient omborni tanlay olmaydi.
+    [JsonIgnore]
+    public long? WarehouseId { get; init; }
+}
 
 public class CreateSaleCommandHandler(
     IAppDbContext context,
@@ -39,7 +46,8 @@ public class CreateSaleCommandHandler(
         try
         {
             var branchId = await branches.ResolveAsync(request.BranchId, cancellationToken);
-            var warehouse = await GetWarehouseAsync(branchId, cancellationToken);
+            var warehouse = await GetWarehouseAsync(
+                request.WarehouseId ?? await branches.WarehouseOfAsync(branchId, cancellationToken), cancellationToken);
             var customer = await GetCustomerAsync(request.CustomerId, cancellationToken);
 
             var descriptionBuilder = new StringBuilder();
@@ -48,6 +56,7 @@ public class CreateSaleCommandHandler(
             await ProcessSaleItemsAsync(request.Items, warehouse, descriptionBuilder, cancellationToken);
             var sale = mapper.Map<Sale>(request);
             sale.BranchId = branchId;
+            sale.WarehouseId = warehouse.Id;
 
             if (repriced)
                 RecalculateTotals(sale, request.Items, request.IsDiscountApplied);
@@ -78,11 +87,11 @@ public class CreateSaleCommandHandler(
         }
     }
 
-    private async Task<Warehouse> GetWarehouseAsync(long branchId, CancellationToken cancellationToken)
+    private async Task<Warehouse> GetWarehouseAsync(long warehouseId, CancellationToken cancellationToken)
     {
         return await context.Warehouses
             .Include(w => w.Stocks)
-            .FirstOrDefaultAsync(w => w.BranchId == branchId, cancellationToken)
+            .FirstOrDefaultAsync(w => w.Id == warehouseId, cancellationToken)
             ?? throw new NotFoundException(nameof(Warehouse));
     }
 

@@ -45,10 +45,11 @@ public class UpdateSupplyCommandHandler(
 
             branches.EnsureAccess(supply.BranchId);
 
+            var supplyWarehouseId = supply.WarehouseId ?? await branches.WarehouseOfAsync(supply.BranchId, cancellationToken);
             var oldStock = await context.WarehouseStocks
                 .FirstOrDefaultAsync(ws => ws.ProductId == supply.ProductId &&
                                            ws.LengthPerRoll == supply.LengthPerRoll &&
-                                           ws.Warehouse.BranchId == supply.BranchId,
+                                           ws.WarehouseId == supplyWarehouseId,
                                        cancellationToken)
                 ?? throw new NotFoundException(nameof(WarehouseStock), nameof(supply.Id), supply.Id);
 

@@ -2,6 +2,7 @@ namespace VoltStream.Application.Tests.Security;
 
 using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Security;
+using VoltStream.Application.Features.Branches.Queries;
 using VoltStream.Application.Features.CustomerOperations.Commands;
 using VoltStream.Application.Features.Sales.DTOs;
 using VoltStream.Application.Features.Sales.Queries;
@@ -100,9 +101,10 @@ public sealed class BranchIsolationTests(PostgresFixture db)
         var (w, _, _) = await Arrange();
 
         var stocks = await w.OtherSeller.Send(new GetAllWarehouseStockQuery(w.Branch));
+        var otherWarehouse = (await w.Admin.Send(new GetAllBranchesQuery())).Single(b => b.Id == w.OtherBranch).WarehouseId;
 
         Assert.NotEmpty(stocks);
-        Assert.All(stocks, row => Assert.Equal(w.OtherBranch, row.BranchId));
+        Assert.All(stocks, row => Assert.Equal(otherWarehouse, row.WarehouseId));
     }
 
     [Fact]

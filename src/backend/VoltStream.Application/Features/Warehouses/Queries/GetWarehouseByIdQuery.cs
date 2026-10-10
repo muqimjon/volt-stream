@@ -27,7 +27,7 @@ public class GetWarehouseByIdQueryHandler(
             .FirstOrDefaultAsync(w => w.Id == request.Id, cancellationToken)
             ?? throw new NotFoundException(nameof(Warehouse), nameof(request.Id), request.Id);
 
-        branches.EnsureAccess(warehouse.BranchId);
+        await branches.EnsureWarehouseAccessAsync(warehouse.Id, cancellationToken);
 
         return user.Apply(mapper.Map<WarehouseDto>(warehouse));
     }

@@ -2,6 +2,7 @@
 
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using VoltStream.Application.Commons.Exceptions;
 using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Mediator;
@@ -41,15 +42,11 @@ public class CreateSupplyCommandHandler(
         var requestedPrice = canSetPrice ? request.UnitPrice : null;
         var requestedDiscount = canSetPrice ? request.DiscountRate : null;
 
+        var warehouseId = await branches.WarehouseOfAsync(branchId, cancellationToken);
         var warehouse = await context.Warehouses
             .Include(w => w.Stocks)
-            .FirstOrDefaultAsync(w => w.BranchId == branchId, cancellationToken);
-
-        if (warehouse is null)
-        {
-            context.Warehouses.Add(warehouse = new() { BranchId = branchId });
-            warehouse.Stocks = [];
-        }
+            .FirstOrDefaultAsync(w => w.Id == warehouseId, cancellationToken)
+            ?? throw new NotFoundException(nameof(Warehouse));
 
         await context.BeginTransactionAsync(cancellationToken);
 
@@ -116,6 +113,7 @@ public class CreateSupplyCommandHandler(
         var supply = mapper.Map<Supply>(request);
         supply.ProductId = newProductId;
         supply.BranchId = branchId;
+        supply.WarehouseId = warehouse.Id;
         supply.UnitPrice = unitPrice;
         supply.DiscountRate = discountRate;
         context.Supplies.Add(supply);

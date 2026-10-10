@@ -91,9 +91,10 @@ public class DeleteCustomerOperationCommandHandler(
         if (!sale.IsDiscountApplied)
             account.Discount -= sale.Discount;
 
+        var warehouseId = sale.WarehouseId ?? await branches.WarehouseOfAsync(sale.BranchId, cancellationToken);
         var warehouse = await context.Warehouses
             .Include(w => w.Stocks)
-            .FirstOrDefaultAsync(w => w.BranchId == sale.BranchId, cancellationToken)
+            .FirstOrDefaultAsync(w => w.Id == warehouseId, cancellationToken)
             ?? throw new NotFoundException(nameof(Warehouse));
 
         foreach (var item in sale.Items)

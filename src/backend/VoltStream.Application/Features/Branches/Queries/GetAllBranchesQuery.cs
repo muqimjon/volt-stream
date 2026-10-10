@@ -16,6 +16,7 @@ public class GetAllBranchesQueryHandler(
     public async Task<IReadOnlyCollection<BranchDto>> Handle(GetAllBranchesQuery request, CancellationToken cancellationToken)
         => mapper.Map<IReadOnlyCollection<BranchDto>>(await context.Branches
             .AsNoTracking()
+            .Include(b => b.Warehouse)
             .OrderBy(b => b.Id)
             .ToListAsync(cancellationToken));
 }

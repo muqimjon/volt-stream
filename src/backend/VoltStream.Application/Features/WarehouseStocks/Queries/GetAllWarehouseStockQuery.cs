@@ -19,15 +19,15 @@ public class GetAllWarehouseStockQueryHandler(
 {
     public async Task<IReadOnlyCollection<WarehouseStockDto>> Handle(GetAllWarehouseStockQuery request, CancellationToken cancellationToken)
     {
-        var branchId = await branches.ResolveFilterAsync(request.BranchId, true, cancellationToken);
+        var warehouseId = await branches.WarehouseFilterAsync(request.BranchId, cancellationToken);
         var query = context.WarehouseStocks
             .AsNoTracking()
             .Include(i => i.Product)
             .Include(i => i.Warehouse)
             .Where(w => w.IsDeleted != true);
 
-        if (branchId is not null)
-            query = query.Where(w => w.Warehouse.BranchId == branchId);
+        if (warehouseId is not null)
+            query = query.Where(w => w.WarehouseId == warehouseId);
 
         return user.ApplyToStocks(mapper.Map<IReadOnlyCollection<WarehouseStockDto>>(await query.ToListAsync(cancellationToken)));
     }

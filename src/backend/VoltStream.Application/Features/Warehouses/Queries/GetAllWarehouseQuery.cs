@@ -20,11 +20,11 @@ public class GetAllWarehouseQueryHandler(
 {
     public async Task<IReadOnlyCollection<WarehouseDto>> Handle(GetAllWarehouseQuery query, CancellationToken cancellationToken)
     {
-        var branchId = await branches.ResolveFilterAsync(null, true, cancellationToken);
+        var warehouseId = await branches.WarehouseFilterAsync(null, cancellationToken);
         var warehouses = context.Warehouses.Where(w => !w.IsDeleted);
 
-        if (branchId is not null)
-            warehouses = warehouses.Where(w => w.BranchId == branchId);
+        if (warehouseId is not null)
+            warehouses = warehouses.Where(w => w.Id == warehouseId);
 
         return user.ApplyToWarehouses(mapper.Map<IReadOnlyCollection<WarehouseDto>>(
             await warehouses.ToListAsync(cancellationToken)));

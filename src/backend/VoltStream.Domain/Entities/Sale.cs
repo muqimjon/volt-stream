@@ -12,6 +12,8 @@ public class Sale : Auditable
 
     public long BranchId { get; set; }
     public Branch Branch { get; set; } = default!;
+    public long? WarehouseId { get; set; }
+    public Warehouse? Warehouse { get; set; }
 
     public long CurrencyId { get; set; }
     public Currency Currency { get; set; } = default!;

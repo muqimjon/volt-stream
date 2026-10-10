@@ -1,7 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ApiClient } from '../../core/api/api-client';
 import { AuthService } from '../../core/auth/auth';
-import { BranchStore } from '../../core/branches';
 import { TranslatePipe, TranslateService } from '../../core/i18n/translate';
 import {
   Category,
@@ -48,7 +47,6 @@ export class SalePage {
   private readonly dialog = inject(DialogService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
-  private readonly branches = inject(BranchStore);
   private readonly permissions = inject(PermissionService);
   private readonly hub = inject(PrintHubService);
 
@@ -109,8 +107,7 @@ export class SalePage {
       fmtNum(item.rollCount, 0),
       fmtNum(item.totalLength),
     );
-    const branch = this.showBranch() ? this.branches.nameOf(item.branchId) : null;
-    return branch ? `${branch} · ${info}` : info;
+    return this.showBranch() ? `${item.warehouseName} · ${info}` : info;
   };
   private readonly showBranch = computed(
     () => this.auth.isAdmin() && this.auth.branchId() === null,
@@ -119,7 +116,6 @@ export class SalePage {
   protected readonly customerHint = (item: Customer) => item.phone ?? '';
 
   constructor() {
-    void this.branches.load();
     const draft = this.store.draft();
     if (draft.customerId) this.customer.set({ id: draft.customerId, name: draft.customerName });
     void this.loadCategories();
@@ -195,10 +191,10 @@ export class SalePage {
         branchId === null ? undefined : { branchId },
       )
       .catch(() => []);
-    const branchName = (item: WarehouseItem) => this.branches.nameOf(item.branchId) ?? '';
     this.stocks.set(
       items.sort(
-        (a, b) => a.lengthPerRoll - b.lengthPerRoll || branchName(a).localeCompare(branchName(b)),
+        (a, b) =>
+          a.lengthPerRoll - b.lengthPerRoll || a.warehouseName.localeCompare(b.warehouseName),
       ),
     );
   }

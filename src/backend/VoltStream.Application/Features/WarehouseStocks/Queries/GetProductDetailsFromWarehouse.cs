@@ -18,13 +18,13 @@ internal class GetProductDetailsFromWarehouseHandler(
 {
     public async Task<List<WarehouseStockDto>> Handle(GetProductDetailsFromWarehouse request, CancellationToken cancellationToken)
     {
-        var branchId = await branches.ResolveFilterAsync(request.BranchId, true, cancellationToken);
+        var warehouseId = await branches.WarehouseFilterAsync(request.BranchId, cancellationToken);
         var query = context.WarehouseStocks
             .Include(w => w.Warehouse)
             .Where(w => !w.IsDeleted && w.ProductId == request.Id);
 
-        if (branchId is not null)
-            query = query.Where(w => w.Warehouse.BranchId == branchId);
+        if (warehouseId is not null)
+            query = query.Where(w => w.WarehouseId == warehouseId);
 
         return user.ApplyToStocks(mapper.Map<List<WarehouseStockDto>>(await query.ToListAsync(cancellationToken)));
     }

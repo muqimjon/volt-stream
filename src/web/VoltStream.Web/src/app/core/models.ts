@@ -47,7 +47,7 @@ export interface WarehouseItem {
   totalLength: number;
   unitPrice: number;
   discountRate: number;
-  branchId?: number | null;
+  warehouseName: string;
 }
 
 export interface Customer {

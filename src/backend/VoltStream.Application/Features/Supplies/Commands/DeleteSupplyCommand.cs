@@ -24,10 +24,11 @@ public class DeleteSupplyCommandHandler(
 
         branches.EnsureAccess(supply.BranchId);
 
+        var warehouseId = supply.WarehouseId ?? await branches.WarehouseOfAsync(supply.BranchId, cancellationToken);
         var stock = await context.WarehouseStocks
             .FirstOrDefaultAsync(ws => ws.ProductId == supply.ProductId &&
                                        ws.LengthPerRoll == supply.LengthPerRoll &&
-                                       ws.Warehouse.BranchId == supply.BranchId,
+                                       ws.WarehouseId == warehouseId,
                                    cancellationToken)
             ?? throw new NotFoundException(nameof(WarehouseStock), nameof(supply.Id), supply.Id);
 

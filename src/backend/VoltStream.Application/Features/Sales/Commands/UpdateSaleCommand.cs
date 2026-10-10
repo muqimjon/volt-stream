@@ -59,7 +59,7 @@ public class UpdateSaleCommandHandler(
                 request.Discount,
                 request.Description,
                 request.Items,
-                oldSale.BranchId), cancellationToken);
+                oldSale.BranchId) { WarehouseId = oldSale.WarehouseId }, cancellationToken);
 
             return await context.CommitTransactionAsync(cancellationToken);
         }

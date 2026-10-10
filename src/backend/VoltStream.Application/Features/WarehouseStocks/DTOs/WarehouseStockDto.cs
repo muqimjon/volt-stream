@@ -11,6 +11,6 @@ public record WarehouseStockDto
     public decimal UnitPrice { get; set; }
     public decimal DiscountRate { get; set; }
     public long WarehouseId { get; set; }
-    public long BranchId { get; set; }
+    public string WarehouseName { get; set; } = string.Empty;
     public ProductForWarehouseDto Product { get; set; } = default!;
 };

@@ -41,29 +41,52 @@ public class DatabaseInitializer(
 
     private static async Task EnsureDefaultBranchAsync(AppDbContext context, CancellationToken ct)
     {
-        var branch = await context.Branches.OrderBy(b => b.Id).FirstOrDefaultAsync(ct);
-
-        if (branch is null)
+        if (!await context.Branches.AnyAsync(ct))
         {
-            branch = new Branch
+            context.Branches.Add(new Branch
             {
                 Name = BranchConfiguration.DefaultBranchName,
                 NormalizedName = BranchConfiguration.DefaultBranchName.ToUpperInvariant()
-            };
-            context.Branches.Add(branch);
-            await context.SaveChangesAsync(ct);
-        }
-
-        if (!await context.Warehouses.AnyAsync(w => w.BranchId == branch.Id, ct))
-        {
-            context.Warehouses.Add(new Warehouse
-            {
-                BranchId = branch.Id,
-                Name = branch.Name,
-                NormalizedName = branch.NormalizedName
             });
             await context.SaveChangesAsync(ct);
         }
+
+        await LinkBranchWarehousesAsync(context, ct);
+    }
+
+    // Eski Warehouses.BranchId bu kod ishlashidan oldin migratsiyada o'chadi, shuning uchun
+    // filial va bo'sh ombor Id tartibida juftlanadi (ikkalasi bir xil tartibda yaratilgan).
+    public static async Task LinkBranchWarehousesAsync(AppDbContext context, CancellationToken ct)
+    {
+        var branches = await context.Branches
+            .Where(b => b.WarehouseId == null)
+            .OrderBy(b => b.Id)
+            .ToListAsync(ct);
+
+        if (branches.Count > 0)
+        {
+            var free = await context.Warehouses
+                .Where(w => !w.IsDeleted && !w.Branches.Any())
+                .OrderBy(w => w.Id)
+                .ToListAsync(ct);
+
+            for (var i = 0; i < branches.Count; i++)
+                branches[i].Warehouse = i < free.Count
+                    ? free[i]
+                    : new Warehouse { Name = branches[i].Name, NormalizedName = branches[i].NormalizedName };
+
+            await context.SaveChangesAsync(ct);
+        }
+
+        await context.Sales
+            .Where(s => s.WarehouseId == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(x => x.WarehouseId,
+                x => context.Branches.Where(b => b.Id == x.BranchId).Select(b => b.WarehouseId).FirstOrDefault()), ct);
+
+        await context.Supplies
+            .Where(s => s.WarehouseId == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(x => x.WarehouseId,
+                x => context.Branches.Where(b => b.Id == x.BranchId).Select(b => b.WarehouseId).FirstOrDefault()), ct);
     }
 
     private static Task EnsurePerformanceIndexesAsync(AppDbContext context, CancellationToken ct)

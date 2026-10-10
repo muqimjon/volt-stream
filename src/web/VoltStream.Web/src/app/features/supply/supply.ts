@@ -174,6 +174,7 @@ export class SupplyPage {
       totalLength: 0,
       unitPrice: 0,
       discountRate: 0,
+      warehouseName: '',
     });
     this.unitPrice.set(null);
     this.discountRate.set(null);

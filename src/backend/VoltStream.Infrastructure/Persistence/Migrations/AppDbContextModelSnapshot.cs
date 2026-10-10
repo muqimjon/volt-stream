@@ -188,7 +188,12 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<long?>("WarehouseId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("WarehouseId");
 
                     b.ToTable("Branches", (string)null);
 
@@ -670,6 +675,9 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<long?>("WarehouseId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BranchId");
@@ -680,6 +688,8 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CustomerOperationId")
                         .IsUnique();
+
+                    b.HasIndex("WarehouseId");
 
                     b.ToTable("Sales", (string)null);
                 });
@@ -790,11 +800,16 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<long?>("WarehouseId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BranchId");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("WarehouseId");
 
                     b.ToTable("Supplies");
                 });
@@ -911,9 +926,6 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("BranchId")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -936,9 +948,7 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BranchId");
-
-                    b.ToTable("Warehouses");
+                    b.ToTable("Warehouses", (string)null);
                 });
 
             modelBuilder.Entity("VoltStream.Domain.Entities.WarehouseStock", b =>
@@ -1008,6 +1018,16 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.Navigation("Currency");
 
                     b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("VoltStream.Domain.Entities.Branch", b =>
+                {
+                    b.HasOne("VoltStream.Domain.Entities.Warehouse", "Warehouse")
+                        .WithMany("Branches")
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("VoltStream.Domain.Entities.Cash", b =>
@@ -1109,6 +1129,11 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                         .HasForeignKey("VoltStream.Domain.Entities.Sale", "CustomerOperationId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("VoltStream.Domain.Entities.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Branch");
 
                     b.Navigation("Currency");
@@ -1116,6 +1141,8 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.Navigation("Customer");
 
                     b.Navigation("CustomerOperation");
+
+                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("VoltStream.Domain.Entities.SaleItem", b =>
@@ -1151,9 +1178,16 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("VoltStream.Domain.Entities.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Branch");
 
                     b.Navigation("Product");
+
+                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("VoltStream.Domain.Entities.User", b =>
@@ -1162,17 +1196,6 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("BranchId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Branch");
-                });
-
-            modelBuilder.Entity("VoltStream.Domain.Entities.Warehouse", b =>
-                {
-                    b.HasOne("VoltStream.Domain.Entities.Branch", "Branch")
-                        .WithMany("Warehouses")
-                        .HasForeignKey("BranchId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
 
                     b.Navigation("Branch");
                 });
@@ -1194,11 +1217,6 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("Warehouse");
-                });
-
-            modelBuilder.Entity("VoltStream.Domain.Entities.Branch", b =>
-                {
-                    b.Navigation("Warehouses");
                 });
 
             modelBuilder.Entity("VoltStream.Domain.Entities.Category", b =>
@@ -1232,6 +1250,8 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("VoltStream.Domain.Entities.Warehouse", b =>
                 {
+                    b.Navigation("Branches");
+
                     b.Navigation("Stocks");
                 });
 #pragma warning restore 612, 618

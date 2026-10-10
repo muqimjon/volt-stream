@@ -33,6 +33,24 @@ public class BranchContext(IAppDbContext context, ICurrentUser user)
             throw new ForbiddenException("Boshqa filial ma'lumoti.");
     }
 
+    public async Task<long> WarehouseOfAsync(long branchId, CancellationToken cancellationToken = default)
+        => await context.Branches
+            .Where(b => b.Id == branchId)
+            .Select(b => b.WarehouseId)
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new ConflictException("Filialga ombor biriktirilmagan.");
+
+    public async Task<long?> WarehouseFilterAsync(long? requested, CancellationToken cancellationToken = default)
+        => await ResolveFilterAsync(requested, true, cancellationToken) is long branchId
+            ? await WarehouseOfAsync(branchId, cancellationToken)
+            : null;
+
+    public async Task EnsureWarehouseAccessAsync(long warehouseId, CancellationToken cancellationToken = default)
+    {
+        if (!user.Has(Permissions.BranchesAll) && warehouseId != await WarehouseOfAsync(Own(), cancellationToken))
+            throw new ForbiddenException("Boshqa filial ombori.");
+    }
+
     private long Own()
         => user.BranchId ?? throw new ForbiddenException("Filial biriktirilmagan");
 

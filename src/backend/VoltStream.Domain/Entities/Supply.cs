@@ -11,6 +11,8 @@ public class Supply : Auditable
 
     public long BranchId { get; set; }
     public Branch Branch { get; set; } = default!;
+    public long? WarehouseId { get; set; }
+    public Warehouse? Warehouse { get; set; }
 
     public long ProductId { get; set; }
     public Product Product { get; set; } = default!;

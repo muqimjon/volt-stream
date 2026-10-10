@@ -9,7 +9,7 @@ using VoltStream.Application.Commons.Security;
 using VoltStream.Domain.Entities;
 
 [RequirePermission(Permissions.SettingsBranches)]
-public record CreateBranchCommand(string Name) : IRequest<long>;
+public record CreateBranchCommand(string Name, long? WarehouseId = null) : IRequest<long>;
 
 public class CreateBranchCommandHandler(IAppDbContext context)
     : IRequestHandler<CreateBranchCommand, long>
@@ -24,16 +24,15 @@ public class CreateBranchCommandHandler(IAppDbContext context)
         var branch = new Branch
         {
             Name = request.Name.Trim(),
-            NormalizedName = normalizedName,
-            Warehouses =
-            [
-                new Warehouse
-                {
-                    Name = request.Name.Trim(),
-                    NormalizedName = normalizedName
-                }
-            ]
+            NormalizedName = normalizedName
         };
+
+        if (request.WarehouseId is long warehouseId)
+            branch.WarehouseId = await context.Warehouses.AnyAsync(w => w.Id == warehouseId && !w.IsDeleted, cancellationToken)
+                ? warehouseId
+                : throw new NotFoundException(nameof(Warehouse), nameof(request.WarehouseId), warehouseId);
+        else
+            branch.Warehouse = new Warehouse { Name = branch.Name, NormalizedName = normalizedName };
 
         context.Branches.Add(branch);
         await context.SaveAsync(cancellationToken);
