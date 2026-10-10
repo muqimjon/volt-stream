@@ -603,7 +603,6 @@
   "Turnovers.TotalLength": "Total meters",
   "Turnovers.Unknown": "Unknown",
   "Turnovers.UnknownOperationType": "Unknown operation type!",
-  "Turnovers.Update": "Update",
   "Turnovers.WarehouseLoadFailed": "Error loading warehouse data!",
   "Turnovers.WarehouseMetersLeft": "{2} m of {1}-meter {0} left in the warehouse.",
   "Turnovers.WarehouseRollsLeft": "{1} rolls of {0} left in the warehouse.",

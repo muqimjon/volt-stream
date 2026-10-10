@@ -483,85 +483,92 @@
                     AutoGenerateColumns="False"
                     CanUserAddRows="False"
                     CanUserDeleteRows="True"
-                    IsReadOnly="True"
                     FontSize="14"
                     ItemsSource="{Binding SaleItems}"
                     SelectionMode="Single"
                     HeadersVisibility="Column, Row"
                     RowHeaderWidth="40"
+                    utils:DataGridExcelEditing.IsEnabled="True"
                     utils:DataGridRowNumbering.IsEnabled="True"
-                    MouseDoubleClick="DataGrid_MouseDoubleClick"
-                    SelectionUnit="FullRow">
+                    CellEditEnding="DataGrid_CellEditEnding"
+                    SelectionUnit="CellOrRowHeader">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Width="1.5*" MinWidth="120" Binding="{Binding CategoryName}" Header="{loc:Loc Sales.ProductType}" />
+                        <DataGridTextColumn Width="1.5*" MinWidth="120" IsReadOnly="True" Binding="{Binding CategoryName}" Header="{loc:Loc Sales.ProductType}" />
                         <DataGridTextColumn
                             Width="1.8*"
                             MinWidth="120"
-                            Binding="{Binding ProductName, Mode=TwoWay}"
+                            IsReadOnly="True"
+                            Binding="{Binding ProductName}"
                             Header="{loc:Loc Sales.ProductName}" />
                         <DataGridTextColumn
                             Width="*"
-                            Binding="{Binding PerRollCount, Mode=TwoWay}"
+                            IsReadOnly="True"
+                            Binding="{Binding PerRollCount}"
                             ElementStyle="{StaticResource RightCellText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Sales.PerRoll}" />
-                        <DataGridTextColumn
+                        <utils:ManualCommitTextColumn
+                            x:Name="rollCountColumn"
                             Width="*"
-                            Binding="{Binding RollCount, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
+                            Binding="{Binding RollCount, Mode=OneWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
+                            EditingElementStyle="{StaticResource GridEditInteger}"
                                     HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Sales.RollCount}" />
-                        <DataGridTextColumn
+                        <utils:ManualCommitTextColumn
+                            x:Name="quantityColumn"
                             Width="*"
-                            Binding="{Binding Quantity, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
+                            Binding="{Binding Quantity, Mode=OneWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
+                            EditingElementStyle="{StaticResource GridEditText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}"
-
                             Header="{loc:Loc Common.Total}" />
                         <DataGridTextColumn
                             x:Name="weightColumn"
                             Width="*"
+                            IsReadOnly="True"
                             Binding="{Binding Weight, StringFormat={}{0:N3}}"
                             ElementStyle="{StaticResource RightCellText}"
                             HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc SalesJournal.Weight}"
                             Visibility="Collapsed" />
-                        <DataGridTextColumn
+                        <utils:ManualCommitTextColumn
                             x:Name="priceColumn"
                             Width="*"
-                            utils:NumericTextBox.IsNumeric="True"
-                            Binding="{Binding Price, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
+                            Binding="{Binding Price, Mode=OneWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
+                            EditingElementStyle="{StaticResource GridEditText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Common.Price}" />
                         <DataGridTextColumn
                             x:Name="sumColumn"
                             Width="*"
-                            utils:NumericTextBox.IsNumeric="True"
-                            Binding="{Binding Sum, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
+                            IsReadOnly="True"
+                            Binding="{Binding Sum, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Sales.TotalSum}" />
-                        <DataGridTextColumn
+                        <utils:ManualCommitTextColumn
                             x:Name="perDiscountColumn"
                             Width="*"
-                            Binding="{Binding PerDiscount, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
+                            Binding="{Binding PerDiscount, Mode=OneWay, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
+                            EditingElementStyle="{StaticResource GridEditText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Sales.DiscountPercent}" />
                         <DataGridTextColumn
                             x:Name="discountColumn"
                             Width="*"
-                            utils:NumericTextBox.IsNumeric="True"
-                            Binding="{Binding Discount, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
+                            IsReadOnly="True"
+                            Binding="{Binding Discount, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Sales.DiscountAmount}" />
                         <DataGridTextColumn
                             x:Name="finalSumColumn"
                             Width="*"
-                            utils:NumericTextBox.IsNumeric="True"
-                            Binding="{Binding FinalSumProduct, Mode=TwoWay, Converter={StaticResource ToStringConverter}}"
+                            IsReadOnly="True"
+                            Binding="{Binding FinalSumProduct, Converter={StaticResource ToStringConverter}}"
                             ElementStyle="{StaticResource RightCellText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}"
                             Header="{loc:Loc Sales.GrandTotal}" />

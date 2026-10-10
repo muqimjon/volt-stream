@@ -216,7 +216,6 @@
 						<ColumnDefinition Width="*" />
 						<ColumnDefinition Width="*" />
 						<ColumnDefinition Width="*" />
-						<ColumnDefinition Width="Auto" />
 					</Grid.ColumnDefinitions>
 
 					<TextBlock Panel.ZIndex="1" IsHitTestVisible="False" Style="{StaticResource FloatingLabelStyle}" Tag="{Binding ElementName=cbxCategory}" Text="{loc:Loc Turnovers.ProductType}" />
@@ -348,36 +347,13 @@
                 Grid.Column="10"
                 Margin="4,3"
                 FontSize="14"
-                Command="{Binding AddCommand}">
-						<Button.Style>
-							<Style TargetType="Button" BasedOn="{StaticResource RoundedButton}">
-								<Setter Property="Background" Value="{DynamicResource Brand}" />
-								<Setter Property="Foreground" Value="{DynamicResource OnBrand}" />
-								<Setter Property="FontWeight" Value="SemiBold" />
-								<Setter Property="Padding" Value="10,0" />
-								<Setter Property="Content" Value="{loc:Loc Common.Add}" />
-								<Style.Triggers>
-									<DataTrigger Binding="{Binding IsEditing}" Value="True">
-										<Setter Property="Content" Value="{loc:Loc Turnovers.Update}" />
-									</DataTrigger>
-								</Style.Triggers>
-							</Style>
-						</Button.Style>
-					</Button>
-
-					<Button x:Name="btnCancel"
-                Grid.Column="11"
-                Margin="4,3"
-                FontSize="14"
-                Content="{loc:Loc Common.Cancel}"
-                Command="{Binding CancelEditCommand}"
-                Background="{DynamicResource SurfaceAlt}"
-                Foreground="{DynamicResource TextPrimary}"
-                BorderBrush="{DynamicResource BorderStrong}"
-                BorderThickness="1"
-                Padding="10,0"
+                Command="{Binding AddCommand}"
                 Style="{StaticResource RoundedButton}"
-                Visibility="{Binding IsEditing, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                Background="{DynamicResource Brand}"
+                Foreground="{DynamicResource OnBrand}"
+                FontWeight="SemiBold"
+                Padding="10,0"
+                Content="{loc:Loc Common.Add}" />
 				</Grid>
 
 				<DataGrid Grid.Row="2" Margin="0 5 0 0"
@@ -386,31 +362,36 @@
                   CanUserAddRows="False"
                   CanUserDeleteRows="True"
                   FontSize="14"
-                  IsReadOnly="True"
                   ItemsSource="{Binding Sale.Items}"
                   HeadersVisibility="Column, Row"
                   RowHeaderWidth="40"
+                  utils:DataGridExcelEditing.IsEnabled="True"
                   utils:DataGridRowNumbering.IsEnabled="True"
                   SelectionMode="Single"
-                  MouseDoubleClick="DataGrid_MouseDoubleClick">
+                  SelectionUnit="CellOrRowHeader"
+                  CellEditEnding="DataGrid_CellEditEnding">
 					<DataGrid.Columns>
-						<DataGridTextColumn Width="1.5*" MinWidth="120" Binding="{Binding Product.Category.Name}" Header="{loc:Loc Turnovers.ProductType}" />
-						<DataGridTextColumn Width="1.8*" MinWidth="120" Binding="{Binding Product.Name}" Header="{loc:Loc Turnovers.ProductName}" />
-						<DataGridTextColumn Width="*" Binding="{Binding LengthPerRoll}" ElementStyle="{StaticResource RightCellText}"
+						<DataGridTextColumn Width="1.5*" MinWidth="120" IsReadOnly="True" Binding="{Binding Product.Category.Name}" Header="{loc:Loc Turnovers.ProductType}" />
+						<DataGridTextColumn Width="1.8*" MinWidth="120" IsReadOnly="True" Binding="{Binding Product.Name}" Header="{loc:Loc Turnovers.ProductName}" />
+						<DataGridTextColumn Width="*" IsReadOnly="True" Binding="{Binding LengthPerRoll}" ElementStyle="{StaticResource RightCellText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Turnovers.RollLength}" />
-						<DataGridTextColumn Width="*" Binding="{Binding RollCount}" ElementStyle="{StaticResource RightCellText}"
+						<utils:ManualCommitTextColumn x:Name="rollCountColumn" Width="*" Binding="{Binding RollCount, Mode=OneWay}" ElementStyle="{StaticResource RightCellText}"
+                                    EditingElementStyle="{StaticResource GridEditInteger}"
                                     HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Turnovers.RollCount}" />
-						<DataGridTextColumn Width="*" Binding="{Binding TotalLength, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
+						<utils:ManualCommitTextColumn x:Name="totalLengthColumn" Width="*" Binding="{Binding TotalLength, Mode=OneWay, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
+                                    EditingElementStyle="{StaticResource GridEditText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Turnovers.TotalLength}" />
-						<DataGridTextColumn Width="*" Binding="{Binding UnitPrice, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
+						<utils:ManualCommitTextColumn x:Name="unitPriceColumn" Width="*" Binding="{Binding UnitPrice, Mode=OneWay, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
+                                    EditingElementStyle="{StaticResource GridEditText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Common.Price}" />
-						<DataGridTextColumn Width="*" Binding="{Binding TotalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
+						<DataGridTextColumn Width="*" IsReadOnly="True" Binding="{Binding TotalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Turnovers.TotalAmount}" />
-						<DataGridTextColumn Width="*" Binding="{Binding DiscountRate, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
+						<utils:ManualCommitTextColumn x:Name="discountRateColumn" Width="*" Binding="{Binding DiscountRate, Mode=OneWay, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
+                                    EditingElementStyle="{StaticResource GridEditText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Turnovers.DiscountRate}" />
-						<DataGridTextColumn Width="*" Binding="{Binding DiscountAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
+						<DataGridTextColumn Width="*" IsReadOnly="True" Binding="{Binding DiscountAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Turnovers.DiscountAmount}" />
-						<DataGridTextColumn Width="*" Binding="{Binding FinalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
+						<DataGridTextColumn Width="*" IsReadOnly="True" Binding="{Binding FinalAmount, Converter={StaticResource ToStringConverter}}" ElementStyle="{StaticResource RightCellText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}" Header="{loc:Loc Turnovers.FinalAmount}" />
 					</DataGrid.Columns>
 				</DataGrid>

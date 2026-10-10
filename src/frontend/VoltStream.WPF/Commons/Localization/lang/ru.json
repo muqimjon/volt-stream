@@ -603,7 +603,6 @@
   "Turnovers.TotalLength": "Итого метров",
   "Turnovers.Unknown": "Неизвестно",
   "Turnovers.UnknownOperationType": "Неизвестный тип операции!",
-  "Turnovers.Update": "Обновить",
   "Turnovers.WarehouseLoadFailed": "Ошибка при загрузке данных склада!",
   "Turnovers.WarehouseMetersLeft": "На складе осталось {2} м из {1}-метровых {0}.",
   "Turnovers.WarehouseRollsLeft": "На складе осталось {1} рулонов из {0}.",

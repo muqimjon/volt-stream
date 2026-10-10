@@ -3,7 +3,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
     xmlns:loc="clr-namespace:VoltStream.WPF.Commons.Localization"
-    xmlns:uc="clr-namespace:VoltStream.WPF.Commons.UserControls">
+    xmlns:uc="clr-namespace:VoltStream.WPF.Commons.UserControls"
+    xmlns:utils="clr-namespace:VoltStream.WPF.Commons.Utils">
 
     <!--  ===== Typography ===== -->
     <Style TargetType="TextBlock">
@@ -372,6 +373,16 @@
         <Setter Property="AutoGenerateColumns" Value="False" />
         <Setter Property="CanUserAddRows" Value="False" />
         <Setter Property="VerticalGridLinesBrush" Value="Transparent" />
+    </Style>
+
+    <Style x:Key="GridEditText" TargetType="TextBox" BasedOn="{StaticResource RoundedTextBox}">
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="Padding" Value="6,0" />
+        <Setter Property="utils:NumericTextBox.IsNumeric" Value="True" />
+    </Style>
+
+    <Style x:Key="GridEditInteger" TargetType="TextBox" BasedOn="{StaticResource GridEditText}">
+        <Setter Property="utils:NumericTextBox.DecimalDigits" Value="0" />
     </Style>
 
     <!--  ===== Read-only / computed value field ===== -->

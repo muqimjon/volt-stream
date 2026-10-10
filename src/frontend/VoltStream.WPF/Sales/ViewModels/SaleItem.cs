@@ -45,6 +45,23 @@ public partial class SaleItem : ViewModelBase
     private bool isUpdating = false;
     private bool discountByAmount = false;
 
+    public void SetQuantity(int rollCount, decimal quantity, decimal cutRemainder)
+    {
+        discountByAmount = false;
+        if (Weight.HasValue && Quantity > 0)
+            Weight = Weight * quantity / Quantity;
+
+        NewQuantity = cutRemainder;
+        RollCount = rollCount;
+        Quantity = quantity;
+    }
+
+    public void SetPrice(decimal value)
+    {
+        discountByAmount = false;
+        Price = value;
+    }
+
     private void Recalculate()
     {
         if (isUpdating) return;
@@ -61,7 +78,7 @@ public partial class SaleItem : ViewModelBase
             if (Price.HasValue && Quantity.HasValue)
                 Sum = Price.Value * Quantity.Value;
 
-            if (!discountByAmount && PerDiscount.HasValue && PerDiscount.Value > 0 && Sum.HasValue)
+            if (!discountByAmount && PerDiscount.HasValue && Sum.HasValue)
                 Discount = Sum.Value * (PerDiscount.Value / 100);
             else if (discountByAmount && Discount.HasValue && Sum.HasValue && Sum.Value > 0)
                 PerDiscount = Math.Round((Discount.Value / Sum.Value) * 100, 2);
