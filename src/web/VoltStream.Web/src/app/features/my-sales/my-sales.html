@@ -6,7 +6,12 @@
       </button>
     </app-page-header>
 
-    <app-date-field [label]="'Common.Date' | t" [value]="date()" (valueChange)="onDate($event)" />
+    <app-date-field
+      [label]="'Common.Date' | t"
+      [stepper]="true"
+      [value]="date()"
+      (valueChange)="onDate($event)"
+    />
   </div>
 
   @if (!sales().length && !loading()) {
@@ -27,11 +32,10 @@
             @if (showWeight() && bp.desktop()) {
               <th class="num">{{ 'Web.Weight' | t }}</th>
             }
-            @if (showAmount() && bp.desktop()) {
+            @if (showAmount()) {
               <th class="num">{{ 'Common.Amount' | t }}</th>
             }
-            <th>{{ 'Web.Status' | t }}</th>
-            @if (canPrint() && bp.desktop()) {
+            @if (canPrint()) {
               <th class="num">{{ 'Common.Actions' | t }}</th>
             }
           </tr>
@@ -51,7 +55,7 @@
                 </button>
               </td>
               <td>{{ fmtDateTime(sale.date) }}</td>
-              <td>{{ sale.customer?.name || ('Common.NoData' | t) }}</td>
+              <td class="clip">{{ sale.customer?.name || ('Common.NoData' | t) }}</td>
               @if (showBranch() && bp.desktop()) {
                 <td class="muted">{{ branches.nameOf(sale.branchId) }}</td>
               }
@@ -60,16 +64,14 @@
               @if (showWeight() && bp.desktop()) {
                 <td class="num">{{ fmt(weightOf(sale), 3) }}</td>
               }
-              @if (showAmount() && bp.desktop()) {
+              @if (showAmount()) {
                 <td class="num">{{ fmt(sale.amount) }}</td>
               }
-              <td>
-                @if (statusOf(sale); as status) {
-                  <app-status-badge [status]="status" />
-                }
-              </td>
-              @if (canPrint() && bp.desktop()) {
+              @if (canPrint()) {
                 <td class="num">
+                  @if (statusOf(sale); as status) {
+                    <app-status-badge [status]="status" />
+                  }
                   <button
                     type="button"
                     class="btn btn-ghost"

@@ -28,6 +28,19 @@
           (create)="createCustomer($event)"
         />
 
+        @if (balance(); as b) {
+          <dl class="sums">
+            <div>
+              <dt>{{ 'Web.BalanceCurrent' | t }}</dt>
+              <dd>{{ fmt(b.current, 0) }}</dd>
+            </div>
+            <div>
+              <dt>{{ 'Web.BalanceResult' | t }}</dt>
+              <dd>{{ fmt(b.after, 0) }}</dd>
+            </div>
+          </dl>
+        }
+
         <div class="field">
           <label for="note">{{ 'Common.Note' | t }}</label>
           <input
@@ -40,7 +53,7 @@
         </div>
       </section>
 
-      <section class="card stack">
+      <section class="card stack" appStockFlow (rowSubmit)="addItem()">
         <app-search-select
           [label]="'Sales.ProductType' | t"
           [placeholder]="'Common.Select' | t"
@@ -56,12 +69,14 @@
           [placeholder]="'Common.Select' | t"
           [items]="sel.shownProducts()"
           [labelOf]="nameOf"
+          [subLabelOf]="sel.productHint"
           [selected]="sel.product()"
           (opened)="sel.loadProducts()"
           (selectedChange)="sel.onProduct($event)"
         />
 
         <app-search-select
+          data-step="length"
           [label]="'Sales.RollLength' | t"
           [placeholder]="'Common.Select' | t"
           [items]="sel.stocks()"
@@ -70,11 +85,12 @@
           [selected]="sel.stock()"
           [disabled]="!sel.product()"
           [hint]="sel.stock() ? sel.stockHint(sel.stock()!) : ''"
-          (selectedChange)="onStock($event)"
+          (selectedChange)="sel.onStock($event)"
         />
 
         <div class="grid-2">
           <app-number-field
+            data-step="count"
             [label]="'Sales.RollCount' | t"
             [value]="sel.rollCount()"
             [disabled]="!sel.stock()"
@@ -194,17 +210,17 @@
             <dd>{{ fmt(store.totals().length) }}</dd>
           </div>
           @if (hasWeight()) {
-            <div>
+            <div class="detail">
               <dt>{{ 'Web.TotalWeight' | t }}</dt>
               <dd>{{ fmt(store.totals().weight, 3) }}</dd>
             </div>
           }
           @if (canViewPrices()) {
-            <div>
+            <div class="detail">
               <dt>{{ 'Sales.TotalSum' | t }}</dt>
               <dd>{{ fmt(store.totals().amount) }}</dd>
             </div>
-            <div>
+            <div class="detail">
               <dt>{{ 'Sales.DiscountLabel' | t }}</dt>
               <dd>{{ fmt(store.totals().discount) }}</dd>
             </div>

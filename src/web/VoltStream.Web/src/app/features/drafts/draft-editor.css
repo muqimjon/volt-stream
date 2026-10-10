@@ -25,7 +25,19 @@
   display: flex;
 }
 
+@media (min-width: 768px) {
+  .col {
+    container-type: inline-size;
+  }
+}
+
 @media (max-width: 639.98px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@container (max-width: 420px) {
   .grid-2 {
     grid-template-columns: 1fr;
   }

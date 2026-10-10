@@ -36,7 +36,7 @@
         </div>
       </section>
 
-      <section #picker class="card stack">
+      <section #picker class="card stack" appStockFlow (rowSubmit)="addItem()">
         <app-search-select
           [label]="'Sales.ProductType' | t"
           [placeholder]="'Common.Select' | t"
@@ -52,12 +52,14 @@
           [placeholder]="'Common.Select' | t"
           [items]="sel.shownProducts()"
           [labelOf]="nameOf"
+          [subLabelOf]="sel.productHint"
           [selected]="sel.product()"
           (opened)="sel.loadProducts()"
           (selectedChange)="sel.onProduct($event)"
         />
 
         <app-search-select
+          data-step="length"
           [label]="'Sales.RollLength' | t"
           [placeholder]="'Common.Select' | t"
           [items]="sel.stocks()"
@@ -80,6 +82,7 @@
               −
             </button>
             <app-number-field
+              data-step="count"
               [label]="'Sales.RollCount' | t"
               [value]="sel.rollCount()"
               [disabled]="!sel.stock()"
@@ -201,3 +204,37 @@
     </div>
   </div>
 </div>
+
+@if (savedId(); as saved) {
+  <div class="overlay">
+    <div class="sheet card stack">
+      <h2>{{ 'Web.DraftSaved' | t }}</h2>
+
+      @if (printJob(); as job) {
+        <div class="print-row">
+          <app-status-badge [status]="job.status" />
+          @if (job.error) {
+            <small class="muted">{{ job.error }}</small>
+          }
+        </div>
+      }
+
+      @if (canPrint()) {
+        <button
+          type="button"
+          class="btn btn-block"
+          [disabled]="print.isBusy(saved, 'draft') || !pwa.online()"
+          (click)="requestPrint()"
+        >
+          <app-icon name="print" />
+          {{ 'Common.Print' | t }}
+        </button>
+      }
+
+      <button type="button" class="btn btn-primary btn-block" (click)="startNew()">
+        {{ 'Web.DraftNew' | t }}
+      </button>
+      <a class="btn btn-ghost btn-block" routerLink="/drafts">{{ 'Web.Drafts' | t }}</a>
+    </div>
+  </div>
+}

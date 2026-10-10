@@ -6,7 +6,12 @@
       </button>
     </app-page-header>
 
-    <app-date-field [label]="'Common.Date' | t" [value]="date()" (valueChange)="onDate($event)" />
+    <app-date-field
+      [label]="'Common.Date' | t"
+      [stepper]="true"
+      [value]="date()"
+      (valueChange)="onDate($event)"
+    />
   </div>
 
   @if (!supplies().length && !loading()) {

@@ -82,8 +82,8 @@ export class MySalesPage {
       5 +
       (this.showBranch() && this.bp.desktop() ? 1 : 0) +
       (this.showWeight() && this.bp.desktop() ? 1 : 0) +
-      (this.showAmount() && this.bp.desktop() ? 1 : 0) +
-      (this.canPrint() && this.bp.desktop() ? 1 : 0),
+      (this.showAmount() ? 1 : 0) +
+      (this.canPrint() ? 1 : 0),
   );
 
   protected readonly expandedId = signal<number | null>(null);

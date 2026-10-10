@@ -67,16 +67,35 @@
   gap: var(--sp-lg);
 }
 
-@media (max-width: 899.98px) {
+@media (max-width: 767.98px) {
+  .col {
+    display: contents;
+  }
+}
+
+@media (max-width: 1023.98px) {
+  .totals.pinned .detail {
+    display: none;
+  }
+
   .totals.pinned {
     position: sticky;
     bottom: 0;
-    gap: var(--sp-sm);
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sp-md);
     padding-block: var(--sp-md);
     box-shadow: var(--shadow-card);
   }
 
+  .totals.pinned .btn-block {
+    width: auto;
+    flex: 0 0 auto;
+    padding-inline: var(--sp-lg);
+  }
+
   .totals.pinned .sums {
+    flex: 1;
     display: flex;
     flex-wrap: wrap;
     gap: var(--sp-xs) var(--sp-md);
@@ -98,7 +117,7 @@
   }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   .split {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

@@ -218,6 +218,17 @@ table.data .btn {
   display: contents;
 }
 
+@media (max-width: 1023.98px) {
+  table.data th,
+  table.data td {
+    padding-inline: 10px;
+  }
+
+  table.data th {
+    white-space: normal;
+  }
+}
+
 @media (min-width: 1024px) {
   .page {
     padding: var(--sp-xl);
@@ -226,7 +237,7 @@ table.data .btn {
 
   .filter-bar > app-date-field {
     display: block;
-    max-width: 260px;
+    max-width: 400px;
   }
 
   .filter-bar {

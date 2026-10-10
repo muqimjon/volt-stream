@@ -25,8 +25,23 @@ export class StockSelection {
   readonly rollCount = signal<number | null>(null);
   readonly length = signal<number | null>(null);
 
+  readonly focusStep = signal<{ target: 'length' | 'count'; n: number } | null>(null);
+
   private readonly allowNegativeStock = signal(true);
-  private readonly inStock = signal<WarehouseItem[]>([]);
+  private readonly stockRows = signal<WarehouseItem[]>([]);
+  private readonly inStock = computed(() => this.stockRows().filter((s) => s.rollCount > 0));
+  private readonly totals = computed(() => {
+    const map = new Map<number, { rolls: number; length: number }>();
+    for (const row of this.stockRows()) {
+      const id = row.product?.id;
+      if (id === undefined) continue;
+      const sum = map.get(id) ?? { rolls: 0, length: 0 };
+      sum.rolls += row.rollCount;
+      sum.length += row.totalLength;
+      map.set(id, sum);
+    }
+    return map;
+  });
   readonly shownCategories = computed(() => {
     if (this.allowNegativeStock()) return this.categories();
     const ids = new Set(this.inStock().map((s) => s.product?.categoryId));
@@ -51,14 +66,22 @@ export class StockSelection {
     return this.showBranch() ? `${item.warehouseName} · ${info}` : info;
   };
 
+  readonly productHint = (item: Product) => {
+    const sum = this.totals().get(item.id) ?? { rolls: 0, length: 0 };
+    const info = this.translate.t('Web.StockInfo', fmtNum(sum.rolls, 0), fmtNum(sum.length));
+    return this.category() || !item.category ? info : `${item.category.name} · ${info}`;
+  };
+
   private pendingCommit: Promise<void> = Promise.resolve();
+  private stockLoad: Promise<void> | null = null;
+  private stockBranch: number | null | undefined;
 
   constructor() {
     void this.loadCategories();
     void this.loadSettings();
     effect(() => {
       this.auth.branchId();
-      if (!this.allowNegativeStock()) untracked(() => void this.loadInStock());
+      if (!this.allowNegativeStock()) untracked(() => void this.ensureStock());
     });
   }
 
@@ -80,6 +103,7 @@ export class StockSelection {
     const filters: Record<string, string[]> = { category: ['include'] };
     const category = this.category();
     if (category) filters['CategoryId'] = [`=${category.id}`];
+    void this.ensureStock();
     const page = await this.api
       .filter<Product>('products/filter', { filters, page: 1, pageSize: 500, descending: false })
       .catch(() => ({ items: [], paging: null }));
@@ -94,7 +118,7 @@ export class StockSelection {
     this.products.set([]);
   }
 
-  async onProduct(product: Product | null): Promise<void> {
+  async onProduct(product: Product | null, chain = true): Promise<void> {
     this.product.set(product);
     if (product?.category) this.category.set(product.category);
     this.stock.set(null);
@@ -108,19 +132,23 @@ export class StockSelection {
         branchId === null ? undefined : { branchId },
       )
       .catch(() => []);
-    this.stocks.set(
-      items
-        .filter((s) => this.allowNegativeStock() || s.rollCount > 0)
-        .sort(
-          (a, b) =>
-            a.lengthPerRoll - b.lengthPerRoll || a.warehouseName.localeCompare(b.warehouseName),
-        ),
-    );
+    const options = items
+      .filter((s) => this.allowNegativeStock() || s.rollCount > 0)
+      .sort(
+        (a, b) =>
+          a.lengthPerRoll - b.lengthPerRoll || a.warehouseName.localeCompare(b.warehouseName),
+      );
+    this.stocks.set(options);
+    if (!chain) return;
+    if (options.length === 1) this.onStock(options[0]);
+    else if (options.length) this.requestStep('length');
   }
 
   onStock(stock: WarehouseItem | null): void {
     this.stock.set(stock);
-    if (stock) this.syncLengthFromRolls();
+    if (!stock) return;
+    this.syncLengthFromRolls();
+    this.requestStep('count');
   }
 
   onRollCountCommit(value: number | null): Promise<void> {
@@ -142,13 +170,16 @@ export class StockSelection {
     totalLength: number;
   }): Promise<void> {
     this.category.set({ id: line.categoryId, name: line.category });
-    await this.onProduct({
-      id: line.productId,
-      name: line.product,
-      unit: line.unit,
-      categoryId: line.categoryId,
-      isWeightTracked: false,
-    });
+    await this.onProduct(
+      {
+        id: line.productId,
+        name: line.product,
+        unit: line.unit,
+        categoryId: line.categoryId,
+        isWeightTracked: false,
+      },
+      false,
+    );
     this.stock.set(
       this.stocks().find((s) => s.lengthPerRoll === line.lengthPerRoll) ?? {
         id: 0,
@@ -186,12 +217,18 @@ export class StockSelection {
     this.allowNegativeStock.set(settings?.allowNegativeStock ?? true);
   }
 
-  private async loadInStock(): Promise<void> {
+  private ensureStock(): Promise<void> {
     const branchId = this.auth.branchId();
-    const items = await this.api
+    if (this.stockLoad && this.stockBranch === branchId) return this.stockLoad;
+    this.stockBranch = branchId;
+    return (this.stockLoad = this.api
       .get<WarehouseItem[]>('warehouse-items', branchId === null ? undefined : { branchId })
-      .catch(() => []);
-    this.inStock.set(items.filter((s) => s.rollCount > 0));
+      .then((rows) => this.stockRows.set(rows))
+      .catch(() => undefined));
+  }
+
+  private requestStep(target: 'length' | 'count'): void {
+    this.focusStep.set({ target, n: (this.focusStep()?.n ?? 0) + 1 });
   }
 
   private async confirmOversell(stock: WarehouseItem, message: string): Promise<boolean> {

@@ -59,6 +59,7 @@ export interface Customer {
   id: number;
   name: string;
   phone?: string | null;
+  accounts?: { balance: number }[] | null;
 }
 
 export interface Currency {

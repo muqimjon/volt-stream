@@ -1,8 +1,8 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { ApiClient } from '../../core/api/api-client';
 import { AuthService } from '../../core/auth/auth';
 import { TranslatePipe, TranslateService } from '../../core/i18n/translate';
-import { Currency, Customer, SaleRequest, WarehouseItem } from '../../core/models';
+import { Currency, Customer, SaleRequest } from '../../core/models';
 import { PermissionService } from '../../core/permissions/permission';
 import { PwaService } from '../../core/pwa/pwa';
 import { PrintHubService } from '../../core/realtime/print-hub';
@@ -18,6 +18,7 @@ import { NumberField } from '../../shared/number-field';
 import { PageHeader } from '../../shared/page-header';
 import { SearchSelect } from '../../shared/search-select';
 import { StatusBadge } from '../../shared/status-badge';
+import { StockFlow } from '../../shared/stock-flow';
 import { StockSelection } from '../../shared/stock-selection';
 import { DraftItem, SaleDraftStore } from './sale-draft';
 
@@ -32,6 +33,7 @@ import { DraftItem, SaleDraftStore } from './sale-draft';
     EmptyState,
     StatusBadge,
     Icon,
+    StockFlow,
   ],
   providers: [StockSelection],
   templateUrl: './sale.html',
@@ -87,13 +89,41 @@ export class SalePage {
     return id === null ? null : this.hub.jobFor(id);
   });
 
+  protected readonly balance = computed(() => {
+    const accounts = this.customer()?.accounts;
+    if (!this.canViewPrices() || !accounts) return null;
+    const sum = accounts.reduce((total, a) => total + a.balance, 0);
+    const current = Math.sign(sum) * Math.round(Math.abs(sum));
+    return {
+      current,
+      after: current - this.store.totals().final * (this.currency()?.exchangeRate || 1),
+    };
+  });
+
   protected readonly nameOf = (item: { name: string }) => item.name;
   protected readonly customerHint = (item: Customer) => item.phone ?? '';
 
   constructor() {
     const draft = this.store.draft();
-    if (draft.customerId) this.customer.set({ id: draft.customerId, name: draft.customerName });
+    if (draft.customerId) {
+      this.customer.set({ id: draft.customerId, name: draft.customerName });
+      if (this.canViewPrices()) void this.restoreCustomer(draft.customerId);
+    }
     void this.loadCurrency();
+    effect(() => {
+      const stock = this.sel.stock();
+      if (!stock) return;
+      untracked(() => {
+        this.unitPrice.set(stock.unitPrice);
+        this.discountRate.set(stock.discountRate);
+      });
+    });
+  }
+
+  private async restoreCustomer(id: number): Promise<void> {
+    await this.loadCustomers();
+    const customer = this.customers().find((c) => c.id === id);
+    if (customer && this.customer()?.id === id) this.customer.set(customer);
   }
 
   private async loadCurrency(): Promise<void> {
@@ -127,13 +157,6 @@ export class SalePage {
     } catch {
       this.toast.error(this.translate.t('Sales.CustomerCreateError'));
     }
-  }
-
-  protected onStock(stock: WarehouseItem | null): void {
-    this.sel.onStock(stock);
-    if (!stock) return;
-    this.unitPrice.set(stock.unitPrice);
-    this.discountRate.set(stock.discountRate);
   }
 
   protected async addItem(): Promise<void> {

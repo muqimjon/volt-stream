@@ -19,6 +19,7 @@ import { NumberField } from '../../shared/number-field';
 import { PageHeader } from '../../shared/page-header';
 import { SearchSelect } from '../../shared/search-select';
 import { StatusBadge } from '../../shared/status-badge';
+import { StockFlow } from '../../shared/stock-flow';
 import { StockSelection } from '../../shared/stock-selection';
 
 interface EditorItem {
@@ -44,6 +45,7 @@ interface EditorItem {
     EmptyState,
     StatusBadge,
     Icon,
+    StockFlow,
   ],
   providers: [StockSelection],
   templateUrl: './draft-editor.html',
@@ -73,6 +75,7 @@ export class DraftEditorPage {
   protected readonly description = signal('');
   protected readonly items = signal<EditorItem[]>([]);
   protected readonly saving = signal(false);
+  protected readonly savedId = signal<number | null>(null);
   private readonly picker = viewChild<ElementRef<HTMLElement>>('picker');
   private editedAt: number | null = null;
 
@@ -84,14 +87,12 @@ export class DraftEditorPage {
     ),
   }));
   protected readonly canPrint = computed(
-    () =>
-      this.id !== null &&
-      this.permissions.has('drafts.print') &&
-      this.auth.printPolicy() !== 'Deny',
+    () => this.permissions.has('drafts.print') && this.auth.printPolicy() !== 'Deny',
   );
-  protected readonly printJob = computed(() =>
-    this.id === null ? null : this.hub.jobFor(this.id, 'draft'),
-  );
+  protected readonly printJob = computed(() => {
+    const id = this.savedId() ?? this.id;
+    return id === null ? null : this.hub.jobFor(id, 'draft');
+  });
 
   protected readonly nameOf = (item: { name: string }) => item.name;
   protected readonly customerHint = (item: Customer) => item.phone ?? '';
@@ -187,11 +188,14 @@ export class DraftEditorPage {
 
     this.saving.set(true);
     try {
-      if (this.id === null)
-        await this.api.post<number>('sale-drafts', { ...request, branchId: this.auth.branchId() });
-      else await this.api.put<boolean>('sale-drafts', { ...request, id: this.id });
-      this.toast.success(this.translate.t('Web.DraftSaved'));
-      await this.router.navigate(['/drafts']);
+      if (this.id === null) {
+        const branchId = this.auth.branchId();
+        this.savedId.set(await this.api.post<number>('sale-drafts', { ...request, branchId }));
+        this.draftBranchId = branchId;
+      } else {
+        await this.api.put<boolean>('sale-drafts', { ...request, id: this.id });
+        this.savedId.set(this.id);
+      }
     } catch {
       /* reported by the error interceptor */
     } finally {
@@ -214,7 +218,18 @@ export class DraftEditorPage {
   }
 
   protected requestPrint(): void {
-    if (this.id !== null) void this.print.request(this.id, this.draftBranchId, 'draft');
+    const id = this.savedId() ?? this.id;
+    if (id !== null) void this.print.request(id, this.draftBranchId, 'draft');
+  }
+
+  protected startNew(): void {
+    if (this.id !== null) return void this.router.navigateByUrl('/drafts/new');
+    this.savedId.set(null);
+    this.date.set(toDateInput(new Date()));
+    this.customer.set(null);
+    this.description.set('');
+    this.items.set([]);
+    this.sel.clear();
   }
 
   private warn(key: string): void {

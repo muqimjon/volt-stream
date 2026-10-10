@@ -7,7 +7,12 @@
     </app-page-header>
 
     <div class="filters">
-      <app-date-field [label]="'Common.Date' | t" [value]="date()" (valueChange)="onDate($event)" />
+      <app-date-field
+        [label]="'Common.Date' | t"
+        [stepper]="true"
+        [value]="date()"
+        (valueChange)="onDate($event)"
+      />
 
       <div class="field">
         <label for="q">{{ 'Common.Search' | t }}</label>

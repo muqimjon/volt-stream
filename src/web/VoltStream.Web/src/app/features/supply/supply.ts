@@ -19,7 +19,7 @@ import { SearchSelect } from '../../shared/search-select';
   selector: 'app-supply',
   imports: [TranslatePipe, DateField, NumberField, SearchSelect, PageHeader, EmptyState],
   templateUrl: './supply.html',
-  styleUrl: './supply.css',
+  styleUrls: ['../sale/sale.css', './supply.css'],
 })
 export class SupplyPage {
   private readonly api = inject(ApiClient);
