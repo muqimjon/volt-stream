@@ -619,6 +619,8 @@
   "Turnovers.ResultLabel": "Натижа:",
   "Turnovers.RollCount": "Рулон сони",
   "Turnovers.RollLength": "Рулон метр",
+  "Turnovers.RollMismatchConfirm": "{0}: {1} та рулон × {2} м жами {3} м га мос келмайди. Рулон сонини {4} га ўзгартирасизми? Бу омбор қолдиғига таъсир қилади.",
+  "Turnovers.RollMismatchWarning": "Қизил қаторда рулон сони жами метрга мос эмас — тўғриланг.",
   "Turnovers.Sale": "Савдо",
   "Turnovers.SaleDataNotFound": "Савдо маълумотлари топилмади!",
   "Turnovers.SaleEditTitle": "Савдони таҳрирлаш",

@@ -619,6 +619,8 @@
   "Turnovers.ResultLabel": "Итог:",
   "Turnovers.RollCount": "Кол-во рулонов",
   "Turnovers.RollLength": "Метраж рулона",
+  "Turnovers.RollMismatchConfirm": "{0}: {1} рул. × {2} м не соответствует общей длине {3} м. Изменить количество рулонов на {4}? Это повлияет на остаток на складе.",
+  "Turnovers.RollMismatchWarning": "В выделенной строке количество рулонов не соответствует общей длине — исправьте.",
   "Turnovers.Sale": "Продажа",
   "Turnovers.SaleDataNotFound": "Данные продажи не найдены!",
   "Turnovers.SaleEditTitle": "Редактирование продажи",

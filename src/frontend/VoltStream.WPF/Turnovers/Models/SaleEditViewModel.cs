@@ -116,6 +116,33 @@ public partial class SaleEditViewModel : ViewModelBase
         SelectedCurrency = Currencies.FirstOrDefault(c => c.Id == Sale.CurrencyId);
 
         await LoadItemStocksAsync();
+        ResolveRollMismatches();
+    }
+
+    // V1 davridagi qatorda rulon soni jami metrga mos kelmasligi mumkin; soni ombor qoldig'ini o'zgartiradi, shuning uchun uni foydalanuvchi tasdig'isiz tuzatmaymiz.
+    private void ResolveRollMismatches()
+    {
+        foreach (var item in Sale.Items.Where(i => i.HasRollMismatch).ToList())
+        {
+            var fixedRolls = (int)Math.Ceiling(item.TotalLength!.Value / item.LengthPerRoll!.Value);
+            var question = string.Format(TranslationSource.T("Turnovers.RollMismatchConfirm"),
+                item.Product?.Name, item.RollCount, item.LengthPerRoll, item.TotalLength, fixedRolls);
+
+            if (!AppDialog.Confirm(question, TranslationSource.T("Turnovers.Sale")))
+                continue;
+
+            var (demandRolls, demandLength) = DemandOf(item, fixedRolls, item.TotalLength.Value);
+            var (ownRolls, ownLength) = OwnUsageOf(item);
+            if (!CheckWarehouseAvailabilityForLength(item.Product?.Name, StockOf(item), demandLength, demandRolls, ownRolls, ownLength))
+                continue;
+
+            item.RollCount = fixedRolls;
+        }
+
+        RecalculateSaleTotals();
+
+        if (Sale.Items.Any(i => i.HasRollMismatch))
+            Warning = TranslationSource.T("Turnovers.RollMismatchWarning");
     }
 
     // Katak tahriri CellEditEnding'da sinxron tekshiriladi, shuning uchun qoldiq oldindan xotirada bo'lishi kerak.
@@ -507,8 +534,12 @@ public partial class SaleEditViewModel : ViewModelBase
     {
         if (!CurrentItem.TotalAmount.HasValue || !CurrentItem.TotalLength.HasValue) return;
 
+        // Server qator summasini metr × narx deb qayta hisoblaydi: narxni yaxlitlab summani undan chiqaramiz, ekrandagi summa saqlanadigan bilan teng bo'lsin.
         if (CurrentItem.TotalLength.Value > 0)
-            CurrentItem.UnitPrice = CurrentItem.TotalAmount.Value / CurrentItem.TotalLength.Value;
+        {
+            CurrentItem.UnitPrice = Math.Round(CurrentItem.TotalAmount.Value / CurrentItem.TotalLength.Value, 2, MidpointRounding.AwayFromZero);
+            CurrentItem.TotalAmount = CurrentItem.TotalLength.Value * CurrentItem.UnitPrice.Value;
+        }
 
         CalculateDiscounts(CurrentItem);
     }

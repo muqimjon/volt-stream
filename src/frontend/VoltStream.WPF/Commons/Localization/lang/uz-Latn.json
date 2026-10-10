@@ -619,6 +619,8 @@
   "Turnovers.ResultLabel": "Natija:",
   "Turnovers.RollCount": "Rulon soni",
   "Turnovers.RollLength": "Rulon metr",
+  "Turnovers.RollMismatchConfirm": "{0}: {1} ta rulon × {2} m jami {3} m ga mos kelmaydi. Rulon sonini {4} ga o'zgartirasizmi? Bu ombor qoldig'iga ta'sir qiladi.",
+  "Turnovers.RollMismatchWarning": "Qizil qatorda rulon soni jami metrga mos emas — to'g'rilang.",
   "Turnovers.Sale": "Savdo",
   "Turnovers.SaleDataNotFound": "Savdo ma'lumotlari topilmadi!",
   "Turnovers.SaleEditTitle": "Savdoni tahrirlash",

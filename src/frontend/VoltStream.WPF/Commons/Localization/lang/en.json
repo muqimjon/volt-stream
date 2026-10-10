@@ -619,6 +619,8 @@
   "Turnovers.ResultLabel": "Result:",
   "Turnovers.RollCount": "Roll count",
   "Turnovers.RollLength": "Roll meters",
+  "Turnovers.RollMismatchConfirm": "{0}: {1} rolls × {2} m does not match the total of {3} m. Change the roll count to {4}? This affects the warehouse stock.",
+  "Turnovers.RollMismatchWarning": "In the highlighted row the roll count does not match the total metres — please correct it.",
   "Turnovers.Sale": "Sale",
   "Turnovers.SaleDataNotFound": "Sale data not found!",
   "Turnovers.SaleEditTitle": "Edit sale",

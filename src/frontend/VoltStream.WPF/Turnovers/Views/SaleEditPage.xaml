@@ -375,6 +375,15 @@
                   SelectionMode="Single"
                   SelectionUnit="CellOrRowHeader"
                   CellEditEnding="DataGrid_CellEditEnding">
+					<DataGrid.RowStyle>
+						<Style BasedOn="{StaticResource {x:Type DataGridRow}}" TargetType="DataGridRow">
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding HasRollMismatch}" Value="True">
+									<Setter Property="Background" Value="{DynamicResource DangerSubtle}" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</DataGrid.RowStyle>
 					<DataGrid.Columns>
 						<DataGridTextColumn Width="1.5*" MinWidth="120" IsReadOnly="True" Binding="{Binding Product.Category.Name}" Header="{loc:Loc Turnovers.ProductType}" />
 						<DataGridTextColumn Width="1.8*" MinWidth="120" IsReadOnly="True" Binding="{Binding Product.Name}" Header="{loc:Loc Turnovers.ProductName}" />
