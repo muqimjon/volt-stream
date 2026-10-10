@@ -14,6 +14,8 @@ public sealed class TestDatabase : IAsyncDisposable
 
     public ServiceProvider Services { get; }
 
+    public RecordingPrintNotifier Notifier => Services.GetRequiredService<RecordingPrintNotifier>();
+
     public static async Task<TestDatabase> CreateAsync(string connectionString)
     {
         var database = new TestDatabase(new ServiceCollection()
@@ -24,6 +26,8 @@ public sealed class TestDatabase : IAsyncDisposable
             .AddScoped<AuditInterceptor>()
             .AddScoped<IAuditLogWriter, AuditLogWriter>()
             .AddScoped<IPagingMetadataWriter, NoPagingMetadata>()
+            .AddSingleton<RecordingPrintNotifier>()
+            .AddSingleton<IPrintJobNotifier>(provider => provider.GetRequiredService<RecordingPrintNotifier>())
             .AddDbContext<IAppDbContext, AppDbContext>((provider, options) => options
                 .UseNpgsql(connectionString, b => b.MigrationsAssembly("VoltStream.Infrastructure"))
                 .AddInterceptors(provider.GetRequiredService<AuditInterceptor>()))

@@ -14,6 +14,9 @@ using VoltStream.Application.Features.Payments.Commands;
 using VoltStream.Application.Features.Payments.DTOs;
 using VoltStream.Application.Features.Payments.Queries;
 using VoltStream.Application.Features.Products.Commands;
+using VoltStream.Application.Features.SaleDrafts;
+using VoltStream.Application.Features.SaleDrafts.Commands;
+using VoltStream.Application.Features.SaleDrafts.Queries;
 using VoltStream.Application.Features.Sales.Commands;
 using VoltStream.Application.Features.Sales.DTOs;
 using VoltStream.Application.Features.Sales.Queries;
@@ -21,6 +24,8 @@ using VoltStream.Application.Features.Settings.Commands;
 using VoltStream.Application.Features.Supplies.Commands;
 using VoltStream.Application.Features.Warehouses.Commands;
 using VoltStream.Application.Features.WarehouseStocks.Queries;
+using VoltStream.Application.Commons.Security;
+using VoltStream.Domain.Entities;
 using VoltStream.Domain.Enums;
 
 public sealed record Line(
@@ -56,6 +61,8 @@ public sealed class World
     public Actor Manager { get; private set; } = default!;
     public Actor OtherSeller { get; private set; } = default!;
     public Actor OtherManager { get; private set; } = default!;
+
+    public long CategoryId => category;
 
     public long Branch { get; private set; }
     public long OtherBranch { get; private set; }
@@ -113,6 +120,41 @@ public sealed class World
 
     public Task SetNegativeStock(bool allowed) => Admin.Send(new UpdateGeneralSettingsCommand(allowed));
 
+    public CreateSaleDraftCommand Draft(Line[] lines, long? customerId = null, long? branchId = null)
+        => new(DateTimeOffset.UtcNow, customerId, string.Empty,
+            [.. lines.Select(line => new SaleDraftItemCommand(line.ProductId, line.LengthPerRoll, line.Rolls, line.Length ?? line.Rolls * line.LengthPerRoll))],
+            branchId ?? Branch);
+
+    public static UpdateSaleDraftCommand EditDraft(long draftId, CreateSaleDraftCommand draft)
+        => new(draftId, draft.Date, draft.CustomerId, draft.Description, draft.Items);
+
+    public async Task<long[]> OpenDraftIds(Actor actor, long? branchId = null)
+        => [.. (await actor.Send(new GetOpenSaleDraftsQuery(branchId))).Select(draft => draft.Id).Order()];
+
+    // Chop etish so'rovchisi Users jadvalidan qidiriladi, shuning uchun qatori bor foydalanuvchi
+    public async Task<Actor> NewUser(UserRole role, long branchId, params string[] extraPermissions)
+    {
+        var permissions = RolePresets.For(role).Concat(extraPermissions).Distinct().ToArray();
+        var username = $"user-{Unique()}";
+        var id = await Db.Read(async context =>
+        {
+            var user = new User
+            {
+                Username = username,
+                NormalizedUsername = username.ToUpperInvariant(),
+                Role = role,
+                IsActive = true,
+                Permissions = permissions,
+                BranchId = branchId
+            };
+            context.Users.Add(user);
+            await context.SaveChangesAsync();
+
+            return user.Id;
+        });
+
+        return As(TestUser.Existing(id, branchId, permissions));
+    }
     public Task<long> NewBranch(long? warehouseId = null)
         => Admin.Send(new CreateBranchCommand($"branch-{Unique()}", warehouseId));
 

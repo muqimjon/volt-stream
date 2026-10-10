@@ -9,29 +9,6 @@ using VoltStream.Application.Tests.Ledger;
 [Collection(DatabaseCollection.Name)]
 public sealed class StockConcurrencyTests(PostgresFixture db)
 {
-    private sealed record Outcome(Func<Task> Operation, Exception? Error);
-
-    private static Task<Outcome[]> Race(Func<Task> operation, int times)
-        => Race(Enumerable.Repeat(operation, times));
-
-    private static Task<Outcome[]> Race(IEnumerable<Func<Task>> operations)
-        => Task.WhenAll(operations.Select(async operation =>
-        {
-            try
-            {
-                await operation();
-                return new Outcome(operation, null);
-            }
-            catch (Exception ex)
-            {
-                return new Outcome(operation, ex);
-            }
-        }));
-
-    private static Outcome[] Lost(Outcome[] outcomes) => [.. outcomes.Where(outcome => outcome.Error is not null)];
-
-    private static int Won(Outcome[] outcomes) => outcomes.Count(outcome => outcome.Error is null);
-
     [Fact]
     public async Task Racing_sales_on_one_row_never_lose_an_update()
     {
@@ -40,16 +17,16 @@ public sealed class StockConcurrencyTests(PostgresFixture db)
         var customer = await w.NewCustomer();
         await w.Supply(product, 100, 100, 1_000);
 
-        var outcomes = await Race(() => w.Admin.Send(w.Sale(customer, w.Uzs, [new Line(product, 1, 100, 1_000)])), 10);
+        var outcomes = await Racing.Race(() => w.Admin.Send(w.Sale(customer, w.Uzs, [new Line(product, 1, 100, 1_000)])), 10);
 
-        var won = Won(outcomes);
+        var won = outcomes.Won();
         Assert.True(won >= 1);
-        Assert.All(Lost(outcomes), outcome => Assert.IsType<DbUpdateConcurrencyException>(outcome.Error));
+        Assert.All(outcomes.Lost(), outcome => Assert.IsType<DbUpdateConcurrencyException>(outcome.Error));
         Assert.Equal([new StockRow(100, 100 - won, (100 - won) * 100)], await w.Stock(product));
         Assert.Equal(won, (await w.SalesOf(customer)).Count);
         await LedgerAssert.Balances(w, customer, (w.Uzs, -won * 100_000));
 
-        foreach (var lost in Lost(outcomes))
+        foreach (var lost in outcomes.Lost())
             await lost.Operation();
 
         Assert.Equal([new StockRow(100, 90, 9_000)], await w.Stock(product));
@@ -66,15 +43,15 @@ public sealed class StockConcurrencyTests(PostgresFixture db)
         await w.Supply(product, 4, 100, 1_000);
         await w.SetNegativeStock(false);
 
-        var outcomes = await Race(() => w.Admin.Send(w.Sale(customer, w.Uzs, [new Line(product, 1, 100, 1_000)])), 10);
+        var outcomes = await Racing.Race(() => w.Admin.Send(w.Sale(customer, w.Uzs, [new Line(product, 1, 100, 1_000)])), 10);
 
-        var won = Won(outcomes);
+        var won = outcomes.Won();
         Assert.InRange(won, 1, 4);
-        Assert.All(Lost(outcomes), outcome => Assert.True(outcome.Error is ConflictException or DbUpdateConcurrencyException, outcome.Error?.ToString()));
+        Assert.All(outcomes.Lost(), outcome => Assert.True(outcome.Error is ConflictException or DbUpdateConcurrencyException, outcome.Error?.ToString()));
         Assert.Equal([new StockRow(100, 4 - won, (4 - won) * 100)], await w.Stock(product));
         await LedgerAssert.Balances(w, customer, (w.Uzs, -won * 100_000));
 
-        foreach (var lost in Lost(outcomes))
+        foreach (var lost in outcomes.Lost())
             try
             {
                 await lost.Operation();
@@ -99,15 +76,15 @@ public sealed class StockConcurrencyTests(PostgresFixture db)
         for (var i = 0; i < 6; i++)
             sales.Add(await w.Admin.Send(w.Sale(customer, w.Uzs, [new Line(product, 1, 100, 1_000)])));
 
-        var outcomes = await Race(sales.Select<long, Func<Task>>(saleId => () => w.DeleteSale(saleId)));
+        var outcomes = await Racing.Race(sales.Select<long, Func<Task>>(saleId => () => w.DeleteSale(saleId)));
 
-        var deleted = Won(outcomes);
-        Assert.All(Lost(outcomes), outcome => Assert.IsType<DbUpdateConcurrencyException>(outcome.Error));
+        var deleted = outcomes.Won();
+        Assert.All(outcomes.Lost(), outcome => Assert.IsType<DbUpdateConcurrencyException>(outcome.Error));
         Assert.Equal([new StockRow(100, 14 + deleted, (14 + deleted) * 100)], await w.Stock(product));
         Assert.Equal(6 - deleted, (await w.SalesOf(customer)).Count);
         await LedgerAssert.Balances(w, customer, (w.Uzs, -(6 - deleted) * 100_000));
 
-        foreach (var lost in Lost(outcomes))
+        foreach (var lost in outcomes.Lost())
             await lost.Operation();
 
         Assert.Equal([new StockRow(100, 20, 2_000)], await w.Stock(product));
@@ -125,17 +102,17 @@ public sealed class StockConcurrencyTests(PostgresFixture db)
         Func<Task> supply = () => w.Supply(product, 2, 100, 1_000);
         Func<Task> sale = () => w.Admin.Send(w.Sale(customer, w.Uzs, [new Line(product, 1, 100, 1_000)]));
 
-        var outcomes = await Race([.. Enumerable.Repeat(supply, 5), .. Enumerable.Repeat(sale, 5)]);
+        var outcomes = await Racing.Race([.. Enumerable.Repeat(supply, 5), .. Enumerable.Repeat(sale, 5)]);
 
         var suppliesWon = outcomes.Count(outcome => outcome.Operation == supply && outcome.Error is null);
         var salesWon = outcomes.Count(outcome => outcome.Operation == sale && outcome.Error is null);
         var rolls = 20 + 2 * suppliesWon - salesWon;
-        Assert.All(Lost(outcomes), outcome => Assert.IsType<DbUpdateConcurrencyException>(outcome.Error));
+        Assert.All(outcomes.Lost(), outcome => Assert.IsType<DbUpdateConcurrencyException>(outcome.Error));
         Assert.Equal([new StockRow(100, rolls, rolls * 100)], await w.Stock(product));
         Assert.Equal(salesWon, (await w.SalesOf(customer)).Count);
         await LedgerAssert.Balances(w, customer, (w.Uzs, -salesWon * 100_000));
 
-        foreach (var lost in Lost(outcomes))
+        foreach (var lost in outcomes.Lost())
             await lost.Operation();
 
         Assert.Equal([new StockRow(100, 25, 2_500)], await w.Stock(product));
