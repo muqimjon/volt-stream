@@ -6,6 +6,14 @@ public readonly record struct RollGroup(decimal Length, int Count);
 
 public static class RollComposition
 {
+    // Kesilgan bo'lak = TotalLength − (RollCount − 1) × LengthPerRoll musbat va to'liq rulondan oshmasligi kerak,
+    // aks holda chekdagi tarkib manfiy yoki ortiqcha bo'lak ko'rsatadi.
+    public static bool IsConsistent(int rollCount, decimal lengthPerRoll, decimal totalLength)
+        => rollCount > 0
+            && lengthPerRoll > 0
+            && totalLength > (rollCount - 1) * lengthPerRoll
+            && totalLength <= rollCount * lengthPerRoll;
+
     public static IReadOnlyList<RollGroup> Of(int rollCount, decimal lengthPerRoll, decimal totalLength)
     {
         if (rollCount <= 0 || lengthPerRoll <= 0)

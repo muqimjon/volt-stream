@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text;
 using System.Text.Json.Serialization;
 using VoltStream.Application.Commons.Exceptions;
+using VoltStream.Application.Commons.Extensions;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Security;
@@ -43,6 +44,9 @@ public class CreateSaleCommandHandler(
 {
     public async Task<long> Handle(CreateSaleCommand request, CancellationToken cancellationToken)
     {
+        if (request.Items.Any(item => !RollComposition.IsConsistent(item.RollCount, item.LengthPerRoll, item.TotalLength)))
+            throw new AppException("Savdo qatori noto'g'ri: soni va uzunligi musbat, jami (soni − 1) × uzunlikdan katta va soni × uzunlikdan oshmasin.");
+
         await context.BeginTransactionAsync(cancellationToken);
 
         try
@@ -54,7 +58,8 @@ public class CreateSaleCommandHandler(
             var customer = await GetCustomerAsync(request.CustomerId, cancellationToken);
 
             var descriptionBuilder = new StringBuilder();
-            var repriced = ApplyStockPrices(request.Items, warehouse);
+            ApplyStockPrices(request.Items, warehouse);
+            CalculateAmounts(request.Items);
 
             var allowNegativeStock = await context.AppSettings.AllAsync(s => s.AllowNegativeStock, cancellationToken);
             await ProcessSaleItemsAsync(request.Items, warehouse, allowNegativeStock, descriptionBuilder, cancellationToken);
@@ -62,8 +67,7 @@ public class CreateSaleCommandHandler(
             sale.BranchId = branchId;
             sale.WarehouseId = warehouse.Id;
 
-            if (repriced)
-                RecalculateTotals(sale, request.Items, request.IsDiscountApplied);
+            RecalculateTotals(sale, request.Items, request.IsDiscountApplied);
 
             if (customer is not null)
             {
@@ -134,10 +138,9 @@ public class CreateSaleCommandHandler(
             ?? throw new NotFoundException(nameof(Warehouse));
     }
 
-    private bool ApplyStockPrices(List<SaleItemCommand> items, Warehouse warehouse)
+    private void ApplyStockPrices(List<SaleItemCommand> items, Warehouse warehouse)
     {
         var canSeePrices = user.Has(Permissions.SalesViewPrices);
-        var repriced = false;
 
         foreach (var item in items)
         {
@@ -152,13 +155,23 @@ public class CreateSaleCommandHandler(
 
             item.UnitPrice = stock.UnitPrice;
             item.DiscountRate = stock.DiscountRate;
-            item.TotalAmount = item.TotalLength * item.UnitPrice;
-            item.DiscountAmount = item.TotalAmount * item.DiscountRate / 100;
-            item.FinalAmount = item.TotalAmount - item.DiscountAmount;
-            repriced = true;
+            item.DiscountAmount = item.TotalLength * item.UnitPrice * item.DiscountRate / 100;
         }
+    }
 
-        return repriced;
+    // Qarz shu summalardan yoziladi, shuning uchun klient arifmetikasiga ishonilmaydi. Chegirma summasi esa
+    // klientdan olinadi: desktopda "summa bilan chegirma" bor, foizdan qayta hisoblash foydalanuvchi niyatini buzadi.
+    private static void CalculateAmounts(List<SaleItemCommand> items)
+    {
+        foreach (var item in items)
+        {
+            item.TotalAmount = item.TotalLength * item.UnitPrice;
+
+            if (item.DiscountAmount < 0 || item.DiscountAmount > item.TotalAmount)
+                throw new AppException("Chegirma summasi manfiy yoki qator summasidan katta bo'lishi mumkin emas.");
+
+            item.FinalAmount = item.TotalAmount - item.DiscountAmount;
+        }
     }
 
     private static void RecalculateTotals(Sale sale, List<SaleItemCommand> items, bool isDiscountApplied)

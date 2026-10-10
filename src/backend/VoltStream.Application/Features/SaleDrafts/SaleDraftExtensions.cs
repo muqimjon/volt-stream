@@ -74,8 +74,8 @@ public static class SaleDraftExtensions
         if (items is not { Count: > 0 })
             throw new AppException("Ro'yxatda mahsulot yo'q.");
 
-        if (items.Any(i => i.RollCount <= 0 || i.LengthPerRoll <= 0 || i.TotalLength <= 0 || i.TotalLength > i.RollCount * i.LengthPerRoll))
-            throw new AppException("Ro'yxat qatori noto'g'ri: soni, uzunligi va jami musbat bo'lsin, jami soni × uzunlikdan oshmasin.");
+        if (items.Any(i => !RollComposition.IsConsistent(i.RollCount, i.LengthPerRoll, i.TotalLength)))
+            throw new AppException("Ro'yxat qatori noto'g'ri: soni va uzunligi musbat, jami (soni − 1) × uzunlikdan katta va soni × uzunlikdan oshmasin.");
 
         var productIds = items.Select(i => i.ProductId).Distinct().ToList();
 
