@@ -8,10 +8,11 @@ public static class MauiProgram
     {
         WebViewHandler.Mapper.AppendToMapping(nameof(VoltStream), static (handler, _) =>
         {
-            var settings = handler.PlatformView.Settings;
-            settings.JavaScriptEnabled = true;
-            settings.DomStorageEnabled = true;
-            settings.DatabaseEnabled = true;
+            var web = handler.PlatformView;
+            web.Settings.JavaScriptEnabled = true;
+            web.Settings.DomStorageEnabled = true;
+            web.Settings.DatabaseEnabled = true;
+            web.AddJavascriptInterface(new ThemeBridge(), "VoltShell");
         });
 
         return MauiApp.CreateBuilder()
