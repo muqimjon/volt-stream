@@ -15,6 +15,8 @@ using VoltStream.WPF.Commons.Messages;
 
 public partial class BranchSettingsViewModel : ViewModelBase
 {
+    public const string BranchesUpdatedMessage = "BranchesUpdated";
+
     private readonly IBranchesApi branchesApi;
     private readonly IWarehousesApi warehousesApi;
     private List<WarehouseResponse> allWarehouses = [];
@@ -87,6 +89,7 @@ public partial class BranchSettingsViewModel : ViewModelBase
                 Success = TranslationSource.T("Branches.Updated");
                 await LoadBranches();
                 Cancel();
+                WeakReferenceMessenger.Default.Send(new EntityUpdatedMessage<string>(BranchesUpdatedMessage));
             }
             else Error = response.Message ?? TranslationSource.T("Branches.UpdateError");
         }
@@ -100,6 +103,7 @@ public partial class BranchSettingsViewModel : ViewModelBase
                 Success = TranslationSource.T("Branches.Created");
                 await Reload();
                 Cancel();
+                WeakReferenceMessenger.Default.Send(new EntityUpdatedMessage<string>(BranchesUpdatedMessage));
             }
             else Error = response.Message ?? TranslationSource.T("Branches.CreateError");
         }

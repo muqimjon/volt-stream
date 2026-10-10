@@ -268,6 +268,11 @@
                                 Header="{loc:Loc Printer.SaleId}" />
                             <DataGridTextColumn
                                 Width="110"
+                                Binding="{Binding SaleDraftId}"
+                                ElementStyle="{StaticResource CenterCellText}"
+                                Header="{loc:Loc Printer.DraftId}" />
+                            <DataGridTextColumn
+                                Width="110"
                                 Binding="{Binding Status}"
                                 ElementStyle="{StaticResource CenterCellText}"
                                 Header="{loc:Loc Logs.Status}" />

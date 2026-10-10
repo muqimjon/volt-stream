@@ -227,7 +227,7 @@ public partial class PrintAgentService(
             }
 
             Track(claimed with { Status = PrintJobStatus.Completed });
-            Notify(string.Format(TranslationSource.T("Printer.Printed"), claimed.SaleId), NotificationType.Success);
+            Notify(string.Format(TranslationSource.T(JobKey(claimed, "Printed")), claimed.SaleDraftId ?? claimed.SaleId), NotificationType.Success);
         }
         catch (Exception ex)
         {
@@ -240,7 +240,7 @@ public partial class PrintAgentService(
             }
 
             Track(job with { Status = PrintJobStatus.Failed, Error = ex.Message });
-            Notify(string.Format(TranslationSource.T("Printer.Failed"), job.SaleId, ex.Message), NotificationType.Error);
+            Notify(string.Format(TranslationSource.T(JobKey(job, "Failed")), job.SaleDraftId ?? job.SaleId, ex.Message), NotificationType.Error);
         }
         finally
         {
@@ -277,10 +277,13 @@ public partial class PrintAgentService(
     private static Task<bool> AskAsync(PrintJobResponse job)
         => Application.Current.Dispatcher.InvokeAsync(() =>
         {
-            var message = string.Format(TranslationSource.T("Printer.AskMessage"), job.SaleId, job.RequestedBy);
+            var message = string.Format(TranslationSource.T(JobKey(job, "AskMessage")), job.SaleDraftId ?? job.SaleId, job.RequestedBy);
 
             return AppDialog.Confirm(message, TranslationSource.T("Printer.AskTitle"), Application.Current.MainWindow);
         }).Task;
+
+    private static string JobKey(PrintJobResponse job, string name)
+        => $"Printer.{name}{(job.SaleDraftId is null ? string.Empty : "Draft")}";
 
     private void Track(PrintJobResponse job)
         => Application.Current.Dispatcher.Invoke(() =>

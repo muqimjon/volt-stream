@@ -33,6 +33,17 @@
 				<modules:CurrencySettingsView DataContext="{Binding ElementName=RootPage, Path=DataContext}" />
 			</TabItem>
 
+			<TabItem utils:Permission.Require="settings.general">
+				<TabItem.Header>
+					<StackPanel Orientation="Horizontal">
+						<fa:IconImage Icon="Gear" Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center"
+                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=TabItem}}" />
+						<TextBlock Text="{loc:Loc Settings.TabGeneral}" VerticalAlignment="Center" />
+					</StackPanel>
+				</TabItem.Header>
+				<modules:GeneralSettingsView DataContext="{Binding ElementName=RootPage, Path=DataContext.GeneralSettings}" />
+			</TabItem>
+
 			<TabItem utils:Permission.Require="settings.categories">
 				<TabItem.Header>
 					<StackPanel Orientation="Horizontal">

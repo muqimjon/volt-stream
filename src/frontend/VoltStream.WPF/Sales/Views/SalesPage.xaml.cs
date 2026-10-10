@@ -31,6 +31,8 @@ public partial class SalesPage : Page
     private readonly ICurrenciesApi currenciesApi;
     private readonly ISaleApi salesApi;
     private readonly BranchContext branchContext;
+    private readonly INavigationService navigationService;
+    private readonly SalePolicy policy;
 
     private readonly SaleSession saleSession;
     private readonly bool canViewPrices;
@@ -53,6 +55,8 @@ public partial class SalesPage : Page
         salesApi = services.GetRequiredService<ISaleApi>();
         currenciesApi = services.GetRequiredService<ICurrenciesApi>();
         branchContext = services.GetRequiredService<BranchContext>();
+        navigationService = services.GetRequiredService<INavigationService>();
+        policy = services.GetRequiredService<SalePolicy>();
 
         CustomerName.GotFocus += CustomerName_GotFocus;
 
@@ -127,13 +131,26 @@ public partial class SalesPage : Page
         }
     }
 
+    // Yuk ro'yxati tasdiqlanayotganda qoldiq ham, filial ham ro'yxatning filialidan olinadi (admin boshqa filialni tanlab turgan bo'lishi mumkin).
+    private long? SaleBranchId => sale.DraftBranchId ?? branchContext.BranchId;
+
     private bool ConfirmRollStock(string productName, decimal warehouseRolls) =>
-        AppDialog.Confirm(string.Format(TranslationSource.T("Sales.RollStockWarning"), productName, warehouseRolls),
-            TranslationSource.T("Sales.SaleCaption"), Window.GetWindow(this));
+        policy.AllowNegativeStock
+            ? AppDialog.Confirm(string.Format(TranslationSource.T("Sales.RollStockWarning"), productName, warehouseRolls),
+                TranslationSource.T("Sales.SaleCaption"), Window.GetWindow(this))
+            : RefuseStock(string.Format(TranslationSource.T("Turnovers.WarehouseRollsLeft"), productName, warehouseRolls));
 
     private bool ConfirmMeterStock(string productName, object perRoll, decimal warehouseQuantity) =>
-        AppDialog.Confirm(string.Format(TranslationSource.T("Sales.MeterStockWarning"), productName, perRoll, warehouseQuantity),
-            TranslationSource.T("Sales.SaleCaption"), Window.GetWindow(this));
+        policy.AllowNegativeStock
+            ? AppDialog.Confirm(string.Format(TranslationSource.T("Sales.MeterStockWarning"), productName, perRoll, warehouseQuantity),
+                TranslationSource.T("Sales.SaleCaption"), Window.GetWindow(this))
+            : RefuseStock(string.Format(TranslationSource.T("Turnovers.WarehouseMetersLeft"), productName, perRoll, warehouseQuantity.ToString("N2")));
+
+    private bool RefuseStock(string left)
+    {
+        sale.Warning = $"{TranslationSource.T("Sales.StockNotEnough")} {left}";
+        return false;
+    }
 
     private bool ConfirmRollCut(string productName, object perRoll, decimal quantity, decimal cut, decimal leftover) =>
         AppDialog.Confirm(string.Format(TranslationSource.T("Sales.RollCutWarning"), productName, perRoll, quantity, cut, leftover),
@@ -492,7 +509,7 @@ public partial class SalesPage : Page
         var response = await categoriesApi.GetAllAsync().Handle();
         if (response.IsSuccess)
         {
-            List<CategoryResponse> categories = response.Data!;
+            List<CategoryResponse> categories = [.. response.Data!.Where(c => policy.ShowCategory(c.Id))];
             cbxCategoryName.ItemsSource = categories;
             cbxCategoryName.DisplayMemberPath = "Name";
             cbxCategoryName.SelectedValuePath = "Id";
@@ -518,7 +535,7 @@ public partial class SalesPage : Page
 
         if (response.IsSuccess)
         {
-            var products = response.Data;
+            var products = response.Data!.Where(p => policy.ShowProduct(p.Id)).ToList();
             cbxProductName.ItemsSource = products;
             cbxProductName.DisplayMemberPath = "Name";
             cbxProductName.SelectedValuePath = "Id";
@@ -543,10 +560,10 @@ public partial class SalesPage : Page
             return;
         }
 
-        response = await warehouseItemsApi.GetProductDetailsFromWarehouseAsync(productId.Value, branchContext.BranchId).Handle();
+        response = await warehouseItemsApi.GetProductDetailsFromWarehouseAsync(productId.Value, SaleBranchId).Handle();
         if (response.IsSuccess)
         {
-            var warehouseItems = response.Data;
+            var warehouseItems = response.Data!.Where(policy.ShowStock).ToList();
             cbxPerRollCount.ItemsSource = warehouseItems;
             cbxPerRollCount.DisplayMemberPath = "LengthPerRoll";
             cbxPerRollCount.SelectedValuePath = "LengthPerRoll";
@@ -825,7 +842,7 @@ public partial class SalesPage : Page
             return;
         }
 
-        if (branchContext.CanSelect && branchContext.BranchId is null)
+        if (branchContext.CanSelect && SaleBranchId is null)
         {
             sale.Warning = TranslationSource.T("Header.SelectBranch");
             return;
@@ -837,7 +854,8 @@ public partial class SalesPage : Page
         var saleRequest = new SaleRequest
         {
             Date = sale.OperationDate,
-            BranchId = branchContext.BranchId,
+            BranchId = SaleBranchId,
+            SaleDraftId = sale.SaleDraftId,
             CustomerId = sale.CustomerId,
             Amount = sale.FinalSum ?? 0,
             Discount = sale.TotalDiscount ?? 0,
@@ -865,6 +883,7 @@ public partial class SalesPage : Page
 
         if (response.IsSuccess)
         {
+            bool fromDraft = sale.SaleDraftId is not null;
             lastSaleId = response.Data;
             receiptButton.IsEnabled = true;
             receiptButtonText.Text = string.IsNullOrWhiteSpace(sale.CustomerName)
@@ -876,10 +895,16 @@ public partial class SalesPage : Page
             await ClearUI();
             CustomerName.Focus();
             WeakReferenceMessenger.Default.Send(new EntityUpdatedMessage<string>("OperationUpdated"));
+
+            if (fromDraft)
+            {
+                WeakReferenceMessenger.Default.Send(new EntityUpdatedMessage<string>("DraftsUpdated"));
+                navigationService.GoBack();
+            }
         }
         else
         {
-            sale.Error = $"{TranslationSource.T("Sales.ServerError")}: {response.StatusCode}";
+            sale.Error = response.Message ?? $"{TranslationSource.T("Sales.ServerError")}: {response.StatusCode}";
         }
     }
 
@@ -900,6 +925,7 @@ public partial class SalesPage : Page
 
     private async void Page_Loaded(object sender, RoutedEventArgs e)
     {
+        await policy.LoadAsync(SaleBranchId);
         await LoadCategoryAsync();
         await LoadCurrencyAsync();
         RegisterFocusNavigation();

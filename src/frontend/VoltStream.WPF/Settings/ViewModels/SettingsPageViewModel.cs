@@ -24,6 +24,7 @@ public partial class SettingsPageViewModel : ViewModelBase
         mapper = services.GetRequiredService<IMapper>();
         apiConnection = services.GetRequiredService<ApiConnectionViewModel>();
 
+        if (Permission.Has("settings.general")) GeneralSettings = services.GetRequiredService<GeneralSettingsViewModel>();
         if (Permission.Has("settings.categories")) CategorySettings = services.GetRequiredService<CategorySettingsViewModel>();
         if (Permission.Has("settings.products")) ProductSettings = services.GetRequiredService<ProductSettingsViewModel>();
         if (Permission.Has("settings.customers")) CustomerSettings = services.GetRequiredService<CustomerSettingsViewModel>();
@@ -39,6 +40,7 @@ public partial class SettingsPageViewModel : ViewModelBase
     [ObservableProperty] private ApiConnectionViewModel apiConnection;
     [ObservableProperty] private ObservableCollection<CurrencyViewModel> currencies = [];
 
+    [ObservableProperty] private GeneralSettingsViewModel? generalSettings;
     [ObservableProperty] private CategorySettingsViewModel? categorySettings;
     [ObservableProperty] private ProductSettingsViewModel? productSettings;
     [ObservableProperty] private CustomerSettingsViewModel? customerSettings;

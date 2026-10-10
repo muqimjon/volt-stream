@@ -601,6 +601,16 @@
                     </StackPanel>
                 </Button>
 
+                <TextBlock
+                    Margin="0 10 0 0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    FontSize="14"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource Warning}"
+                    Text="{Binding DraftLabel}"
+                    Visibility="{Binding DraftLabel, Converter={StaticResource StringToVisibilityConverter}}" />
+
                 <StackPanel
                     Margin="0 10 0 0"
                     HorizontalAlignment="Right"

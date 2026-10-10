@@ -46,7 +46,7 @@ public static class ReceiptDocumentBuilder
         ]);
 
         IReadOnlyList<(string Label, Func<Button, Task> Run)>? actions =
-            services.GetRequiredService<ISessionService>().Has("print.request")
+            services.GetRequiredService<ISessionService>().Has(receipt.SaleDraftId is null ? "print.request" : "drafts.print")
                 ? [(TranslationSource.T("Receipt.SendToBranch"), button => SendToBranchAsync(receipt, services, button))]
                 : null;
 
@@ -95,7 +95,13 @@ public static class ReceiptDocumentBuilder
     private static async Task SendAsync(ReceiptResponse receipt, IServiceProvider services, long? branchId, Button button)
     {
         var response = await services.GetRequiredService<IPrintJobsApi>()
-            .CreateAsync(new PrintJobRequest { SaleId = receipt.SaleId, Copies = 1, BranchId = branchId }).Handle();
+            .CreateAsync(new PrintJobRequest
+            {
+                SaleId = receipt.SaleDraftId is null ? receipt.SaleId : null,
+                SaleDraftId = receipt.SaleDraftId,
+                Copies = 1,
+                BranchId = branchId
+            }).Handle();
 
         var owner = Window.GetWindow(button);
         var title = TranslationSource.T("Receipt.SendToBranch");
@@ -108,10 +114,13 @@ public static class ReceiptDocumentBuilder
                 title, owner);
     }
 
-    public static string FileName(ReceiptResponse receipt) => $"Chek-{receipt.SaleId}";
+    public static string FileName(ReceiptResponse receipt)
+        => receipt.SaleDraftId is long draftId ? $"Yuk-royxati-{draftId}" : $"Chek-{receipt.SaleId}";
 
     public static string Title(ReceiptResponse receipt)
-        => string.Format(TranslationSource.T("Receipt.Title"), receipt.SaleId);
+        => receipt.SaleDraftId is long draftId
+            ? string.Format(TranslationSource.T("Receipt.DraftTitle"), draftId)
+            : string.Format(TranslationSource.T("Receipt.Title"), receipt.SaleId);
 
     private static ReportDefinition<ReceiptItemResponse> Define(ReceiptResponse receipt, ReceiptMode mode, ReceiptLayout layout, Size page)
     {

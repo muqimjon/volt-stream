@@ -2,21 +2,25 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using FontAwesome.Sharp;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using VoltStream.WPF.Commons;
 using VoltStream.WPF.Commons.Localization;
+using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
 using VoltStream.WPF.Commons.ViewModels;
 using VoltStream.WPF.Debitors.Views;
 using VoltStream.WPF.Home.Views;
 using VoltStream.WPF.Payments.Views;
 using VoltStream.WPF.Products.Views;
+using VoltStream.WPF.SaleDrafts.Views;
 using VoltStream.WPF.Sales.Views;
 using VoltStream.WPF.SalesJournal.Views;
 using VoltStream.WPF.Sales_history.Views;
+using VoltStream.WPF.Settings.ViewModels;
 using VoltStream.WPF.Settings.Views;
 using VoltStream.WPF.Supplies.Views;
 using VoltStream.WPF.Turnovers.Views;
@@ -69,6 +73,11 @@ public partial class MainViewModel : ViewModelBase
         session = services.GetRequiredService<ISessionService>();
         _ = BranchContext.LoadAsync();
 
+        WeakReferenceMessenger.Default.Register<EntityUpdatedMessage<string>>(this, static (r, m) =>
+        {
+            if (m.Value == BranchSettingsViewModel.BranchesUpdatedMessage) _ = ((MainViewModel)r).BranchContext.LoadAsync();
+        });
+
         if (this.navigationService is NavigationService navImpl)
         {
             navImpl.PropertyChanged += NavigationService_PropertyChanged;
@@ -81,6 +90,7 @@ public partial class MainViewModel : ViewModelBase
                 ("Nav.Dashboard", "reports.view", IconChar.Home, ShowDashboardView),
                 ("Nav.Production", "supplies.create", IconChar.ProjectDiagram, ShowSuppliesView),
                 ("Nav.Sales", "sales.create", IconChar.ShoppingCart, ShowSalesView),
+                ("Nav.Drafts", "drafts.confirm", IconChar.ClipboardList, ShowDraftsView),
                 ("Nav.SalesJournal", "sales.view", IconChar.Receipt, ShowSalesJournalView),
                 ("Nav.Payment", "payments.manage", IconChar.MoneyBillWave, ShowPaymentView),
                 ("Nav.Products", "stock.view", IconChar.Boxes, ShowProductView),
@@ -182,6 +192,7 @@ public partial class MainViewModel : ViewModelBase
 
     [RelayCommand] private void ShowDashboardView() => NavigateTo<DashboardPage>("Nav.Dashboard");
     [RelayCommand] private void ShowSalesView() => NavigateTo<SalesPage>("Nav.Sales");
+    [RelayCommand] private void ShowDraftsView() => NavigateTo<SaleDraftsPage>("Nav.Drafts");
     [RelayCommand] private void ShowSalesJournalView() => NavigateTo<SalesJournalPage>("Nav.SalesJournal");
     [RelayCommand] private void ShowSuppliesView() => NavigateTo<SuppliesPage>("Nav.Production");
     [RelayCommand] private void ShowPaymentView() => NavigateTo<PaymentsPage>("Nav.Payment");

@@ -148,6 +148,7 @@ public partial class App : Application
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<ISessionService, SessionService>();
         services.AddSingleton<BranchContext>();
+        services.AddTransient<SalePolicy>();
         services.AddSingleton<NamozTimeService>();
 
         var printerStore = new PrinterSettingsStore();

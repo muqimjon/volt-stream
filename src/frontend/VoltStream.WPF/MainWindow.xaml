@@ -136,6 +136,19 @@
                     </RadioButton>
 
                     <RadioButton
+                        utils:Permission.Require="drafts.confirm"
+                        Command="{Binding ShowDraftsViewCommand}"
+                        GroupName="MenuGroup"
+                        IsChecked="{Binding ActivePageKey, Converter={StaticResource StringEqualsToBool}, ConverterParameter=Nav.Drafts, Mode=OneWay}"
+                        Style="{DynamicResource menuButton}"
+                        Tag="{DynamicResource color3}">
+                        <StackPanel HorizontalAlignment="Left" Orientation="Horizontal">
+                            <fa:IconImage Icon="ClipboardList" Style="{StaticResource menuButtonIcon}" />
+                            <TextBlock Style="{StaticResource menuButtonText}" Text="{loc:Loc Nav.Drafts}" />
+                        </StackPanel>
+                    </RadioButton>
+
+                    <RadioButton
                         utils:Permission.Require="sales.view"
                         Command="{Binding ShowSalesJournalViewCommand}"
                         GroupName="MenuGroup"
