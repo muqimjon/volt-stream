@@ -42,7 +42,7 @@ public static class SaleDraftExtensions
         bool edit,
         CancellationToken cancellationToken)
     {
-        var draft = await context.SaleDrafts.WithDetails().FirstOrDefaultAsync(d => d.Id == id, cancellationToken)
+        var draft = await context.SaleDrafts.AsNoTracking().WithDetails().FirstOrDefaultAsync(d => d.Id == id, cancellationToken)
             ?? throw new NotFoundException(nameof(SaleDraft), nameof(SaleDraft.Id), id);
 
         branches.EnsureAccess(draft.BranchId);

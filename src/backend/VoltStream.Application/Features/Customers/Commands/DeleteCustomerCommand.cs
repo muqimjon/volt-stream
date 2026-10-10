@@ -26,6 +26,9 @@ public class DeleteCustomerCommandHandler(
         if (hasOperations)
             throw new ForbiddenException("Mijozni o'chirib bo'lmaydi: Unda savdo yoki to'lov operatsiyalari mavjud.");
 
+        if (await context.SaleDrafts.AnyAsync(d => d.CustomerId == request.Id, cancellationToken))
+            throw new ConflictException("Mijozni o'chirib bo'lmaydi: U yuk ro'yxatlarida ko'rsatilgan.");
+
         context.Customers.Remove(customer);
         await context.SaveAsync(cancellationToken);
 

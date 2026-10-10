@@ -26,6 +26,9 @@ public class DeleteCategoryCommandHandler(IAppDbContext context)
         if (hasSoldProducts)
             throw new ForbiddenException("Kategoriyani o'chirib bo'lmaydi: Undagi ayrim mahsulotlar savdoda ishtirok etgan.");
 
+        if (await context.SaleDraftItems.AnyAsync(i => i.Product.CategoryId == request.Id, cancellationToken))
+            throw new ConflictException("Kategoriyani o'chirib bo'lmaydi: Undagi ayrim mahsulotlar yuk ro'yxatlarida ishlatilgan.");
+
         context.Categories.Remove(category);
         await context.SaveAsync(cancellationToken);
 

@@ -23,7 +23,7 @@ public class CreateSaleDraftCommandHandler(IAppDbContext context, BranchContext 
     {
         var draft = new SaleDraft
         {
-            Date = request.Date,
+            Date = request.Date.ToOffset(TimeSpan.Zero),
             Description = request.Description?.Trim() ?? string.Empty,
             Status = SaleDraftStatus.Open,
             BranchId = await branches.ResolveAsync(request.BranchId, cancellationToken)

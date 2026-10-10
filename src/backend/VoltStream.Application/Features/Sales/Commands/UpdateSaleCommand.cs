@@ -8,6 +8,7 @@ using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Commons.Services;
 using VoltStream.Application.Features.CustomerOperations.Commands;
 using VoltStream.Domain.Entities;
+using VoltStream.Domain.Enums;
 
 [RequirePermission(Permissions.SalesEdit)]
 public record UpdateSaleCommand(
@@ -69,7 +70,9 @@ public class UpdateSaleCommandHandler(
             if (draftId is not null)
                 await context.SaleDrafts
                     .Where(d => d.Id == draftId)
-                    .ExecuteUpdateAsync(s => s.SetProperty(d => d.ConfirmedSaleId, saleId), cancellationToken);
+                    .ExecuteUpdateAsync(s => s
+                        .SetProperty(d => d.Status, SaleDraftStatus.Confirmed)
+                        .SetProperty(d => d.ConfirmedSaleId, saleId), cancellationToken);
 
             return await context.CommitTransactionAsync(cancellationToken);
         }

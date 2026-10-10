@@ -48,7 +48,10 @@ public class DeleteCustomerOperationCommandHandler(
                 case OperationType.Sale:
                     await RevertSaleAsync(customerOperation, account, cancellationToken);
                     if (customerOperation.Sale != null)
+                    {
+                        await ReopenDraftAsync(customerOperation.Sale.Id, cancellationToken);
                         context.Sales.Remove(customerOperation.Sale);
+                    }
                     break;
                 case OperationType.Discount:
                     await RevertDiscountAppliedAsync(customerOperation, account, cancellationToken);
@@ -82,6 +85,16 @@ public class DeleteCustomerOperationCommandHandler(
             cash.Balance -= co.Amount;
         }
     }
+
+    // Savdo o'chsa uning ro'yxati yetim qolmasin: qayta Open bo'ladi. Tahrirda (Delete+Create)
+    // UpdateSaleCommand uni yangi savdoga bog'lab, yana Confirmed qiladi.
+    private Task ReopenDraftAsync(long saleId, CancellationToken cancellationToken)
+        => context.SaleDrafts
+            .Where(d => d.ConfirmedSaleId == saleId)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(d => d.Status, SaleDraftStatus.Open)
+                .SetProperty(d => d.ConfirmedSaleId, (long?)null)
+                .SetProperty(d => d.UpdatedAt, DateTimeOffset.UtcNow), cancellationToken);
 
     private async Task RevertSaleAsync(CustomerOperation co, Account account, CancellationToken cancellationToken)
     {

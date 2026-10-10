@@ -1309,7 +1309,7 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.HasOne("VoltStream.Domain.Entities.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("VoltStream.Domain.Entities.SaleDraft", "SaleDraft")

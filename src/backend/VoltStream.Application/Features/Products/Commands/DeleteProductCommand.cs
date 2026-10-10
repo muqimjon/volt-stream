@@ -25,6 +25,9 @@ public class DeleteProductCommandHandler(IAppDbContext context)
         if (isSold)
             throw new ForbiddenException("Ushbu mahsulotni o'chirib bo'lmaydi: U bilan bog'liq savdo operatsiyalari mavjud.");
 
+        if (await context.SaleDraftItems.AnyAsync(i => i.ProductId == request.Id, cancellationToken))
+            throw new ConflictException("Ushbu mahsulotni o'chirib bo'lmaydi: U yuk ro'yxatlarida ishlatilgan.");
+
         context.Products.Remove(product);
         await context.SaveAsync(cancellationToken);
 

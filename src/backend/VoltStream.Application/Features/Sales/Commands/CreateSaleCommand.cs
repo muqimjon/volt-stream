@@ -115,9 +115,12 @@ public class CreateSaleCommandHandler(
                 .FirstOrDefaultAsync(cancellationToken)
                 ?? throw new NotFoundException(nameof(SaleDraft), nameof(SaleDraft.Id), draftId);
 
-            throw new ConflictException(draftBranchId == branchId
-                ? SaleDraftExtensions.NotOpenMessage
-                : "Ro'yxat boshqa filialga tegishli.");
+            if (draftBranchId != branchId)
+                throw user.Has(Permissions.BranchesAll)
+                    ? new ConflictException("Ro'yxat boshqa filialga tegishli.")
+                    : new NotFoundException(nameof(SaleDraft), nameof(SaleDraft.Id), draftId);
+
+            throw new ConflictException(SaleDraftExtensions.NotOpenMessage);
         }
 
         return await context.SaleDrafts.FirstAsync(d => d.Id == draftId, cancellationToken);

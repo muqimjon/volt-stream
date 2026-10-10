@@ -1,5 +1,6 @@
 namespace VoltStream.Application.Features.SaleDrafts.Commands;
 
+using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Services;
@@ -17,14 +18,15 @@ public class UpdateSaleDraftCommandHandler(IAppDbContext context, ICurrentUser u
 {
     public async Task<bool> Handle(UpdateSaleDraftCommand request, CancellationToken cancellationToken)
     {
+        await context.FindDraftAsync(request.Id, user, branches, edit: true, cancellationToken);
         await context.BeginTransactionAsync(cancellationToken);
 
         try
         {
             await context.LockOpenDraftAsync(request.Id, cancellationToken);
-            var draft = await context.FindDraftAsync(request.Id, user, branches, edit: true, cancellationToken);
+            var draft = await context.SaleDrafts.Include(d => d.Items).FirstAsync(d => d.Id == request.Id, cancellationToken);
 
-            draft.Date = request.Date;
+            draft.Date = request.Date.ToOffset(TimeSpan.Zero);
             draft.Description = request.Description?.Trim() ?? string.Empty;
             await draft.FillAsync(request.CustomerId, request.Items, context, cancellationToken);
 
