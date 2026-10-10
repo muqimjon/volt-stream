@@ -14,7 +14,7 @@ public class GetStockSummaryQueryHandler(IAppDbContext context, BranchContext br
     public async Task<IReadOnlyList<StockSummaryDto>> Handle(GetStockSummaryQuery request, CancellationToken cancellationToken)
     {
         var warehouseId = await branches.WarehouseFilterAsync(request.BranchId, cancellationToken);
-        var query = context.WarehouseStocks.Where(ws => !ws.IsDeleted && ws.RollCount > 0);
+        var query = context.WarehouseStocks.Where(ws => !ws.IsDeleted && ws.RollCount > 0 && ws.TotalLength > 0 && ws.LengthPerRoll > 0);
 
         if (warehouseId is not null)
             query = query.Where(ws => ws.WarehouseId == warehouseId);

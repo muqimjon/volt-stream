@@ -211,6 +211,16 @@ public sealed class SaleTotalsTests(PostgresFixture db)
         Assert.Equal([new StockRow(100, 10, 1_000)], await w.Stock(product));
     }
 
+    [Fact]
+    public async Task A_negative_price_is_rejected()
+    {
+        var (w, product, customer) = await Arrange();
+
+        await Rejection.With(HttpStatusCode.BadRequest, () => w.Admin.Send(w.Sale(customer, w.Uzs, [new Line(product, 2, 100, -5)])));
+
+        Assert.Empty(await w.SalesOf(customer));
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

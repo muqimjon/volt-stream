@@ -47,8 +47,8 @@ public class CreateSaleCommandHandler(
         if (request.Items.Any(item => !RollComposition.IsConsistent(item.RollCount, item.LengthPerRoll, item.TotalLength)))
             throw new AppException("Savdo qatori noto'g'ri: soni va uzunligi musbat, jami (soni − 1) × uzunlikdan katta va soni × uzunlikdan oshmasin.");
 
-        if (request.Items.Any(item => item.DiscountRate is < 0 or > 100))
-            throw new AppException("Chegirma foizi 0 dan 100 gacha bo'lishi kerak.");
+        foreach (var item in request.Items)
+            PriceValidation.Ensure(item.UnitPrice, item.DiscountRate);
 
         await context.BeginTransactionAsync(cancellationToken);
 

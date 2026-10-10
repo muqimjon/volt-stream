@@ -37,6 +37,8 @@ public class CreateSupplyCommandHandler(
 {
     public async Task<long> Handle(CreateSupplyCommand request, CancellationToken cancellationToken)
     {
+        PriceValidation.Ensure(request.UnitPrice, request.DiscountRate);
+
         var branchId = await branches.ResolveAsync(request.BranchId, cancellationToken);
         var canSetPrice = user.Has(Permissions.SalesViewPrices);
         var requestedPrice = canSetPrice ? request.UnitPrice : null;

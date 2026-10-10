@@ -33,6 +33,8 @@ public class UpdateSupplyCommandHandler(
 {
     public async Task<bool> Handle(UpdateSupplyCommand request, CancellationToken cancellationToken)
     {
+        PriceValidation.Ensure(request.UnitPrice, request.DiscountRate);
+
         var canSetPrice = user.Has(Permissions.SalesViewPrices);
 
         await context.BeginTransactionAsync(cancellationToken);
