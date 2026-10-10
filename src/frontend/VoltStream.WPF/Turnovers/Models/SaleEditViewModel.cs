@@ -17,6 +17,7 @@ using VoltStream.WPF.Commons.Dialogs;
 using VoltStream.WPF.Commons.Localization;
 using VoltStream.WPF.Commons.Messages;
 using VoltStream.WPF.Commons.Services;
+using VoltStream.WPF.Commons.Utils;
 using VoltStream.WPF.Commons.ViewModels;
 using VoltStream.WPF.Sales.ViewModels;
 
@@ -35,6 +36,9 @@ public partial class SaleEditViewModel : ViewModelBase
     private bool isCalculating = false;
     private decimal? previousTotalLength = null;
     private int? previousRollCount = null;
+    private readonly long originalCustomerId;
+    private readonly long originalCurrencyId;
+    private readonly decimal originalAmount;
 
     public SaleEditViewModel(IServiceProvider services, SaleResponse saleData)
     {
@@ -46,6 +50,10 @@ public partial class SaleEditViewModel : ViewModelBase
         productsApi = services.GetRequiredService<IProductsApi>();
         warehouseStocksApi = services.GetRequiredService<IWarehouseStocksApi>();
         navigationService = services.GetRequiredService<INavigationService>();
+
+        originalCustomerId = saleData.CustomerId;
+        originalCurrencyId = saleData.CurrencyId;
+        originalAmount = saleData.Amount;
 
         Sale = mapper.Map<SaleViewModel>(saleData);
         Sale.PropertyChanged += OnSalePropertyChanged;
@@ -73,6 +81,17 @@ public partial class SaleEditViewModel : ViewModelBase
     [ObservableProperty] private decimal beginBalance;
     [ObservableProperty] private decimal lastBalance;
     [ObservableProperty] private decimal totalSum;
+
+    // Kalendar faqat sanani biladi: kun o'zgarmasa savdo vaqti ham o'zgarmasin.
+    public DateTime? SaleDate
+    {
+        get => Sale.Date.LocalDateTime.Date;
+        set
+        {
+            if (value is { } day && day.Date != Sale.Date.LocalDateTime.Date)
+                Sale.Date = new DateTimeOffset(day.Date + Sale.Date.LocalDateTime.TimeOfDay);
+        }
+    }
 
     #region Load Data
 
@@ -115,28 +134,8 @@ public partial class SaleEditViewModel : ViewModelBase
         var response = await customersApi.FilterAsync(request)
             .Handle(isLoading => IsLoading = isLoading);
 
-        if (response.IsSuccess)
-        {
-            Customers = mapper.Map<ObservableCollection<CustomerViewModel>>(response.Data!);
-            RestoreOriginalCustomerBalance();
-        }
+        if (response.IsSuccess) Customers = mapper.Map<ObservableCollection<CustomerViewModel>>(response.Data!);
         else Error = response.Message ?? TranslationSource.T("Turnovers.CustomersLoadFailed");
-    }
-
-    private void RestoreOriginalCustomerBalance()
-    {
-        var account = Customers.FirstOrDefault(c => c.Id == Sale.CustomerId)?
-            .Accounts.FirstOrDefault(a => a.CurrencyId == Sale.CurrencyId);
-
-        if (account is not null)
-        {
-            account.Balance += Sale.Amount;
-            if (!Sale.IsDiscountApplied)
-            {
-                account.Discount -= Sale.Discount;
-                account.Balance += Sale.Discount;
-            }
-        }
     }
 
     private async Task LoadCurrenciesAsync()
@@ -732,19 +731,13 @@ public partial class SaleEditViewModel : ViewModelBase
             return;
         }
 
-        var account = SelectedCustomer.Accounts.FirstOrDefault(a => a.CurrencyId == SelectedCurrency.Id);
+        BeginBalance = CustomerBalance.Current(SelectedCustomer.Accounts.Select(a => a.Balance));
 
-        if (account is not null)
-        {
-            BeginBalance = account.Balance;
-        }
-        else
-        {
-            var rate = SelectedCurrency.ExchangeRate > 0 ? SelectedCurrency.ExchangeRate : 1;
-            BeginBalance = SelectedCustomer.Balance / rate;
-        }
+        // Mijoz qoldig'i shu savdoning o'zini ham o'z ichiga oladi — tahrirda uni qaytarib olib tashlaymiz.
+        if (SelectedCustomer.Id == originalCustomerId)
+            BeginBalance += CustomerBalance.InBase(originalAmount, Currencies.FirstOrDefault(c => c.Id == originalCurrencyId)?.ExchangeRate ?? 1);
 
-        LastBalance = BeginBalance - Sale.Amount;
+        LastBalance = CustomerBalance.After(BeginBalance, Sale.Amount, SelectedCurrency.ExchangeRate);
     }
 
     private void ClearCurrentItem()

@@ -216,22 +216,12 @@ public partial class SalesPage : Page
         {
             var customer = response.Data!.First();
 
-            beginBalans.Text = canViewPrices ? GetAccountsSumInUzsString(customer) : string.Empty;
+            beginBalans.Text = canViewPrices ? CustomerBalance.Current(customer.Accounts?.Select(a => a.Balance) ?? []).ToString("F0") : string.Empty;
             tel.Text = customer.Phone;
             CalcSaleSum();
         }
         else sale.Error = response.Message ?? TranslationSource.T("Sales.CustomerInfoLoadError");
 
-    }
-
-
-    private static string GetAccountsSumInUzsString(CustomerResponse customer)
-    {
-        if (customer?.Accounts == null) return "0";
-
-        var totalUzs = customer.Accounts.Where(a => a != null).Sum(a => a.Balance);
-
-        return Math.Round(totalUzs, 0, MidpointRounding.AwayFromZero).ToString("F0");
     }
 
 
@@ -797,9 +787,7 @@ public partial class SalesPage : Page
             }
         }
         decimal beginSum = decimal.TryParse(beginBalans.Text, out decimal value) ? value : 0;
-        var rate = (CurrencyType.SelectedItem as CurrencyResponse)?.ExchangeRate ?? 1m;
-        if (rate == 0m) rate = 1m;
-        decimal endSum = beginSum - finalSum * rate;
+        decimal endSum = CustomerBalance.After(beginSum, finalSum, (CurrencyType.SelectedItem as CurrencyResponse)?.ExchangeRate ?? 1m);
         lastBalans.Text = canViewPrices ? endSum.ToString() : string.Empty;
 
     }

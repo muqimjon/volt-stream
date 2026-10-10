@@ -97,6 +97,7 @@ public partial class ProductPageViewModel : ViewModelBase
             [
                 new() { Header = TranslationSource.T("Products.ProductType"), Width = 90, Value = x => x.Category },
                 new() { Header = TranslationSource.T("Common.Name"), Width = 150, Value = x => x.Name },
+                new() { Header = TranslationSource.T("Products.Warehouse"), Width = 90, Value = x => x.Warehouse },
                 new() { Header = TranslationSource.T("Products.PerRoll"), Width = 80, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.RollLength },
                 new() { Header = TranslationSource.T("Products.RollCount"), Width = 80, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.Quantity },
                 new() { Header = TranslationSource.T("Common.Total"), Width = 70, Align = ReportAlign.Right, IsNumber = true, Format = "N0", Value = x => x.TotalCount },
@@ -105,7 +106,7 @@ public partial class ProductPageViewModel : ViewModelBase
                 new() { Header = TranslationSource.T("Products.TotalAmount"), Width = 100, Align = ReportAlign.Right, IsNumber = true, Format = "N2", Value = x => x.TotalAmount },
             ],
             Rows = items,
-            Totals = new ReportTotals { Label = TranslationSource.T("Products.GrandTotal"), LabelSpan = 7, Cells = [new() { Column = 7, Value = items.Sum(x => x.TotalAmount ?? 0), Format = "N2" }] },
+            Totals = new ReportTotals { Label = TranslationSource.T("Products.GrandTotal"), LabelSpan = 8, Cells = [new() { Column = 8, Value = items.Sum(x => x.TotalAmount ?? 0), Format = "N2" }] },
         };
 
     private async Task ReloadAsync()
@@ -163,6 +164,7 @@ public partial class ProductPageViewModel : ViewModelBase
     {
         Category = item.Product.Category?.Name,
         Name = item.Product.Name,
+        Warehouse = item.WarehouseName,
         RollLength = item.LengthPerRoll,
         Quantity = item.RollCount,
         Price = item.UnitPrice,

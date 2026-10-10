@@ -89,6 +89,11 @@
 
                 <DataGridTextColumn
                     Width="*"
+                    Binding="{Binding Warehouse}"
+                    Header="{loc:Loc Products.Warehouse}" />
+
+                <DataGridTextColumn
+                    Width="*"
                     Binding="{Binding RollLength, StringFormat={}{0:N0}}"
                     ElementStyle="{StaticResource RightCellText}"
                                     HeaderStyle="{StaticResource RightColumnHeader}"
