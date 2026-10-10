@@ -1,4 +1,13 @@
-import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiClient } from '../../core/api/api-client';
 import { AuthService } from '../../core/auth/auth';
@@ -8,6 +17,7 @@ import { PermissionService } from '../../core/permissions/permission';
 import { PwaService } from '../../core/pwa/pwa';
 import { PrintService } from '../../core/realtime/print';
 import { PrintHubService } from '../../core/realtime/print-hub';
+import { BreakpointService } from '../../core/ui/breakpoint';
 import { DialogService } from '../../core/ui/dialog';
 import { ToastService } from '../../core/ui/toast';
 import { fromDateInput, operationMoment, toDateInput, toIsoOffset } from '../../core/utils/date';
@@ -17,6 +27,7 @@ import { EmptyState } from '../../shared/empty-state';
 import { Icon } from '../../shared/icon';
 import { NumberField } from '../../shared/number-field';
 import { PageHeader } from '../../shared/page-header';
+import { ProductSheet } from '../../shared/product-sheet';
 import { SearchSelect } from '../../shared/search-select';
 import { StatusBadge } from '../../shared/status-badge';
 import { StockFlow } from '../../shared/stock-flow';
@@ -46,6 +57,7 @@ interface EditorItem {
     StatusBadge,
     Icon,
     StockFlow,
+    ProductSheet,
   ],
   providers: [StockSelection],
   templateUrl: './draft-editor.html',
@@ -64,6 +76,7 @@ export class DraftEditorPage {
   protected readonly sel = inject(StockSelection);
   protected readonly print = inject(PrintService);
   protected readonly pwa = inject(PwaService);
+  protected readonly bp = inject(BreakpointService);
   protected readonly fmt = fmtNum;
 
   protected readonly id = Number(inject(ActivatedRoute).snapshot.paramMap.get('id')) || null;
@@ -77,7 +90,12 @@ export class DraftEditorPage {
   protected readonly saving = signal(false);
   protected readonly savedId = signal<number | null>(null);
   private readonly picker = viewChild<ElementRef<HTMLElement>>('picker');
+  protected readonly sheetOpen = signal(false);
+  protected readonly sheetStart = signal<1 | 3>(1);
+  protected readonly noteOpen = signal(false);
+  protected readonly adder = () => this.addItem();
   private editedAt: number | null = null;
+  private replacing = false;
 
   protected readonly totals = computed(() => ({
     rolls: this.items().reduce((sum, i) => sum + i.rollCount, 0),
@@ -99,6 +117,15 @@ export class DraftEditorPage {
 
   constructor() {
     if (this.id !== null) void this.loadDraft(this.id);
+    effect(() => {
+      if (!this.sheetOpen()) untracked(() => this.endEdit());
+    });
+  }
+
+  private endEdit(): void {
+    this.editedAt = null;
+    this.replacing = false;
+    this.sel.clear();
   }
 
   private async loadDraft(id: number): Promise<void> {
@@ -120,23 +147,27 @@ export class DraftEditorPage {
     this.customers.set(await this.api.get<Customer[]>('customers').catch(() => []));
   }
 
-  protected async addItem(): Promise<void> {
+  protected async addItem(): Promise<boolean> {
     await this.sel.settled();
+    const fail = (key: string) => {
+      this.warn(key);
+      return false;
+    };
     const category = this.sel.category();
     const product = this.sel.product();
     const stock = this.sel.stock();
     const rollCount = this.sel.rollCount();
     const length = this.sel.length();
 
-    if (!category) return this.warn('Sales.CategoryNotSelected');
-    if (!product) return this.warn('Sales.ProductNotSelected');
-    if (!stock) return this.warn('Sales.PerRollNotSelected');
-    if (rollCount === null || rollCount <= 0) return this.warn('Sales.RollCountRequired');
-    if (length === null || length <= 0) return this.warn('Sales.TotalQuantityRequired');
+    if (!category) return fail('Sales.CategoryNotSelected');
+    if (!product) return fail('Sales.ProductNotSelected');
+    if (!stock) return fail('Sales.PerRollNotSelected');
+    if (rollCount === null || rollCount <= 0) return fail('Sales.RollCountRequired');
+    if (length === null || length <= 0) return fail('Sales.TotalQuantityRequired');
 
     this.items.update((list) => {
       const next = [...list];
-      next.splice(this.editedAt ?? next.length, 0, {
+      next.splice(this.editedAt ?? next.length, this.replacing ? 1 : 0, {
         productId: product.id,
         categoryId: category.id,
         product: product.name,
@@ -149,7 +180,30 @@ export class DraftEditorPage {
       return next;
     });
     this.editedAt = null;
+    this.replacing = false;
     this.sel.clear();
+    return true;
+  }
+
+  protected openSheet(): void {
+    this.sheetStart.set(1);
+    this.sheetOpen.set(true);
+  }
+
+  protected async editInSheet(index: number): Promise<void> {
+    this.editedAt = index;
+    this.replacing = true;
+    await this.sel.edit(this.items()[index]);
+    this.sheetStart.set(3);
+    this.sheetOpen.set(true);
+  }
+
+  protected async adjustItem(index: number, delta: number): Promise<void> {
+    const next = await this.sel.adjust(this.items()[index], delta);
+    if (next)
+      this.items.update((list) =>
+        list.map((item, i) => (i === index ? { ...item, ...next } : item)),
+      );
   }
 
   protected async editItem(index: number): Promise<void> {

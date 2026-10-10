@@ -2,7 +2,6 @@ import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { SessionActions } from '../../core/auth/session-actions';
 import { TranslatePipe } from '../../core/i18n/translate';
-import { PermissionService } from '../../core/permissions/permission';
 import { ThemeMode } from '../../core/theme/theme';
 import { PwaService } from '../../core/pwa/pwa';
 import { BreakpointService } from '../../core/ui/breakpoint';
@@ -11,6 +10,7 @@ import { BranchSwitcher } from '../../shared/branch-switcher';
 import { Icon } from '../../shared/icon';
 import { UserMenu } from '../../shared/user-menu';
 import { CommandPalette } from './command-palette';
+import { BottomNavService } from './bottom-nav';
 import { NAV_ITEMS } from './nav';
 
 const THEME_ORDER: ThemeMode[] = ['system', 'light', 'dark'];
@@ -41,21 +41,24 @@ function readCollapsed(): boolean {
   styleUrl: './shell.css',
 })
 export class Shell {
-  private readonly permissions = inject(PermissionService);
+  protected readonly nav = inject(BottomNavService);
   private readonly router = inject(Router);
   protected readonly pwa = inject(PwaService);
   protected readonly actions = inject(SessionActions);
   protected readonly palette = inject(PaletteService);
   private readonly bp = inject(BreakpointService);
 
-  protected readonly items = computed(() =>
-    NAV_ITEMS.filter((i) => !i.permission || this.permissions.has(i.permission)),
-  );
+  protected readonly items = this.nav.allowed;
 
   protected readonly activeTitle = signal(this.titleFor(this.router.url));
 
   private readonly collapsed = signal(readCollapsed());
   protected readonly railOpen = signal(false);
+  protected readonly moreOpen = signal(false);
+  private readonly url = signal(this.router.url);
+  protected readonly moreActive = computed(() =>
+    this.nav.more().some((i) => this.url().startsWith(i.path)),
+  );
   protected readonly compact = computed(() =>
     this.bp.desktop() ? this.collapsed() : !this.railOpen(),
   );
@@ -65,6 +68,8 @@ export class Shell {
       if (event instanceof NavigationEnd) {
         this.activeTitle.set(this.titleFor(event.urlAfterRedirects));
         this.railOpen.set(false);
+        this.moreOpen.set(false);
+        this.url.set(event.urlAfterRedirects);
       }
     });
     inject(DestroyRef).onDestroy(() => sub.unsubscribe());
@@ -80,8 +85,10 @@ export class Shell {
   }
 
   protected onKey(event: KeyboardEvent): void {
-    if (event.key === 'Escape') this.railOpen.set(false);
-    else if ((event.ctrlKey || event.metaKey) && event.code === 'KeyK') {
+    if (event.key === 'Escape') {
+      this.railOpen.set(false);
+      this.moreOpen.set(false);
+    } else if ((event.ctrlKey || event.metaKey) && event.code === 'KeyK') {
       event.preventDefault();
       this.palette.toggle();
     }

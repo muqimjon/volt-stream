@@ -69,6 +69,7 @@ export class StockSelection {
   };
 
   private pendingCommit: Promise<void> = Promise.resolve();
+  private readonly productStocks = new Map<number, Promise<WarehouseItem[]>>();
   private stockLoad: Promise<void> | null = null;
   private stockBranch: number | null | undefined;
 
@@ -90,6 +91,7 @@ export class StockSelection {
   }
 
   clear(): void {
+    this.productStocks.clear();
     this.category.set(null);
     this.product.set(null);
     this.stock.set(null);
@@ -195,6 +197,29 @@ export class StockSelection {
     this.length.set(line.totalLength);
   }
 
+  async adjust(
+    line: {
+      productId: number;
+      product: string;
+      lengthPerRoll: number;
+      rollCount: number;
+      totalLength: number;
+    },
+    delta: number,
+  ): Promise<{ rollCount: number; totalLength: number } | null> {
+    const rollCount = line.rollCount + delta;
+    const totalLength = round(line.totalLength + delta * line.lengthPerRoll, 3);
+    if (rollCount <= 0 || totalLength <= 0) return null;
+    if (delta > 0) {
+      const stock = await this.stockOf(line.productId, line.lengthPerRoll);
+      if (stock && rollCount > stock.rollCount) {
+        const message = this.translate.t('Sales.RollStockWarning', line.product, stock.rollCount);
+        if (!(await this.confirmOversell(stock, message, line.product))) return null;
+      }
+    }
+    return { rollCount, totalLength };
+  }
+
   step(delta: number): Promise<void> {
     const next = (this.rollCount() ?? 0) + delta;
     if (next <= 0) {
@@ -235,11 +260,33 @@ export class StockSelection {
     this.catalog.set(page.items);
   }
 
+  private async stockOf(
+    productId: number,
+    lengthPerRoll: number,
+  ): Promise<WarehouseItem | undefined> {
+    let rows = this.productStocks.get(productId);
+    if (!rows) {
+      const branchId = this.auth.branchId();
+      rows = this.api
+        .get<WarehouseItem[]>(
+          `warehouse-items/productId=${productId}`,
+          branchId === null ? undefined : { branchId },
+        )
+        .catch(() => []);
+      this.productStocks.set(productId, rows);
+    }
+    return (await rows).find((s) => s.lengthPerRoll === lengthPerRoll);
+  }
+
   private requestStep(target: 'length' | 'count'): void {
     this.focusStep.set({ target, n: (this.focusStep()?.n ?? 0) + 1 });
   }
 
-  private async confirmOversell(stock: WarehouseItem, message: string): Promise<boolean> {
+  private async confirmOversell(
+    stock: WarehouseItem,
+    message: string,
+    name = this.product()?.name ?? '',
+  ): Promise<boolean> {
     if (this.allowNegativeStock())
       return this.dialog.confirm(message, { title: 'Sales.SaleCaption' });
     const available = this.translate.t(
@@ -247,7 +294,7 @@ export class StockSelection {
       fmtNum(stock.rollCount, 0),
       fmtNum(stock.totalLength),
     );
-    this.toast.error(this.translate.t('Web.StockNotEnough', this.product()?.name ?? '', available));
+    this.toast.error(this.translate.t('Web.StockNotEnough', name, available));
     return false;
   }
 

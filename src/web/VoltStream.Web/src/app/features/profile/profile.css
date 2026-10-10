@@ -24,3 +24,33 @@
   background: var(--surface);
   padding: 0 var(--sp-sm);
 }
+
+.item,
+.pin {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
+.pin {
+  color: var(--text-2);
+  font-size: var(--fs-caption);
+}
+
+.pin input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--brand);
+}
+
+.hint {
+  margin: 0;
+  padding: 0 var(--sp-lg) var(--sp-sm);
+  font-size: var(--fs-caption);
+}
+
+@media (min-width: 640px) {
+  .bottom-menu {
+    display: none;
+  }
+}

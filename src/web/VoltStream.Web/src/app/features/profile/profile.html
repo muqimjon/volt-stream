@@ -53,6 +53,34 @@
     </div>
   </section>
 
+  @if (nav.allowed().length > max) {
+    <section class="card rows bottom-menu">
+      <div class="row head">
+        <strong>{{ 'Web.BottomMenu' | t }}</strong>
+      </div>
+      <p class="hint muted">{{ 'Web.BottomMenuHint' | t }}</p>
+      @for (item of nav.allowed(); track item.path) {
+        <label class="row">
+          <span class="item">
+            <app-icon [name]="item.icon" [size]="20" />
+            {{ item.key | t }}
+          </span>
+          <span class="pin">
+            <input
+              type="checkbox"
+              [checked]="nav.isPinned(item.path)"
+              [disabled]="
+                nav.isPinned(item.path) ? nav.pinned().length === 1 : nav.pinned().length >= max
+              "
+              (change)="nav.toggle(item.path)"
+            />
+            {{ 'Web.Pinned' | t }}
+          </span>
+        </label>
+      }
+    </section>
+  }
+
   @if (pwa.canInstall()) {
     <button type="button" class="btn btn-block" (click)="pwa.install()">
       <app-icon name="download" />

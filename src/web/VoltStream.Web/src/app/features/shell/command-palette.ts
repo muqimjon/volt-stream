@@ -1,9 +1,9 @@
 import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '../../core/i18n/translate';
-import { PermissionService } from '../../core/permissions/permission';
 import { PaletteService } from '../../core/ui/palette';
-import { NAV_ITEMS, NavItem } from './nav';
+import { BottomNavService } from './bottom-nav';
+import { NavItem } from './nav';
 import { Icon } from '../../shared/icon';
 
 @Component({
@@ -122,7 +122,7 @@ import { Icon } from '../../shared/icon';
 })
 export class CommandPalette {
   private readonly palette = inject(PaletteService);
-  private readonly permissions = inject(PermissionService);
+  private readonly nav = inject(BottomNavService);
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
   private readonly dlg = viewChild.required<ElementRef<HTMLDialogElement>>('dlg');
@@ -131,12 +131,11 @@ export class CommandPalette {
   protected readonly query = signal('');
   protected readonly index = signal(0);
 
-  private readonly items = computed(() =>
-    NAV_ITEMS.filter((i) => !i.permission || this.permissions.has(i.permission)),
-  );
   protected readonly results = computed(() => {
     const q = this.query().trim().toLowerCase();
-    return this.items().filter((i) => !q || this.translate.t(i.key).toLowerCase().includes(q));
+    return this.nav
+      .allowed()
+      .filter((i) => !q || this.translate.t(i.key).toLowerCase().includes(q));
   });
 
   constructor() {

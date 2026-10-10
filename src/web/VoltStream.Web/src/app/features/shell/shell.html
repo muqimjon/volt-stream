@@ -16,14 +16,38 @@
         <a
           [routerLink]="item.path"
           routerLinkActive="active"
+          [class.off]="!nav.isPinned(item.path)"
           [attr.title]="compact() ? (item.key | t) : null"
         >
           <app-icon [name]="item.icon" [size]="22" />
           <span>{{ item.key | t }}</span>
         </a>
       }
+      @if (nav.more().length) {
+        <button
+          type="button"
+          class="more"
+          [class.active]="moreActive()"
+          (click)="moreOpen.set(true)"
+        >
+          <app-icon name="more" [size]="22" />
+          <span>{{ 'Web.MoreMenu' | t }}</span>
+        </button>
+      }
     </nav>
   </aside>
+
+  @if (moreOpen()) {
+    <div class="more-scrim" (click)="moreOpen.set(false)"></div>
+    <div class="more-sheet">
+      @for (item of nav.more(); track item.path) {
+        <a [routerLink]="item.path">
+          <app-icon [name]="item.icon" [size]="22" />
+          <span>{{ item.key | t }}</span>
+        </a>
+      }
+    </div>
+  }
 
   @if (railOpen()) {
     <div class="scrim" (click)="railOpen.set(false)"></div>

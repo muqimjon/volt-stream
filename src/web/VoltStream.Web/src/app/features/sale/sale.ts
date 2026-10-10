@@ -5,6 +5,7 @@ import { TranslatePipe, TranslateService } from '../../core/i18n/translate';
 import { Currency, Customer, SaleRequest } from '../../core/models';
 import { PermissionService } from '../../core/permissions/permission';
 import { PwaService } from '../../core/pwa/pwa';
+import { BreakpointService } from '../../core/ui/breakpoint';
 import { PrintHubService } from '../../core/realtime/print-hub';
 import { PrintService } from '../../core/realtime/print';
 import { DialogService } from '../../core/ui/dialog';
@@ -16,6 +17,7 @@ import { EmptyState } from '../../shared/empty-state';
 import { Icon } from '../../shared/icon';
 import { NumberField } from '../../shared/number-field';
 import { PageHeader } from '../../shared/page-header';
+import { ProductSheet } from '../../shared/product-sheet';
 import { SearchSelect } from '../../shared/search-select';
 import { StatusBadge } from '../../shared/status-badge';
 import { StockFlow } from '../../shared/stock-flow';
@@ -34,6 +36,7 @@ import { DraftItem, SaleDraftStore } from './sale-draft';
     StatusBadge,
     Icon,
     StockFlow,
+    ProductSheet,
   ],
   providers: [StockSelection],
   templateUrl: './sale.html',
@@ -50,6 +53,7 @@ export class SalePage {
   protected readonly translate = inject(TranslateService);
   protected readonly print = inject(PrintService);
   protected readonly pwa = inject(PwaService);
+  protected readonly bp = inject(BreakpointService);
   protected readonly store = inject(SaleDraftStore);
   protected readonly sel = inject(StockSelection);
   protected readonly fmt = fmtNum;
@@ -65,6 +69,15 @@ export class SalePage {
   protected readonly customer = signal<Customer | null>(null);
   protected readonly unitPrice = signal<number | null>(null);
   protected readonly discountRate = signal<number | null>(null);
+
+  protected readonly sheetOpen = signal(false);
+  protected readonly sheetStart = signal<1 | 3>(1);
+  protected readonly noteOpen = signal(false);
+  protected readonly adder = () => this.addItem();
+  private editedAt: number | null = null;
+  private replacing = false;
+  private editedWeightPerUnit: number | null = null;
+  private keepPrice = false;
 
   protected readonly submitting = signal(false);
   protected readonly savedSaleId = signal<number | null>(null);
@@ -114,9 +127,76 @@ export class SalePage {
       const stock = this.sel.stock();
       if (!stock) return;
       untracked(() => {
+        if (this.keepPrice) return void (this.keepPrice = false);
         this.unitPrice.set(stock.unitPrice);
         this.discountRate.set(stock.discountRate);
       });
+    });
+    effect(() => {
+      if (!this.sheetOpen()) untracked(() => this.endEdit());
+    });
+  }
+
+  private endEdit(): void {
+    this.editedAt = null;
+    this.replacing = false;
+    this.editedWeightPerUnit = null;
+    this.keepPrice = false;
+    this.sel.clear();
+    this.unitPrice.set(null);
+    this.discountRate.set(null);
+  }
+
+  protected openSheet(): void {
+    this.sheetStart.set(1);
+    this.sheetOpen.set(true);
+  }
+
+  protected async editItem(index: number): Promise<void> {
+    const item = this.store.draft().items[index];
+    this.editedAt = index;
+    this.replacing = true;
+    this.editedWeightPerUnit = item.totalLength ? item.weight / item.totalLength : 0;
+    this.keepPrice = true;
+    await this.sel.edit({
+      productId: item.productId,
+      product: item.productName,
+      category: item.categoryName,
+      categoryId: item.categoryId,
+      unit: '',
+      lengthPerRoll: item.lengthPerRoll,
+      rollCount: item.rollCount,
+      totalLength: item.totalLength,
+    });
+    this.unitPrice.set(item.unitPrice);
+    this.discountRate.set(item.discountRate);
+    this.sheetStart.set(3);
+    this.sheetOpen.set(true);
+  }
+
+  protected async adjustItem(index: number, delta: number): Promise<void> {
+    const item = this.store.draft().items[index];
+    const next = await this.sel.adjust(
+      {
+        productId: item.productId,
+        product: item.productName,
+        lengthPerRoll: item.lengthPerRoll,
+        rollCount: item.rollCount,
+        totalLength: item.totalLength,
+      },
+      delta,
+    );
+    if (!next) return;
+    const totalAmount = round(item.unitPrice * next.totalLength);
+    const discountAmount = round(totalAmount * (item.discountRate / 100));
+    this.store.replaceAt(index, {
+      ...item,
+      rollCount: next.rollCount,
+      totalLength: next.totalLength,
+      totalAmount,
+      discountAmount,
+      finalAmount: round(totalAmount - discountAmount),
+      weight: item.totalLength ? round((item.weight / item.totalLength) * next.totalLength, 3) : 0,
     });
   }
 
@@ -159,8 +239,12 @@ export class SalePage {
     }
   }
 
-  protected async addItem(): Promise<void> {
+  protected async addItem(): Promise<boolean> {
     await this.sel.settled();
+    const fail = (key: string) => {
+      this.warn(key);
+      return false;
+    };
     const category = this.sel.category();
     const product = this.sel.product();
     const stock = this.sel.stock();
@@ -169,17 +253,17 @@ export class SalePage {
     const price = this.unitPrice();
     const discountRate = this.discountRate() ?? 0;
 
-    if (!category) return this.warn('Sales.CategoryNotSelected');
-    if (!product) return this.warn('Sales.ProductNotSelected');
-    if (!stock) return this.warn('Sales.PerRollNotSelected');
-    if (rollCount === null || rollCount <= 0) return this.warn('Sales.RollCountRequired');
-    if (length === null || length <= 0) return this.warn('Sales.TotalQuantityRequired');
+    if (!category) return fail('Sales.CategoryNotSelected');
+    if (!product) return fail('Sales.ProductNotSelected');
+    if (!stock) return fail('Sales.PerRollNotSelected');
+    if (rollCount === null || rollCount <= 0) return fail('Sales.RollCountRequired');
+    if (length === null || length <= 0) return fail('Sales.TotalQuantityRequired');
 
     if (this.canViewPrices()) {
-      if (price === null || price <= 0) return this.warn('Sales.PriceRequired');
-      if (this.totalAmount() <= 0) return this.warn('Sales.TotalSumRequired');
-      if (this.finalAmount() <= 0) return this.warn('Sales.GrandTotalRequired');
-      if (discountRate < 0 || discountRate > 100) return this.warn('Sales.DiscountPercentRange');
+      if (price === null || price <= 0) return fail('Sales.PriceRequired');
+      if (this.totalAmount() <= 0) return fail('Sales.TotalSumRequired');
+      if (this.finalAmount() <= 0) return fail('Sales.GrandTotalRequired');
+      if (discountRate < 0 || discountRate > 100) return fail('Sales.DiscountPercentRange');
     }
 
     const item: DraftItem = {
@@ -195,14 +279,23 @@ export class SalePage {
       discountAmount: this.canViewPrices() ? this.discountAmount() : 0,
       totalAmount: this.canViewPrices() ? this.totalAmount() : 0,
       finalAmount: this.canViewPrices() ? this.finalAmount() : 0,
-      weight: this.weight(),
+      weight:
+        this.editedWeightPerUnit === null
+          ? this.weight()
+          : round(length * this.editedWeightPerUnit, 3),
     };
 
-    this.store.add(item);
+    if (this.replacing && this.editedAt !== null) this.store.replaceAt(this.editedAt, item);
+    else this.store.add(item);
+    this.editedAt = null;
+    this.replacing = false;
+    this.editedWeightPerUnit = null;
     this.clearRow();
+    return true;
   }
 
   protected removeItem(index: number): void {
+    this.editedAt = null;
     this.store.removeAt(index);
   }
 

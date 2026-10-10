@@ -24,94 +24,102 @@
           (selectedChange)="customer.set($event)"
         />
 
-        <div class="field">
-          <label for="note">{{ 'Common.Note' | t }}</label>
-          <input
-            id="note"
-            class="input"
-            type="text"
-            [value]="description()"
-            (input)="description.set($any($event.target).value)"
-          />
-        </div>
-      </section>
-
-      <section #picker class="card stack" appStockFlow (rowSubmit)="addItem()">
-        <app-search-select
-          [label]="'Sales.ProductType' | t"
-          [placeholder]="'Common.Select' | t"
-          [items]="sel.shownCategories()"
-          [labelOf]="nameOf"
-          [selected]="sel.category()"
-          [clearable]="true"
-          (selectedChange)="sel.onCategory($event)"
-        />
-
-        <app-search-select
-          [label]="'Sales.Product' | t"
-          [placeholder]="'Common.Select' | t"
-          [items]="sel.shownProducts()"
-          [labelOf]="nameOf"
-          [subLabelOf]="sel.productHint"
-          [selected]="sel.product()"
-          (opened)="sel.loadProducts()"
-          (selectedChange)="sel.onProduct($event)"
-        />
-
-        <app-search-select
-          data-step="length"
-          [label]="'Sales.RollLength' | t"
-          [placeholder]="'Common.Select' | t"
-          [items]="sel.stocks()"
-          [labelOf]="sel.stockLabel"
-          [subLabelOf]="sel.stockHint"
-          [selected]="sel.stock()"
-          [disabled]="!sel.product()"
-          [hint]="sel.stock() ? sel.stockHint(sel.stock()!) : ''"
-          (selectedChange)="sel.onStock($event)"
-        />
-
-        <div class="grid-2">
-          <div class="stepper">
-            <button
-              type="button"
-              class="btn btn-ghost"
-              [disabled]="!sel.stock()"
-              (click)="sel.step(-1)"
-            >
-              −
-            </button>
-            <app-number-field
-              data-step="count"
-              [label]="'Sales.RollCount' | t"
-              [value]="sel.rollCount()"
-              [disabled]="!sel.stock()"
-              (valueChange)="sel.rollCount.set($event)"
-              (commit)="sel.onRollCountCommit($event)"
+        @if (!bp.phone() || noteOpen() || description()) {
+          <div class="field">
+            <label for="note">{{ 'Common.Note' | t }}</label>
+            <input
+              id="note"
+              class="input"
+              type="text"
+              [value]="description()"
+              (input)="description.set($any($event.target).value)"
             />
-            <button
-              type="button"
-              class="btn btn-ghost"
-              [disabled]="!sel.stock()"
-              (click)="sel.step(1)"
-            >
-              +
-            </button>
           </div>
-          <app-number-field
-            [label]="'Web.TotalLength' | t"
-            [value]="sel.length()"
-            [disabled]="!sel.stock()"
-            (valueChange)="sel.length.set($event)"
-            (commit)="sel.onLengthCommit($event)"
-          />
-        </div>
-
-        <button type="button" class="btn btn-primary btn-block" (click)="addItem()">
-          <app-icon name="plus" />
-          {{ 'Common.Add' | t }}
-        </button>
+        } @else {
+          <button type="button" class="btn btn-ghost" (click)="noteOpen.set(true)">
+            + {{ 'Common.Note' | t }}
+          </button>
+        }
       </section>
+
+      @if (!bp.phone()) {
+        <section #picker class="card stack" appStockFlow (rowSubmit)="addItem()">
+          <app-search-select
+            [label]="'Sales.ProductType' | t"
+            [placeholder]="'Common.Select' | t"
+            [items]="sel.shownCategories()"
+            [labelOf]="nameOf"
+            [selected]="sel.category()"
+            [clearable]="true"
+            (selectedChange)="sel.onCategory($event)"
+          />
+
+          <app-search-select
+            [label]="'Sales.Product' | t"
+            [placeholder]="'Common.Select' | t"
+            [items]="sel.shownProducts()"
+            [labelOf]="nameOf"
+            [subLabelOf]="sel.productHint"
+            [selected]="sel.product()"
+            (opened)="sel.loadProducts()"
+            (selectedChange)="sel.onProduct($event)"
+          />
+
+          <app-search-select
+            data-step="length"
+            [label]="'Sales.RollLength' | t"
+            [placeholder]="'Common.Select' | t"
+            [items]="sel.stocks()"
+            [labelOf]="sel.stockLabel"
+            [subLabelOf]="sel.stockHint"
+            [selected]="sel.stock()"
+            [disabled]="!sel.product()"
+            [hint]="sel.stock() ? sel.stockHint(sel.stock()!) : ''"
+            (selectedChange)="sel.onStock($event)"
+          />
+
+          <div class="grid-2">
+            <div class="stepper">
+              <button
+                type="button"
+                class="btn btn-ghost"
+                [disabled]="!sel.stock()"
+                (click)="sel.step(-1)"
+              >
+                −
+              </button>
+              <app-number-field
+                data-step="count"
+                [label]="'Sales.RollCount' | t"
+                [value]="sel.rollCount()"
+                [disabled]="!sel.stock()"
+                (valueChange)="sel.rollCount.set($event)"
+                (commit)="sel.onRollCountCommit($event)"
+              />
+              <button
+                type="button"
+                class="btn btn-ghost"
+                [disabled]="!sel.stock()"
+                (click)="sel.step(1)"
+              >
+                +
+              </button>
+            </div>
+            <app-number-field
+              [label]="'Web.TotalLength' | t"
+              [value]="sel.length()"
+              [disabled]="!sel.stock()"
+              (valueChange)="sel.length.set($event)"
+              (commit)="sel.onLengthCommit($event)"
+            />
+          </div>
+
+          <button type="button" class="btn btn-primary btn-block" (click)="addItem()">
+            <app-icon name="plus" />
+            {{ 'Common.Add' | t }}
+          </button>
+        </section>
+      }
     </div>
 
     <div class="col">
@@ -121,17 +129,27 @@
           <app-empty-state [text]="'Common.NoData' | t" />
         }
         @for (item of items(); track $index) {
-          <article class="card item">
+          <article
+            class="card item"
+            [class.tappable]="bp.phone()"
+            (click)="bp.phone() && editInSheet($index)"
+          >
             <div class="item-head">
               <div>
                 <strong>{{ item.product }}</strong>
                 <small class="muted">{{ item.category }}</small>
               </div>
               <div class="item-actions">
-                <button type="button" class="icon-btn" (click)="editItem($index)">
-                  <app-icon name="edit" [size]="18" />
-                </button>
-                <button type="button" class="icon-btn danger" (click)="removeItem($index)">
+                @if (!bp.phone()) {
+                  <button type="button" class="icon-btn" (click)="editItem($index)">
+                    <app-icon name="edit" [size]="18" />
+                  </button>
+                }
+                <button
+                  type="button"
+                  class="icon-btn danger"
+                  (click)="$event.stopPropagation(); removeItem($index)"
+                >
                   <app-icon name="trash" [size]="18" />
                 </button>
               </div>
@@ -150,9 +168,35 @@
                 <dd>{{ fmt(item.totalLength) }}</dd>
               </div>
             </dl>
+            @if (bp.phone()) {
+              <div class="card-stepper">
+                <button
+                  type="button"
+                  class="btn btn-ghost"
+                  (click)="$event.stopPropagation(); adjustItem($index, -1)"
+                >
+                  −
+                </button>
+                <strong>{{ fmt(item.rollCount, 0) }}</strong>
+                <button
+                  type="button"
+                  class="btn btn-ghost"
+                  (click)="$event.stopPropagation(); adjustItem($index, 1)"
+                >
+                  +
+                </button>
+              </div>
+            }
           </article>
         }
       </section>
+
+      @if (bp.phone()) {
+        <button type="button" class="btn btn-primary btn-block add-product" (click)="openSheet()">
+          <app-icon name="plus" />
+          {{ 'Web.AddProduct' | t }}
+        </button>
+      }
 
       @if (id !== null) {
         <section class="card actions">
@@ -204,6 +248,15 @@
     </div>
   </div>
 </div>
+
+@if (bp.phone()) {
+  <app-product-sheet
+    [(open)]="sheetOpen"
+    [start]="sheetStart()"
+    [count]="items().length"
+    [adder]="adder"
+  />
+}
 
 @if (savedId(); as saved) {
   <div class="overlay">

@@ -63,6 +63,10 @@ export class SaleDraftStore {
     this.draft.update((d) => ({ ...d, items: [item, ...d.items] }));
   }
 
+  replaceAt(index: number, item: DraftItem): void {
+    this.draft.update((d) => ({ ...d, items: d.items.map((o, i) => (i === index ? item : o)) }));
+  }
+
   removeAt(index: number): void {
     this.draft.update((d) => ({ ...d, items: d.items.filter((_, i) => i !== index) }));
   }
