@@ -41,7 +41,7 @@
     <div class="more-scrim" (click)="moreOpen.set(false)"></div>
     <div class="more-sheet">
       @for (item of nav.more(); track item.path) {
-        <a [routerLink]="item.path">
+        <a [routerLink]="item.path" [replaceUrl]="true">
           <app-icon [name]="item.icon" [size]="22" />
           <span>{{ item.key | t }}</span>
         </a>

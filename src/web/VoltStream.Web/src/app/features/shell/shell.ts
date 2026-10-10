@@ -1,10 +1,19 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import {
+  NavigationEnd,
+  NavigationSkipped,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+} from '@angular/router';
 import { SessionActions } from '../../core/auth/session-actions';
 import { TranslatePipe } from '../../core/i18n/translate';
 import { ThemeMode } from '../../core/theme/theme';
 import { PwaService } from '../../core/pwa/pwa';
+import { closeOnBack } from '../../core/ui/back-stack';
 import { BreakpointService } from '../../core/ui/breakpoint';
+import { KeyboardService } from '../../core/ui/keyboard';
 import { PageTitle } from '../../core/ui/page-title';
 import { PaletteService } from '../../core/ui/palette';
 import { BranchSwitcher } from '../../shared/branch-switcher';
@@ -48,6 +57,7 @@ export class Shell {
   protected readonly actions = inject(SessionActions);
   protected readonly palette = inject(PaletteService);
   protected readonly title = inject(PageTitle);
+  private readonly keyboard = inject(KeyboardService);
   private readonly bp = inject(BreakpointService);
 
   protected readonly items = this.nav.allowed;
@@ -66,7 +76,12 @@ export class Shell {
   );
 
   constructor() {
+    closeOnBack(
+      () => this.moreOpen(),
+      () => this.moreOpen.set(false),
+    );
     const sub = this.router.events.subscribe((event) => {
+      if (event instanceof NavigationSkipped) this.moreOpen.set(false);
       if (event instanceof NavigationEnd) {
         this.activeTitle.set(this.titleFor(event.urlAfterRedirects));
         this.railOpen.set(false);

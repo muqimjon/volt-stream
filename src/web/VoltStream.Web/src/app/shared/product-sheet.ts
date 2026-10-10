@@ -1,6 +1,5 @@
 import {
   Component,
-  DestroyRef,
   computed,
   effect,
   inject,
@@ -11,6 +10,7 @@ import {
 } from '@angular/core';
 import { TranslatePipe } from '../core/i18n/translate';
 import { Category, Product, WarehouseItem } from '../core/models';
+import { closeOnBack } from '../core/ui/back-stack';
 import { fmtNum } from '../core/utils/number';
 import { Icon } from './icon';
 import { NumberField } from './number-field';
@@ -354,7 +354,6 @@ export class ProductSheet {
   protected readonly added = signal(0);
   protected readonly editing = signal(false);
   protected readonly viewport = signal({ height: window.innerHeight, top: 0 });
-  private silent = false;
 
   protected readonly list = computed(() => {
     const q = this.query().trim().toLowerCase();
@@ -393,18 +392,23 @@ export class ProductSheet {
       });
     });
 
-    const onPop = () => this.onPop();
-    window.addEventListener('popstate', onPop);
-    inject(DestroyRef).onDestroy(() => window.removeEventListener('popstate', onPop));
+    closeOnBack(
+      () => this.open(),
+      () => this.back(),
+    );
   }
 
-  protected back(): void {
-    history.back();
+  protected back(): boolean {
+    const steps = this.steps();
+    if (steps.length > 1) {
+      this.steps.set(steps.slice(0, -1));
+      return true;
+    }
+    this.open.set(false);
+    return false;
   }
 
   protected close(): void {
-    this.silent = true;
-    history.go(-this.steps().length);
     this.open.set(false);
   }
 
@@ -443,7 +447,6 @@ export class ProductSheet {
     this.steps.set([start]);
     this.query.set('');
     this.chip.set(null);
-    history.pushState({ ...history.state, vsSheet: true }, '');
     if (start === 1) {
       this.sel.clear();
       void this.sel.loadProducts();
@@ -452,29 +455,12 @@ export class ProductSheet {
 
   private go(step: number): void {
     this.steps.update((steps) => [...steps, step]);
-    history.pushState({ ...history.state, vsSheet: true }, '');
   }
 
   private restart(): void {
-    const extra = this.steps().length - 1;
     this.steps.set([1]);
     this.query.set('');
     this.chip.set(null);
     void this.sel.loadProducts();
-    if (extra > 0) {
-      this.silent = true;
-      history.go(-extra);
-    }
-  }
-
-  private onPop(): void {
-    if (this.silent) {
-      this.silent = false;
-      return;
-    }
-    if (!this.open()) return;
-    const steps = this.steps();
-    if (steps.length > 1) this.steps.set(steps.slice(0, -1));
-    else this.open.set(false);
   }
 }

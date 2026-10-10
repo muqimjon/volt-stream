@@ -9,6 +9,7 @@ import {
   viewChild,
   ElementRef,
 } from '@angular/core';
+import { closeOnBack } from '../core/ui/back-stack';
 import { BreakpointService } from '../core/ui/breakpoint';
 import { TranslatePipe } from '../core/i18n/translate';
 
@@ -20,13 +21,7 @@ import { TranslatePipe } from '../core/i18n/translate';
       @if (label()) {
         <label>{{ label() }}</label>
       }
-      <button
-        #trigger
-        type="button"
-        class="input trigger"
-        [disabled]="disabled()"
-        (click)="open()"
-      >
+      <button #trigger type="button" class="input trigger" [disabled]="disabled()" (click)="open()">
         <span [class.ph]="!selected()">{{ display() }}</span>
         <span class="chev">▾</span>
       </button>
@@ -35,7 +30,13 @@ import { TranslatePipe } from '../core/i18n/translate';
       }
     </div>
 
-    <dialog #dlg class="sheet" [class.anchored]="anchored()" (click)="backdrop($event)">
+    <dialog
+      #dlg
+      class="sheet"
+      [class.anchored]="anchored()"
+      (click)="backdrop($event)"
+      (close)="isOpen.set(false)"
+    >
       <div class="sheet-body">
         <div class="sheet-head">
           <input
@@ -46,12 +47,16 @@ import { TranslatePipe } from '../core/i18n/translate';
             [placeholder]="'Common.Search' | t"
             (input)="query.set($any($event.target).value)"
           />
-          <button type="button" class="btn btn-ghost" (click)="close()">{{ 'Common.Close' | t }}</button>
+          <button type="button" class="btn btn-ghost" (click)="close()">
+            {{ 'Common.Close' | t }}
+          </button>
         </div>
         <ul class="sheet-list">
           @if (clearable() && selected()) {
             <li>
-              <button type="button" class="opt muted" (click)="pick(null)">{{ 'Common.Clear' | t }}</button>
+              <button type="button" class="opt muted" (click)="pick(null)">
+                {{ 'Common.Clear' | t }}
+              </button>
             </li>
           }
           @for (item of filtered(); track $index) {
@@ -194,6 +199,7 @@ export class SearchSelect<T> {
   private readonly trigger = viewChild.required<ElementRef<HTMLButtonElement>>('trigger');
   protected readonly query = signal('');
   protected readonly anchored = signal(false);
+  protected readonly isOpen = signal(false);
 
   protected readonly display = computed(() => {
     const item = this.selected();
@@ -213,6 +219,10 @@ export class SearchSelect<T> {
     return !this.items().some((i) => this.labelOf()(i).toLowerCase() === q.toLowerCase());
   });
 
+  constructor() {
+    closeOnBack(this.isOpen, () => this.close());
+  }
+
   open(): void {
     if (this.disabled()) return;
     this.query.set('');
@@ -222,6 +232,7 @@ export class SearchSelect<T> {
     if (this.anchored()) this.position(dlg);
     else dlg.style.cssText = '';
     dlg.showModal();
+    this.isOpen.set(true);
   }
 
   private position(dlg: HTMLDialogElement): void {

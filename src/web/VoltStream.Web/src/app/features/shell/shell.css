@@ -234,6 +234,12 @@ main {
   }
 }
 
+@media (max-width: 639.98px) {
+  :host-context(.kb-open) .sidebar {
+    display: none;
+  }
+}
+
 @media (min-width: 640px) {
   .tabs .more,
   .more-scrim,

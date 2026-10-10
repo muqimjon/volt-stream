@@ -117,6 +117,12 @@
   }
 }
 
+@media (max-width: 639.98px) {
+  :host-context(.kb-open) .totals.pinned {
+    display: none;
+  }
+}
+
 @media (min-width: 768px) {
   .split {
     display: grid;

@@ -1,5 +1,6 @@
 import { Component, ElementRef, effect, inject, viewChild } from '@angular/core';
 import { TranslatePipe } from '../core/i18n/translate';
+import { closeOnBack } from '../core/ui/back-stack';
 import { DialogService } from '../core/ui/dialog';
 
 @Component({
@@ -96,6 +97,10 @@ export class ConfirmDialog {
   private readonly dlg = viewChild.required<ElementRef<HTMLDialogElement>>('dlg');
 
   constructor() {
+    closeOnBack(
+      () => !!this.dialog.request(),
+      () => this.dialog.answer(false),
+    );
     effect(() => {
       const el = this.dlg().nativeElement;
       if (this.dialog.request()) {
