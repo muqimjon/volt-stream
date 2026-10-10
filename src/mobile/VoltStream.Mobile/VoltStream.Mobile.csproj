@@ -11,8 +11,8 @@
     <RootNamespace>VoltStream.Mobile</RootNamespace>
     <ApplicationTitle>Volt Stream</ApplicationTitle>
     <ApplicationId>uz.ovoza.voltstream</ApplicationId>
-    <ApplicationDisplayVersion>1.2.0</ApplicationDisplayVersion>
-    <ApplicationVersion>10200</ApplicationVersion>
+    <ApplicationDisplayVersion>1.3.0</ApplicationDisplayVersion>
+    <ApplicationVersion>10300</ApplicationVersion>
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
   </PropertyGroup>
 
