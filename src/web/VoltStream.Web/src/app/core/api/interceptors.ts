@@ -62,7 +62,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         if (auth.token()) {
           auth.logout();
           toast.error(message);
-          void router.navigate(['/login']);
+          void router.navigate(['/login'], { replaceUrl: true });
         }
       } else {
         if (err.status === 403) message = serverMessage || translate.t('Web.NoAccess');

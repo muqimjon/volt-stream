@@ -21,7 +21,7 @@ export class App {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState !== 'visible') return;
       if (!this.auth.checkExpiry() && !this.router.url.startsWith('/login'))
-        void this.router.navigate(['/login']);
+        void this.router.navigate(['/login'], { replaceUrl: true });
     });
   }
 }
