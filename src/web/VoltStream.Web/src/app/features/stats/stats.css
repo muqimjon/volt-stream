@@ -1,25 +1,7 @@
-.segmented {
-  display: flex;
-  gap: var(--sp-xs);
-  padding: var(--sp-xs);
-  border-radius: var(--r-md);
-  background: var(--surface-alt);
-}
-
-.segmented button {
-  flex: 1;
-  min-height: var(--touch);
-  border: none;
-  border-radius: var(--r-sm);
-  background: transparent;
-  color: var(--text-2);
-  font-weight: 600;
-}
-
-.segmented button.active {
-  background: var(--surface);
-  color: var(--brand);
-  box-shadow: var(--shadow-card);
+@media (max-width: 639.98px) {
+  .segmented {
+    width: 100%;
+  }
 }
 
 .group {

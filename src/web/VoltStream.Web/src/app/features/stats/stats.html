@@ -1,13 +1,13 @@
 <div class="page">
-  <app-page-header [title]="heading() | t" />
-
-  <div class="segmented">
-    @for (item of ranges; track item) {
-      <button type="button" [class.active]="range() === item" (click)="select(item)">
-        {{ rangeKey[item] | t }}
-      </button>
-    }
-  </div>
+  <app-page-header [title]="heading() | t">
+    <div class="segmented">
+      @for (item of ranges; track item) {
+        <button type="button" [class.active]="range() === item" (click)="select(item)">
+          {{ rangeKey[item] | t }}
+        </button>
+      }
+    </div>
+  </app-page-header>
 
   @for (section of sections(); track section.title) {
     <section class="group">

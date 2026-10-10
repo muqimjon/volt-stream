@@ -75,29 +75,7 @@ app-icon {
 }
 
 .view-toggle {
-  display: inline-flex;
-  gap: var(--sp-xs);
-  padding: var(--sp-xs);
-  border-radius: var(--r-md);
-  background: var(--surface-alt);
   margin-bottom: var(--sp-sm);
-}
-
-.view-toggle button {
-  min-height: var(--touch);
-  padding: 0 var(--sp-md);
-  border: none;
-  border-radius: var(--r-sm);
-  background: transparent;
-  color: var(--text-2);
-  font-weight: 600;
-  font-size: var(--fs-caption);
-}
-
-.view-toggle button.active {
-  background: var(--surface);
-  color: var(--brand);
-  box-shadow: var(--shadow-card);
 }
 
 .detailed-item {
