@@ -25,6 +25,7 @@ public record ReceiptItemResponse
 public record ReceiptResponse
 {
     public long SaleId { get; set; }
+    public long? SaleDraftId { get; set; }
     public DateTimeOffset Date { get; set; }
     public string? Branch { get; set; }
     public string? Customer { get; set; }

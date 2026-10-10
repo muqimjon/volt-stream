@@ -31,6 +31,10 @@ public static class Permissions
     public const string LogsViewOwn = "logs.view_own";
     public const string BranchesAll = "branches.all";
 
+    public const string DraftsManage = "drafts.manage";
+    public const string DraftsConfirm = "drafts.confirm";
+    public const string DraftsPrint = "drafts.print";
+
     public static readonly string[] All =
     [
         SalesCreate, SalesView, SalesViewPrices, SalesEdit,
@@ -38,6 +42,7 @@ public static class Permissions
         StockView, PaymentsManage, CustomersManage, ReportsView,
         SettingsCurrencies, SettingsCategories, SettingsProducts, SettingsCustomers,
         SettingsBranches, SettingsUsers, SettingsPrinter, SettingsAudit, SettingsGeneral,
-        PrintRequest, PrintAgent, LogsViewOwn, BranchesAll
+        PrintRequest, PrintAgent, LogsViewOwn, BranchesAll,
+        DraftsManage, DraftsConfirm, DraftsPrint
     ];
 }

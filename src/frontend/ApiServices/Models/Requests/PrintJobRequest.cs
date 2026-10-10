@@ -2,7 +2,8 @@ namespace ApiServices.Models.Requests;
 
 public record PrintJobRequest
 {
-    public long SaleId { get; set; }
+    public long? SaleId { get; set; }
+    public long? SaleDraftId { get; set; }
     public int Copies { get; set; } = 1;
     public long? BranchId { get; set; }
 }

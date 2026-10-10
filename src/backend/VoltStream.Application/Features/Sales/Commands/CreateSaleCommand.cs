@@ -9,6 +9,7 @@ using VoltStream.Application.Commons.Interfaces;
 using VoltStream.Application.Commons.Mediator;
 using VoltStream.Application.Commons.Security;
 using VoltStream.Application.Commons.Services;
+using VoltStream.Application.Features.SaleDrafts;
 using VoltStream.Domain.Entities;
 using VoltStream.Domain.Enums;
 
@@ -24,7 +25,8 @@ public record CreateSaleCommand(
     decimal Discount,
     string Description,
     List<SaleItemCommand> Items,
-    long? BranchId = null)
+    long? BranchId = null,
+    long? SaleDraftId = null)
     : IRequest<long>
 {
     // Faqat UpdateSaleCommand beradi: tahrirlangan savdo asl omborida qolsin.
@@ -46,6 +48,7 @@ public class CreateSaleCommandHandler(
         try
         {
             var branchId = await branches.ResolveAsync(request.BranchId, cancellationToken);
+            var draft = request.SaleDraftId is long draftId ? await ClaimDraftAsync(draftId, branchId, cancellationToken) : null;
             var warehouse = await GetWarehouseAsync(
                 request.WarehouseId ?? await branches.WarehouseOfAsync(branchId, cancellationToken), cancellationToken);
             var customer = await GetCustomerAsync(request.CustomerId, cancellationToken);
@@ -76,6 +79,9 @@ public class CreateSaleCommandHandler(
                 sale.CustomerOperation = CreateCustomerOperation(sale, account, request.Description, descriptionBuilder, request.IsDiscountApplied);
             }
 
+            if (draft is not null)
+                draft.ConfirmedSale = sale;
+
             context.Sales.Add(sale);
             await context.CommitTransactionAsync(cancellationToken);
 
@@ -86,6 +92,35 @@ public class CreateSaleCommandHandler(
             await context.RollbackTransactionAsync(cancellationToken);
             throw;
         }
+    }
+
+    // Shartli UPDATE ro'yxat qatorini tranzaksiya oxirigacha qulflaydi: parallel ikkinchi tasdiq kutib turadi,
+    // keyin holat Open emasligini ko'rib 409 oladi.
+    private async Task<SaleDraft> ClaimDraftAsync(long draftId, long branchId, CancellationToken cancellationToken)
+    {
+        if (!user.Has(Permissions.DraftsConfirm))
+            throw new ForbiddenException($"Ruxsat yetarli emas: {Permissions.DraftsConfirm}");
+
+        var claimed = await context.SaleDrafts
+            .Where(d => d.Id == draftId && d.BranchId == branchId && d.Status == SaleDraftStatus.Open)
+            .ExecuteUpdateAsync(s => s
+                .SetProperty(d => d.Status, SaleDraftStatus.Confirmed)
+                .SetProperty(d => d.UpdatedAt, DateTimeOffset.UtcNow), cancellationToken);
+
+        if (claimed == 0)
+        {
+            var draftBranchId = await context.SaleDrafts
+                .Where(d => d.Id == draftId)
+                .Select(d => (long?)d.BranchId)
+                .FirstOrDefaultAsync(cancellationToken)
+                ?? throw new NotFoundException(nameof(SaleDraft), nameof(SaleDraft.Id), draftId);
+
+            throw new ConflictException(draftBranchId == branchId
+                ? SaleDraftExtensions.NotOpenMessage
+                : "Ro'yxat boshqa filialga tegishli.");
+        }
+
+        return await context.SaleDrafts.FirstAsync(d => d.Id == draftId, cancellationToken);
     }
 
     private async Task<Warehouse> GetWarehouseAsync(long warehouseId, CancellationToken cancellationToken)

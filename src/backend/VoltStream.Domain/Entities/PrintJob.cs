@@ -4,8 +4,11 @@ using VoltStream.Domain.Enums;
 
 public class PrintJob : Auditable
 {
-    public long SaleId { get; set; }
-    public Sale Sale { get; set; } = default!;
+    public long? SaleId { get; set; }
+    public Sale? Sale { get; set; }
+
+    public long? SaleDraftId { get; set; }
+    public SaleDraft? SaleDraft { get; set; }
 
     public long BranchId { get; set; }
     public long RequestedByUserId { get; set; }

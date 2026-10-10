@@ -3,6 +3,7 @@ namespace VoltStream.Application.Features.Sales.DTOs;
 public record SaleReceiptDto
 {
     public long SaleId { get; set; }
+    public long? SaleDraftId { get; set; }
     public DateTimeOffset Date { get; set; }
     public string Branch { get; set; } = string.Empty;
     public string? Customer { get; set; }

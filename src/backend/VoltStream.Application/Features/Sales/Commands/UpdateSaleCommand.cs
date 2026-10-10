@@ -46,9 +46,14 @@ public class UpdateSaleCommandHandler(
 
         try
         {
+            var draftId = await context.SaleDrafts
+                .Where(d => d.ConfirmedSaleId == oldSale.Id)
+                .Select(d => (long?)d.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+
             await mediator.Send(new DeleteCustomerOperationCommand(oldSale.CustomerOperation.Id), cancellationToken);
 
-            await mediator.Send(new CreateSaleCommand(
+            var saleId = await mediator.Send(new CreateSaleCommand(
                 request.Date,
                 request.CustomerId,
                 request.CurrencyId,
@@ -60,6 +65,11 @@ public class UpdateSaleCommandHandler(
                 request.Description,
                 request.Items,
                 oldSale.BranchId) { WarehouseId = oldSale.WarehouseId }, cancellationToken);
+
+            if (draftId is not null)
+                await context.SaleDrafts
+                    .Where(d => d.Id == draftId)
+                    .ExecuteUpdateAsync(s => s.SetProperty(d => d.ConfirmedSaleId, saleId), cancellationToken);
 
             return await context.CommitTransactionAsync(cancellationToken);
         }

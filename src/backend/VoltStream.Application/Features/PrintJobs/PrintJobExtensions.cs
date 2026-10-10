@@ -99,6 +99,7 @@ public static class PrintJobExtensions
             {
                 Id = job.Id,
                 SaleId = job.SaleId,
+                SaleDraftId = job.SaleDraftId,
                 BranchId = job.BranchId,
                 Status = job.Status,
                 Copies = job.Copies,

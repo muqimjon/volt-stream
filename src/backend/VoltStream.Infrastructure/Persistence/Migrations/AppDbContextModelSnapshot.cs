@@ -575,7 +575,10 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.Property<long>("RequestedByUserId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("SaleId")
+                    b.Property<long?>("SaleDraftId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("SaleId")
                         .HasColumnType("bigint");
 
                     b.Property<int>("Status")
@@ -588,9 +591,14 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("BranchId", "Status");
 
+                    b.HasIndex("SaleDraftId", "Status");
+
                     b.HasIndex("SaleId", "Status");
 
-                    b.ToTable("PrintJobs", (string)null);
+                    b.ToTable("PrintJobs", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_PrintJobs_SaleOrDraft", "(\"SaleId\" IS NULL) <> (\"SaleDraftId\" IS NULL)");
+                        });
                 });
 
             modelBuilder.Entity("VoltStream.Domain.Entities.Product", b =>
@@ -712,6 +720,100 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.HasIndex("WarehouseId");
 
                     b.ToTable("Sales", (string)null);
+                });
+
+            modelBuilder.Entity("VoltStream.Domain.Entities.SaleDraft", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("BranchId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("ConfirmedSaleId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("CreatedByUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("CustomerId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConfirmedSaleId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("BranchId", "Status");
+
+                    b.ToTable("SaleDrafts", (string)null);
+                });
+
+            modelBuilder.Entity("VoltStream.Domain.Entities.SaleDraftItem", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("CreatedByUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal>("LengthPerRoll")
+                        .HasColumnType("numeric");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("RollCount")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("SaleDraftId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("TotalLength")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SaleDraftId");
+
+                    b.ToTable("SaleDraftItems");
                 });
 
             modelBuilder.Entity("VoltStream.Domain.Entities.SaleItem", b =>
@@ -1111,13 +1213,19 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("VoltStream.Domain.Entities.PrintJob", b =>
                 {
+                    b.HasOne("VoltStream.Domain.Entities.SaleDraft", "SaleDraft")
+                        .WithMany()
+                        .HasForeignKey("SaleDraftId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("VoltStream.Domain.Entities.Sale", "Sale")
                         .WithMany()
                         .HasForeignKey("SaleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Sale");
+
+                    b.Navigation("SaleDraft");
                 });
 
             modelBuilder.Entity("VoltStream.Domain.Entities.Product", b =>
@@ -1169,6 +1277,50 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                     b.Navigation("CustomerOperation");
 
                     b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("VoltStream.Domain.Entities.SaleDraft", b =>
+                {
+                    b.HasOne("VoltStream.Domain.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("VoltStream.Domain.Entities.Sale", "ConfirmedSale")
+                        .WithMany()
+                        .HasForeignKey("ConfirmedSaleId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("VoltStream.Domain.Entities.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("ConfirmedSale");
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("VoltStream.Domain.Entities.SaleDraftItem", b =>
+                {
+                    b.HasOne("VoltStream.Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VoltStream.Domain.Entities.SaleDraft", "SaleDraft")
+                        .WithMany("Items")
+                        .HasForeignKey("SaleDraftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("SaleDraft");
                 });
 
             modelBuilder.Entity("VoltStream.Domain.Entities.SaleItem", b =>
@@ -1270,6 +1422,11 @@ namespace VoltStream.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("VoltStream.Domain.Entities.Sale", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("VoltStream.Domain.Entities.SaleDraft", b =>
                 {
                     b.Navigation("Items");
                 });

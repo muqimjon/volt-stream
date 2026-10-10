@@ -25,6 +25,8 @@ public interface IAppDbContext
     DbSet<AuditLog> AuditLogs { get; }
     DbSet<PrintJob> PrintJobs { get; }
     DbSet<AppSettings> AppSettings { get; }
+    DbSet<SaleDraft> SaleDrafts { get; }
+    DbSet<SaleDraftItem> SaleDraftItems { get; }
 
     Task<int> SaveAsync(CancellationToken cancellationToken);
 

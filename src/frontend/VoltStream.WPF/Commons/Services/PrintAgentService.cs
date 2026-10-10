@@ -212,7 +212,9 @@ public partial class PrintAgentService(
                 return;
             }
 
-            var receipt = await services.GetRequiredService<ISaleApi>().GetReceipt(claimed.SaleId).Handle();
+            var receipt = claimed.SaleDraftId is long draftId
+                ? await services.GetRequiredService<ISaleDraftsApi>().GetReceipt(draftId).Handle()
+                : await services.GetRequiredService<ISaleApi>().GetReceipt(claimed.SaleId!.Value).Handle();
             if (!receipt.IsSuccess)
                 throw new InvalidOperationException(receipt.Message ?? TranslationSource.T("Receipt.LoadError"));
 

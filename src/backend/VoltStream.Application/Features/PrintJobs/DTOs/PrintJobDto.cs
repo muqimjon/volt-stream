@@ -5,7 +5,8 @@ using VoltStream.Domain.Enums;
 public record PrintJobDto
 {
     public long Id { get; set; }
-    public long SaleId { get; set; }
+    public long? SaleId { get; set; }
+    public long? SaleDraftId { get; set; }
     public long BranchId { get; set; }
     public PrintJobStatus Status { get; set; }
     public int Copies { get; set; }

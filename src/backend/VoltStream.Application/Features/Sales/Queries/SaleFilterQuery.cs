@@ -52,12 +52,12 @@ public class SaleFilterQueryHandler(
 
         var jobs = await context.PrintJobs
             .AsNoTracking()
-            .Where(job => ids.Contains(job.SaleId))
+            .Where(job => job.SaleId != null && ids.Contains(job.SaleId.Value))
             .Select(job => new { job.Id, job.SaleId, job.Status, job.Error })
             .ToListAsync(cancellationToken);
 
         var latest = jobs
-            .GroupBy(job => job.SaleId)
+            .GroupBy(job => job.SaleId!.Value)
             .ToDictionary(group => group.Key, group => group.MaxBy(job => job.Id)!);
 
         foreach (var sale in sales)

@@ -7,7 +7,8 @@ public static class RolePresets
     private static readonly string[] manager =
         [.. Permissions.All.Where(p => !p.StartsWith("settings.")
             && p != Permissions.BranchesAll
-            && p != Permissions.PrintAgent)];
+            && p != Permissions.PrintAgent
+            && p != Permissions.DraftsPrint)];
 
     private static readonly string[] cashier =
     [
@@ -20,7 +21,7 @@ public static class RolePresets
     [
         Permissions.SalesCreate, Permissions.SalesView, Permissions.SuppliesCreate,
         Permissions.SuppliesView, Permissions.StockView, Permissions.CustomersManage,
-        Permissions.PrintRequest
+        Permissions.PrintRequest, Permissions.DraftsManage
     ];
 
     public static string[] For(UserRole role) => role switch
