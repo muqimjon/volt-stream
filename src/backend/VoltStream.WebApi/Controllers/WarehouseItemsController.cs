@@ -12,6 +12,10 @@ public class WarehouseItemsController : BaseController
     public async Task<IActionResult> GetAll([FromQuery] long? branchId)
         => Ok(new Response { Data = await Mediator.Send(new GetAllWarehouseStockQuery(branchId)) });
 
+    [HttpGet("summary")]
+    public async Task<IActionResult> GetSummary([FromQuery] long? branchId)
+        => Ok(new Response { Data = await Mediator.Send(new GetStockSummaryQuery(branchId)) });
+
     [HttpGet("productId={Id:long}")]
     public async Task<IActionResult> GetAllWarehouseItemByProductId(long Id, [FromQuery] long? branchId)
         => Ok(new Response { Data = await Mediator.Send(new GetProductDetailsFromWarehouse(Id, branchId)) });
