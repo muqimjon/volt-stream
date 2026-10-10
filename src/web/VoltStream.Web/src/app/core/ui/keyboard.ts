@@ -15,6 +15,7 @@ export class KeyboardService {
   private readonly bp = inject(BreakpointService);
   private readonly focused = signal(false);
   private readonly shrunk = signal(false);
+  private seen = false;
 
   readonly open = computed(() => this.bp.phone() && (this.focused() || this.shrunk()));
 
@@ -34,7 +35,14 @@ export class KeyboardService {
           base = vv.height;
         }
         base = Math.max(base, vv.height);
-        this.shrunk.set(base - vv.height > 150);
+        const shrunk = base - vv.height > 150;
+        this.shrunk.set(shrunk);
+        if (shrunk) this.seen = true;
+        else if (this.seen) {
+          this.seen = false;
+          // Back closes the keyboard but leaves the field focused.
+          this.focused.set(false);
+        }
       });
     }
 

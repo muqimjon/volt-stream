@@ -1,5 +1,6 @@
 import {
   Component,
+  DestroyRef,
   computed,
   effect,
   inject,
@@ -10,7 +11,7 @@ import {
 } from '@angular/core';
 import { TranslatePipe } from '../core/i18n/translate';
 import { Category, Product, WarehouseItem } from '../core/models';
-import { closeOnBack } from '../core/ui/back-stack';
+import { BackStack } from '../core/ui/back-stack';
 import { fmtNum } from '../core/utils/number';
 import { Icon } from './icon';
 import { NumberField } from './number-field';
@@ -345,6 +346,7 @@ export class ProductSheet {
   readonly adder = input.required<() => Promise<boolean>>();
 
   protected readonly sel = inject(StockSelection);
+  private readonly stack = inject(BackStack);
   protected readonly fmt = fmtNum;
   protected readonly steps = signal<number[]>([1]);
   protected readonly step = computed(() => this.steps().at(-1) ?? 1);
@@ -354,6 +356,7 @@ export class ProductSheet {
   protected readonly added = signal(0);
   protected readonly editing = signal(false);
   protected readonly viewport = signal({ height: window.innerHeight, top: 0 });
+  private tokens: number[] = [];
 
   protected readonly list = computed(() => {
     const q = this.query().trim().toLowerCase();
@@ -377,6 +380,7 @@ export class ProductSheet {
   constructor() {
     effect(() => {
       if (this.open()) untracked(() => this.begin());
+      else untracked(() => this.leave());
     });
 
     effect((onCleanup) => {
@@ -392,20 +396,12 @@ export class ProductSheet {
       });
     });
 
-    closeOnBack(
-      () => this.open(),
-      () => this.back(),
-    );
+    inject(DestroyRef).onDestroy(() => this.leave());
   }
 
-  protected back(): boolean {
-    const steps = this.steps();
-    if (steps.length > 1) {
-      this.steps.set(steps.slice(0, -1));
-      return true;
-    }
-    this.open.set(false);
-    return false;
+  protected back(): void {
+    if (this.tokens.length) history.back();
+    else this.open.set(false);
   }
 
   protected close(): void {
@@ -418,17 +414,16 @@ export class ProductSheet {
   }
 
   protected async pick(product: Product): Promise<void> {
+    this.advance();
     await this.sel.onProduct(product, false);
     const options = this.sel.stocks();
-    if (options.length === 1) this.choose(options[0]);
-    else this.go(2);
+    if (options.length === 1) this.select(options[0]);
+    else this.steps.update((steps) => [...steps, 2]);
   }
 
   protected choose(stock: WarehouseItem): void {
-    this.sel.onStock(stock, false);
-    this.sel.rollCount.set(1);
-    void this.sel.onRollCountCommit(1);
-    this.go(3);
+    this.advance();
+    this.select(stock);
   }
 
   protected async add(): Promise<void> {
@@ -445,6 +440,7 @@ export class ProductSheet {
     this.editing.set(start === 3);
     this.added.set(0);
     this.steps.set([start]);
+    this.tokens = [this.entry()];
     this.query.set('');
     this.chip.set(null);
     if (start === 1) {
@@ -453,11 +449,34 @@ export class ProductSheet {
     }
   }
 
-  private go(step: number): void {
-    this.steps.update((steps) => [...steps, step]);
+  private select(stock: WarehouseItem): void {
+    this.sel.onStock(stock, false);
+    this.sel.rollCount.set(1);
+    void this.sel.onRollCountCommit(1);
+    this.steps.update((steps) => [...steps, 3]);
+  }
+
+  private entry(): number {
+    return this.stack.push(() => {
+      this.tokens.pop();
+      const steps = this.steps();
+      if (steps.length > 1) this.steps.set(steps.slice(0, -1));
+      else this.open.set(false);
+    });
+  }
+
+  private advance(): void {
+    this.tokens.push(this.entry());
+  }
+
+  private leave(): void {
+    const tokens = this.tokens;
+    this.tokens = [];
+    this.stack.release(...tokens);
   }
 
   private restart(): void {
+    this.stack.release(...this.tokens.splice(1));
     this.steps.set([1]);
     this.query.set('');
     this.chip.set(null);

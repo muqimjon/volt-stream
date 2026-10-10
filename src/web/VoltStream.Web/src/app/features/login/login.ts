@@ -33,7 +33,7 @@ export class LoginPage {
     this.busy.set(true);
     try {
       await this.auth.login(username, this.password());
-      await this.router.navigate(['/']);
+      await this.router.navigate(['/'], { replaceUrl: true });
     } catch (e) {
       const err = e as ApiError;
       this.error.set(

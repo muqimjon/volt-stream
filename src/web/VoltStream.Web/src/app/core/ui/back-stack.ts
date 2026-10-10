@@ -3,10 +3,11 @@ import { BreakpointService } from './breakpoint';
 
 interface Entry {
   id: number;
-  onBack: () => boolean | void;
+  onBack: () => void;
 }
 
 // Phones only: the Android/browser Back button must close the topmost overlay instead of leaving the page.
+// Entries are only ever pushed from user-initiated code: Chromium skips script-added entries on Back.
 @Injectable({ providedIn: 'root' })
 export class BackStack {
   private readonly phone = inject(BreakpointService).phone;
@@ -18,25 +19,26 @@ export class BackStack {
     window.addEventListener('popstate', () => this.onPop());
   }
 
-  push(onBack: () => boolean | void): number {
+  push(onBack: () => void): number {
     if (!this.phone()) return 0;
     const id = ++this.seq;
     this.stack.push({ id, onBack });
-    this.mark(id);
+    history.pushState({ ...history.state, vsBack: id }, '');
     return id;
   }
 
-  release(id: number): void {
-    const index = this.stack.findIndex((entry) => entry.id === id);
-    if (index < 0) return;
-    this.stack.splice(index, 1);
-    if (history.state?.vsBack !== id) return;
+  release(...ids: number[]): void {
+    const top = this.stack.at(-1)?.id;
+    let count = 0;
+    while (count < this.stack.length && ids.includes(this.stack[this.stack.length - 1 - count].id))
+      count++;
+    for (const id of ids) {
+      const index = this.stack.findIndex((entry) => entry.id === id);
+      if (index >= 0) this.stack.splice(index, 1);
+    }
+    if (!count || history.state?.vsBack !== top) return;
     this.silent++;
-    history.back();
-  }
-
-  private mark(id: number): void {
-    history.pushState({ ...history.state, vsBack: id }, '');
+    history.go(-count);
   }
 
   private onPop(): void {
@@ -44,15 +46,12 @@ export class BackStack {
       this.silent--;
       return;
     }
-    const entry = this.stack.pop();
-    if (entry?.onBack() !== true) return;
-    this.stack.push(entry);
-    this.mark(entry.id);
+    this.stack.pop()?.onBack();
   }
 }
 
-// `onBack` runs after Back popped the entry; returning true keeps the overlay open (it consumed a step).
-export function closeOnBack(open: () => boolean, onBack: () => boolean | void): void {
+// `onBack` runs after Back already popped the entry; closing any other way releases it.
+export function closeOnBack(open: () => boolean, onBack: () => void): void {
   const stack = inject(BackStack);
   let token = 0;
   effect(() => {
