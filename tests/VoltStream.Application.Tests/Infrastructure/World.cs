@@ -17,6 +17,7 @@ using VoltStream.Application.Features.Products.Commands;
 using VoltStream.Application.Features.Sales.Commands;
 using VoltStream.Application.Features.Sales.DTOs;
 using VoltStream.Application.Features.Sales.Queries;
+using VoltStream.Application.Features.Settings.Commands;
 using VoltStream.Application.Features.Supplies.Commands;
 using VoltStream.Application.Features.Warehouses.Commands;
 using VoltStream.Application.Features.WarehouseStocks.Queries;
@@ -110,6 +111,8 @@ public sealed class World
         return id;
     }
 
+    public Task SetNegativeStock(bool allowed) => Admin.Send(new UpdateGeneralSettingsCommand(allowed));
+
     public Task<long> NewBranch(long? warehouseId = null)
         => Admin.Send(new CreateBranchCommand($"branch-{Unique()}", warehouseId));
 
@@ -190,10 +193,11 @@ public sealed class World
         await Admin.Send(new DeleteCustomerOperationCommand(payment.CustomerOperationId));
     }
 
+    public async Task<List<SaleDto>> SalesOf(long customerId)
+        => [.. (await Admin.Send(new SaleFilterQuery { Filters = new() { ["customerId"] = [customerId.ToString()] } })).OrderBy(sale => sale.Id)];
+
     // Tahrirlash eski yozuvni o'chirib yangisini yaratadi, shuning uchun id o'zgaradi
-    public async Task<SaleDto> LastSale(long customerId)
-        => (await Admin.Send(new SaleFilterQuery { Filters = new() { ["customerId"] = [customerId.ToString()] } }))
-            .OrderBy(sale => sale.Id).Last();
+    public async Task<SaleDto> LastSale(long customerId) => (await SalesOf(customerId)).Last();
 
     public async Task<PaymentDto> LastPayment(long customerId)
         => (await Admin.Send(new PaymentFilterQuery { Filters = new() { ["customerId"] = [customerId.ToString()] } }))
