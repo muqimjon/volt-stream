@@ -71,9 +71,18 @@ public class DatabaseInitializer(
                 .ToListAsync(ct);
 
             for (var i = 0; i < branches.Count; i++)
-                branches[i].Warehouse = i < free.Count
-                    ? free[i]
-                    : new Warehouse { Name = branches[i].Name, NormalizedName = branches[i].NormalizedName };
+            {
+                var warehouse = i < free.Count ? free[i] : new Warehouse();
+
+                // v1 dan ko'chgan ombor nomsiz — ro'yxat va tanlagichlarda bo'sh ko'rinmasin.
+                if (string.IsNullOrWhiteSpace(warehouse.Name))
+                {
+                    warehouse.Name = branches[i].Name;
+                    warehouse.NormalizedName = branches[i].NormalizedName;
+                }
+
+                branches[i].Warehouse = warehouse;
+            }
 
             await context.SaveChangesAsync(ct);
         }

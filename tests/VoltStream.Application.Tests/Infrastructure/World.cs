@@ -1,7 +1,9 @@
 namespace VoltStream.Application.Tests.Infrastructure;
 
+using Microsoft.EntityFrameworkCore;
 using VoltStream.Application.Features.Accounts.DTOs;
 using VoltStream.Application.Features.Branches.Commands;
+using VoltStream.Application.Features.Branches.Queries;
 using VoltStream.Application.Features.Categories.Commands;
 using VoltStream.Application.Features.Currencies.Commands;
 using VoltStream.Application.Features.CustomerOperations.Commands;
@@ -16,6 +18,7 @@ using VoltStream.Application.Features.Sales.Commands;
 using VoltStream.Application.Features.Sales.DTOs;
 using VoltStream.Application.Features.Sales.Queries;
 using VoltStream.Application.Features.Supplies.Commands;
+using VoltStream.Application.Features.Warehouses.Commands;
 using VoltStream.Application.Features.WarehouseStocks.Queries;
 using VoltStream.Domain.Enums;
 
@@ -33,13 +36,18 @@ public sealed record StockRow(decimal LengthPerRoll, int Rolls, decimal Length);
 public sealed class World
 {
     private readonly IServiceProvider services;
+    private readonly Dictionary<long, string> productNames = [];
     private long category;
+    private string categoryName = string.Empty;
 
-    private World(IServiceProvider services)
+    private World(TestDatabase database)
     {
-        this.services = services;
+        Db = database;
+        services = database.Services;
         Admin = As(TestUser.Admin());
     }
+
+    public TestDatabase Db { get; }
 
     public Actor Admin { get; }
     public Actor Seller { get; private set; } = default!;
@@ -53,16 +61,17 @@ public sealed class World
     public long Uzs { get; private set; }
     public long Usd { get; private set; }
 
-    public static async Task<World> CreateAsync(IServiceProvider services)
+    public static async Task<World> CreateAsync(TestDatabase database)
     {
-        var world = new World(services);
+        var world = new World(database);
         var tag = Unique();
 
         world.Branch = await world.Admin.Send(new CreateBranchCommand($"branch-{tag}"));
         world.OtherBranch = await world.Admin.Send(new CreateBranchCommand($"other-{tag}"));
         world.Uzs = await world.NewCurrency();
         world.Usd = await world.NewCurrency(rate: 12_500);
-        world.category = await world.Admin.Send(new CreateCategoryCommand($"category-{tag}"));
+        world.categoryName = $"category-{tag}";
+        world.category = await world.Admin.Send(new CreateCategoryCommand(world.categoryName));
 
         world.Seller = world.As(TestUser.Of(UserRole.Seller, world.Branch));
         world.Cashier = world.As(TestUser.Of(UserRole.Cashier, world.Branch));
@@ -93,12 +102,39 @@ public sealed class World
     }
 
     public async Task<long> NewProduct(bool weightTracked = false, decimal? weightPerUnit = null)
-        => await Admin.Send(new CreateProductCommand($"product-{Unique()}", "m", category, weightTracked, weightPerUnit));
+    {
+        var name = $"product-{Unique()}";
+        var id = await Admin.Send(new CreateProductCommand(name, "m", category, weightTracked, weightPerUnit));
+        productNames[id] = name;
 
-    public Task Supply(long productId, int rolls, decimal lengthPerRoll, decimal price = 0, decimal discountRate = 0, long? branchId = null)
+        return id;
+    }
+
+    public Task<long> NewBranch(long? warehouseId = null)
+        => Admin.Send(new CreateBranchCommand($"branch-{Unique()}", warehouseId));
+
+    public Task<long> NewWarehouse()
+        => Admin.Send(new CreateWarehouseCommand($"warehouse-{Unique()}"));
+
+    public async Task<long> WarehouseOf(long branchId)
+        => (await Admin.Send(new GetAllBranchesQuery())).Single(branch => branch.Id == branchId).WarehouseId!.Value;
+
+    public async Task SwitchWarehouse(long branchId, long warehouseId)
+    {
+        var branch = (await Admin.Send(new GetAllBranchesQuery())).Single(b => b.Id == branchId);
+
+        await Admin.Send(new UpdateBranchCommand(branchId, branch.Name, branch.IsActive, warehouseId));
+    }
+
+    public Task<long> Supply(long productId, int rolls, decimal lengthPerRoll, decimal price = 0, decimal discountRate = 0, long? branchId = null)
         => Admin.Send(new CreateSupplyCommand(
             DateTimeOffset.UtcNow, category, string.Empty, productId, string.Empty,
             rolls, "m", lengthPerRoll, rolls * lengthPerRoll, price, discountRate, branchId ?? Branch));
+
+    // Tahrirlash kategoriya va mahsulotni nomi bo'yicha topadi
+    public UpdateSupplyCommand EditSupply(long supplyId, long productId, int rolls, decimal lengthPerRoll, decimal price = 0)
+        => new(supplyId, DateTimeOffset.UtcNow, category, categoryName, productId, productNames[productId], "m",
+            rolls, lengthPerRoll, rolls * lengthPerRoll, price, 0);
 
     public CreateSaleCommand Sale(long customerId, long currencyId, Line[] lines, bool discountApplied = false, long? branchId = null)
     {
@@ -171,6 +207,20 @@ public sealed class World
             .Where(stock => stock.Product.Id == productId)
             .OrderBy(stock => stock.LengthPerRoll)
             .Select(stock => new StockRow(stock.LengthPerRoll, stock.RollCount, stock.TotalLength))];
+
+    // Filialga bog'lanmagan (masalan, almashtirilgandan keyingi eski) ombor qoldig'ini ko'rish uchun to'g'ridan-to'g'ri bazadan o'qiladi
+    public Task<List<StockRow>> StockIn(long warehouseId, long productId)
+        => Db.Read(context => context.WarehouseStocks
+            .Where(stock => stock.WarehouseId == warehouseId && stock.ProductId == productId)
+            .OrderBy(stock => stock.LengthPerRoll)
+            .Select(stock => new StockRow(stock.LengthPerRoll, stock.RollCount, stock.TotalLength))
+            .ToListAsync());
+
+    public Task<long?> WarehouseOfSale(long saleId)
+        => Db.Read(context => context.Sales.Where(sale => sale.Id == saleId).Select(sale => sale.WarehouseId).SingleAsync());
+
+    public Task<long?> WarehouseOfSupply(long supplyId)
+        => Db.Read(context => context.Supplies.Where(supply => supply.Id == supplyId).Select(supply => supply.WarehouseId).SingleAsync());
 
     private static string Unique() => Guid.NewGuid().ToString("N")[..8];
 }
